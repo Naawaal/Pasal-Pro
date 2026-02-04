@@ -8,6 +8,7 @@ import 'package:pasal_pro/features/products/domain/entities/product.dart';
 class ProductListItem extends StatelessWidget {
   final Product product;
   final VoidCallback? onEdit;
+  final VoidCallback? onAdjustStock;
   final VoidCallback? onDelete;
   final VoidCallback? onToggleActive;
 
@@ -15,6 +16,7 @@ class ProductListItem extends StatelessWidget {
     super.key,
     required this.product,
     this.onEdit,
+    this.onAdjustStock,
     this.onDelete,
     this.onToggleActive,
   });
@@ -121,6 +123,11 @@ class ProductListItem extends StatelessWidget {
                   icon: const Icon(AppIcons.edit),
                   tooltip: 'Edit',
                   onPressed: onEdit,
+                ),
+                IconButton(
+                  icon: const Icon(AppIcons.packagePlus),
+                  tooltip: 'Adjust stock',
+                  onPressed: onAdjustStock,
                 ),
                 IconButton(
                   icon: Icon(isInactive ? AppIcons.unlock : AppIcons.lock),

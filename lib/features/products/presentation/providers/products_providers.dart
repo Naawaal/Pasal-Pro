@@ -58,14 +58,17 @@ class ProductsController extends StateNotifier<AsyncValue<List<Product>>> {
   final GetProducts _getProducts;
   final DeleteProduct _deleteProduct;
   final ToggleProductActive _toggleProductActive;
+  final UpdateStock _updateStock;
 
   ProductsController({
     required GetProducts getProducts,
     required DeleteProduct deleteProduct,
     required ToggleProductActive toggleProductActive,
+    required UpdateStock updateStock,
   }) : _getProducts = getProducts,
        _deleteProduct = deleteProduct,
        _toggleProductActive = toggleProductActive,
+       _updateStock = updateStock,
        super(const AsyncValue.loading());
 
   Future<void> loadProducts({bool includeInactive = false}) async {
@@ -101,6 +104,18 @@ class ProductsController extends StateNotifier<AsyncValue<List<Product>>> {
     );
   }
 
+  Future<void> adjustStock(int id, int delta) async {
+    final result = await _updateStock(
+      UpdateStockParams(productId: id, delta: delta),
+    );
+
+    result.fold(
+      onSuccess: (_) => loadProducts(includeInactive: true),
+      onError: (failure) =>
+          state = AsyncValue.error(failure.message, StackTrace.current),
+    );
+  }
+
   AsyncValue<List<Product>> _toAsyncValue(Result<List<Product>> result) {
     return result.fold(
       onSuccess: (data) => AsyncValue.data(data),
@@ -116,6 +131,7 @@ final productsControllerProvider =
         getProducts: ref.read(getProductsProvider),
         deleteProduct: ref.read(deleteProductProvider),
         toggleProductActive: ref.read(toggleProductActiveProvider),
+        updateStock: ref.read(updateStockProvider),
       )..loadProducts(),
     );
 

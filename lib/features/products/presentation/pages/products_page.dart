@@ -4,6 +4,7 @@ import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
 import 'package:pasal_pro/core/theme/app_theme.dart';
 import 'package:pasal_pro/features/products/domain/entities/product.dart';
+import 'package:pasal_pro/features/products/presentation/pages/product_form_page.dart';
 import 'package:pasal_pro/features/products/presentation/providers/products_providers.dart';
 import 'package:pasal_pro/features/products/presentation/widgets/product_list_item.dart';
 
@@ -75,7 +76,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(AppIcons.add),
         label: const Text('Add Product'),
-        onPressed: () => _showNotImplemented(context),
+        onPressed: _openCreateProduct,
       ),
     );
   }
@@ -115,7 +116,8 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
         final product = products[index];
         return ProductListItem(
           product: product,
-          onEdit: () => _showNotImplemented(context),
+          onEdit: () => _openEditProduct(product),
+          onAdjustStock: () => _showAdjustStockDialog(context, product),
           onDelete: () => _confirmDelete(context, product),
           onToggleActive: () => ref
               .read(productsControllerProvider.notifier)
@@ -211,9 +213,117 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     );
   }
 
-  void _showNotImplemented(BuildContext context) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Coming soon in Phase 1 UI.')));
+  Future<void> _openCreateProduct() async {
+    final created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const ProductFormPage()),
+    );
+    if (created == true && mounted) {
+      ref
+          .read(productsControllerProvider.notifier)
+          .loadProducts(includeInactive: _showInactive);
+    }
+  }
+
+  Future<void> _openEditProduct(Product product) async {
+    final updated = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => ProductFormPage(product: product)),
+    );
+    if (updated == true && mounted) {
+      ref
+          .read(productsControllerProvider.notifier)
+          .loadProducts(includeInactive: _showInactive);
+    }
+  }
+
+  Future<void> _showAdjustStockDialog(
+    BuildContext context,
+    Product product,
+  ) async {
+    final controller = TextEditingController();
+    bool isAdd = true;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Adjust stock'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    product.name,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  AppSpacing.small,
+                  TextField(
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Quantity',
+                      prefixIcon: Icon(AppIcons.package),
+                    ),
+                  ),
+                  AppSpacing.small,
+                  SegmentedButton<bool>(
+                    segments: const [
+                      ButtonSegment<bool>(
+                        value: true,
+                        label: Text('Add'),
+                        icon: Icon(AppIcons.packagePlus),
+                      ),
+                      ButtonSegment<bool>(
+                        value: false,
+                        label: Text('Remove'),
+                        icon: Icon(AppIcons.packageMinus),
+                      ),
+                    ],
+                    selected: {isAdd},
+                    onSelectionChanged: (value) {
+                      setDialogState(() => isAdd = value.first);
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: const Text('Apply'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (confirmed != true) {
+      controller.dispose();
+      return;
+    }
+
+    final amount = int.tryParse(controller.text.trim()) ?? 0;
+    controller.dispose();
+    if (amount <= 0) {
+      _showSnack('Enter a quantity greater than zero.');
+      return;
+    }
+
+    final delta = isAdd ? amount : -amount;
+    await ref.read(productsControllerProvider.notifier).adjustStock(
+          product.id,
+          delta,
+        );
+  }
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 }
