@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
 import 'package:pasal_pro/core/theme/app_theme.dart';
+import 'package:pasal_pro/core/utils/currency_formatter.dart';
 import 'package:pasal_pro/features/products/domain/entities/product.dart';
 import 'package:pasal_pro/features/products/presentation/pages/product_form_page.dart';
 import 'package:pasal_pro/features/products/presentation/providers/products_providers.dart';
@@ -19,6 +20,7 @@ class ProductsPage extends ConsumerStatefulWidget {
 class _ProductsPageState extends ConsumerState<ProductsPage> {
   final TextEditingController _searchController = TextEditingController();
   bool _showInactive = false;
+  bool _showLowStockOnly = false;
 
   @override
   void dispose() {
@@ -30,9 +32,10 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
   Widget build(BuildContext context) {
     final productsState = ref.watch(productsControllerProvider);
     final searchState = ref.watch(productSearchProvider);
-    final products = _searchController.text.trim().isNotEmpty
+    final sourceProducts = _searchController.text.trim().isNotEmpty
         ? searchState.valueOrNull ?? []
         : productsState.valueOrNull ?? [];
+    final products = _applyFilters(sourceProducts);
 
     return Scaffold(
       appBar: AppBar(
@@ -62,6 +65,10 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
         child: Column(
           children: [
             _buildSearchBar(context),
+            AppSpacing.medium,
+            _buildFilterBar(context),
+            AppSpacing.medium,
+            _buildSummaryCard(context, products),
             AppSpacing.medium,
             Expanded(
               child: productsState.when(
@@ -104,6 +111,114 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     );
   }
 
+  Widget _buildFilterBar(BuildContext context) {
+    return Row(
+      children: [
+        FilterChip(
+          selected: _showLowStockOnly,
+          label: const Text('Low stock'),
+          avatar: const Icon(AppIcons.alertTriangle, size: 16),
+          onSelected: (value) => setState(() => _showLowStockOnly = value),
+        ),
+        AppSpacing.hSmall,
+        FilterChip(
+          selected: _showInactive,
+          label: const Text('Show inactive'),
+          avatar: Icon(
+            _showInactive ? AppIcons.eyeOff : AppIcons.eye,
+            size: 16,
+          ),
+          onSelected: (value) {
+            setState(() => _showInactive = value);
+            ref
+                .read(productsControllerProvider.notifier)
+                .loadProducts(includeInactive: _showInactive);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryCard(BuildContext context, List<Product> products) {
+    final totalProducts = products.length;
+    final lowStockCount = products.where((p) => p.isLowStock).length;
+    final inventoryValue = products.fold<double>(
+      0,
+      (sum, product) => sum + (product.sellingPrice * product.stockPieces),
+    );
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: AppSpacing.paddingMedium,
+        child: Row(
+          children: [
+            _buildSummaryItem(
+              context,
+              label: 'Products',
+              value: totalProducts.toString(),
+              icon: AppIcons.package,
+            ),
+            AppSpacing.hLarge,
+            _buildSummaryItem(
+              context,
+              label: 'Low stock',
+              value: lowStockCount.toString(),
+              icon: AppIcons.alertTriangle,
+              valueColor: lowStockCount > 0
+                  ? AppTheme.lowStockColor
+                  : Theme.of(context).colorScheme.onSurface,
+            ),
+            AppSpacing.hLarge,
+            _buildSummaryItem(
+              context,
+              label: 'Stock value',
+              value: CurrencyFormatter.formatCompact(inventoryValue),
+              icon: AppIcons.trendingUp,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryItem(
+    BuildContext context, {
+    required String label,
+    required String value,
+    required IconData icon,
+    Color? valueColor,
+  }) {
+    return Expanded(
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+          AppSpacing.hXSmall,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color:
+                        valueColor ?? Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildList(BuildContext context, List<Product> products) {
     if (products.isEmpty) {
       return _buildEmptyState(context);
@@ -125,6 +240,17 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
         );
       },
     );
+  }
+
+  List<Product> _applyFilters(List<Product> products) {
+    var filtered = products;
+    if (!_showInactive) {
+      filtered = filtered.where((product) => product.isActive).toList();
+    }
+    if (_showLowStockOnly) {
+      filtered = filtered.where((product) => product.isLowStock).toList();
+    }
+    return filtered;
   }
 
   Widget _buildEmptyState(BuildContext context) {
@@ -214,9 +340,9 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
   }
 
   Future<void> _openCreateProduct() async {
-    final created = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const ProductFormPage()),
-    );
+    final created = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => const ProductFormPage()));
     if (created == true && mounted) {
       ref
           .read(productsControllerProvider.notifier)
@@ -315,15 +441,14 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     }
 
     final delta = isAdd ? amount : -amount;
-    await ref.read(productsControllerProvider.notifier).adjustStock(
-          product.id,
-          delta,
-        );
+    await ref
+        .read(productsControllerProvider.notifier)
+        .adjustStock(product.id, delta);
   }
 
   void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }

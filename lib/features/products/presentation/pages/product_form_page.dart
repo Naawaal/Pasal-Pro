@@ -66,9 +66,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Product' : 'Add Product'),
-      ),
+      appBar: AppBar(title: Text(_isEditing ? 'Edit Product' : 'Add Product')),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -143,8 +141,8 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
             Text(
               'Selling price should be equal to or higher than cost price.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -155,10 +153,9 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
   Widget _buildSectionTitle(BuildContext context, String label) {
     return Text(
       label,
-      style: Theme.of(context)
-          .textTheme
-          .titleMedium
-          ?.copyWith(fontWeight: FontWeight.w600),
+      style: Theme.of(
+        context,
+      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
     );
   }
 
@@ -171,10 +168,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
     return TextFormField(
       controller: controller,
       textInputAction: TextInputAction.next,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon),
-      ),
+      decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
       validator: validator,
     );
   }
@@ -189,10 +183,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       textInputAction: TextInputAction.next,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon),
-      ),
+      decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
       validator: validator,
     );
   }
@@ -207,10 +198,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
       controller: controller,
       keyboardType: TextInputType.number,
       textInputAction: TextInputAction.next,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon),
-      ),
+      decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
       validator: validator,
     );
   }
@@ -262,7 +250,8 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
       name: _nameController.text.trim(),
       costPrice: cost,
       sellingPrice: selling,
-      piecesPerCarton: int.tryParse(_piecesPerCartonController.text.trim()) ?? 1,
+      piecesPerCarton:
+          int.tryParse(_piecesPerCartonController.text.trim()) ?? 1,
       stockPieces: int.tryParse(_stockController.text.trim()) ?? 0,
       lowStockThreshold: int.tryParse(_lowStockController.text.trim()) ?? 0,
       category: _categoryController.text.trim().isEmpty
@@ -307,10 +296,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppTheme.lossColor,
-      ),
+      SnackBar(content: Text(message), backgroundColor: AppTheme.lossColor),
     );
   }
 }
