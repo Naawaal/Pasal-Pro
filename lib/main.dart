@@ -8,6 +8,7 @@ import 'package:pasal_pro/core/constants/app_colors.dart';
 import 'package:pasal_pro/core/utils/app_logger.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
 import 'package:pasal_pro/features/sales/presentation/pages/fast_sale_page.dart';
+import 'package:pasal_pro/features/products/presentation/pages/products_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -157,7 +158,7 @@ class _PasalProHomeState extends State<PasalProHome> {
       case 1:
         return const _PlaceholderScreen(title: 'Dashboard');
       case 2:
-        return const _PlaceholderScreen(title: 'Products');
+        return const ProductsPage();
       case 3:
         return const _PlaceholderScreen(title: 'Customers');
       case 4:
