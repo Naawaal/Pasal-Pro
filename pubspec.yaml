@@ -1,0 +1,90 @@
+name: pasal_pro
+description: "Digital Khata / POS for Nepali shops - Desktop-first, offline-capable, profit-centric point of sale system"
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ^3.10.8
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State Management
+  riverpod: ^2.5.1
+  flutter_riverpod: ^2.5.1
+
+  # Code Generation Support
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # Local Database (Offline-first)
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+
+  # UI & Forms
+  flutter_form_builder: ^10.3.0
+  intl: ^0.20.0
+  flutter_svg: ^2.0.9
+  gap: ^3.0.1
+  lucide_icons_flutter: ^3.1.9
+
+  # Printing
+  printing: ^5.13.0
+  pdf: ^3.10.7
+  # Note: Bluetooth thermal printer support will be added in Phase 5
+
+  # Cloud Backup (will be added in Phase 6)
+  # googleapis: ^13.2.0
+  # googleapis_auth: ^1.6.0
+  # flutter_secure_storage: ^9.2.2  # Requires Visual Studio C++ workload on Windows
+
+  # Desktop Window Management
+  bitsdojo_window: ^0.1.6
+  window_manager: ^0.4.0
+
+  # Utilities
+  logger: ^2.1.0
+  easy_localization: ^3.0.5
+  path_provider: ^2.1.3
+  equatable: ^2.0.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+  # Code Generation
+  build_runner: ^2.4.9
+  freezed: ^2.5.2
+  json_serializable: ^6.8.0
+  isar_generator: ^3.1.0+1
+
+flutter:
+  uses-material-design: true
+
+  # Assets will be added here as we create them
+  # assets:
+  #   - assets/icons/
+  #   - assets/translations/
+
+  fonts:
+    - family: NotoSans
+      fonts:
+        - asset: assets/fonts/NotoSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/NotoSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/NotoSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/NotoSans-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/NotoSans-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/NotoSans-Black.ttf
+          weight: 900
