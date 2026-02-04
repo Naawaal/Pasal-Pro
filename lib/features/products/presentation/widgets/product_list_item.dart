@@ -53,7 +53,7 @@ class _ProductListItemState extends State<ProductListItem> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.1),
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -168,7 +168,7 @@ class _ProductListItemState extends State<ProductListItem> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -182,8 +182,11 @@ class _ProductListItemState extends State<ProductListItem> {
     );
   }
 
-  Widget _buildInfoChip(BuildContext context,
-      {required IconData icon, required String label}) {
+  Widget _buildInfoChip(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+  }) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -218,9 +221,7 @@ class _ProductListItemState extends State<ProductListItem> {
         child: Container(
           width: 36,
           height: 36,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
           child: Icon(
             icon,
             size: 18,

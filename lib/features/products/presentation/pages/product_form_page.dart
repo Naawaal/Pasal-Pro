@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/utils/result.dart';
 import 'package:pasal_pro/features/products/domain/entities/product.dart';
 import 'package:pasal_pro/features/products/domain/usecases/create_product.dart';
@@ -90,11 +92,16 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
       ),
       body: Form(
         key: _formKey,
-        child: Row(
+        child: ResponsiveRowColumn(
+          layout: AppResponsive.shouldStack(context)
+              ? ResponsiveRowColumnType.COLUMN
+              : ResponsiveRowColumnType.ROW,
           children: [
-            Expanded(
+            // Main form fields (left side / full width on mobile)
+            ResponsiveRowColumnItem(
+              rowFlex: 2,
               child: ListView(
-                padding: const EdgeInsets.all(24),
+                padding: AppResponsive.getPagePadding(context),
                 children: [
                   _buildSection(
                     context,
@@ -107,18 +114,32 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                         hint: 'Enter product name',
                         validator: _requiredText,
                       ),
-                      const SizedBox(height: 16),
-                      Row(
+                      SizedBox(height: AppResponsive.getSectionGap(context)),
+                      ResponsiveRowColumn(
+                        layout: AppResponsive.shouldStack(context)
+                            ? ResponsiveRowColumnType.COLUMN
+                            : ResponsiveRowColumnType.ROW,
                         children: [
-                          Expanded(
+                          ResponsiveRowColumnItem(
+                            rowFlex: 1,
                             child: _buildTextField(
                               controller: _categoryController,
                               label: 'Category',
                               hint: 'Optional',
                             ),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
+                          ResponsiveRowColumnItem(
+                            child: SizedBox(
+                              width: AppResponsive.shouldStack(context)
+                                  ? 0
+                                  : AppResponsive.getSectionGap(context),
+                              height: AppResponsive.shouldStack(context)
+                                  ? AppResponsive.getSectionGap(context)
+                                  : 0,
+                            ),
+                          ),
+                          ResponsiveRowColumnItem(
+                            rowFlex: 1,
                             child: _buildTextField(
                               controller: _barcodeController,
                               label: 'Barcode / SKU',
@@ -129,17 +150,21 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: AppResponsive.getSectionGap(context) + 8),
                   _buildImageUploadSection(context),
-                  const SizedBox(height: 24),
+                  SizedBox(height: AppResponsive.getSectionGap(context) + 8),
                   _buildSection(
                     context,
                     title: 'Pricing',
                     icon: Icons.payments_outlined,
                     children: [
-                      Row(
+                      ResponsiveRowColumn(
+                        layout: AppResponsive.shouldStack(context)
+                            ? ResponsiveRowColumnType.COLUMN
+                            : ResponsiveRowColumnType.ROW,
                         children: [
-                          Expanded(
+                          ResponsiveRowColumnItem(
+                            rowFlex: 1,
                             child: _buildNumberField(
                               controller: _costController,
                               label: 'Cost Price',
@@ -147,8 +172,18 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                               validator: _requiredNonNegative,
                             ),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
+                          ResponsiveRowColumnItem(
+                            child: SizedBox(
+                              width: AppResponsive.shouldStack(context)
+                                  ? 0
+                                  : AppResponsive.getSectionGap(context),
+                              height: AppResponsive.shouldStack(context)
+                                  ? AppResponsive.getSectionGap(context)
+                                  : 0,
+                            ),
+                          ),
+                          ResponsiveRowColumnItem(
+                            rowFlex: 1,
                             child: _buildNumberField(
                               controller: _sellingController,
                               label: 'Selling Price',
@@ -160,15 +195,19 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: AppResponsive.getSectionGap(context) + 8),
                   _buildSection(
                     context,
                     title: 'Inventory',
                     icon: Icons.inventory_2_outlined,
                     children: [
-                      Row(
+                      ResponsiveRowColumn(
+                        layout: AppResponsive.shouldStack(context)
+                            ? ResponsiveRowColumnType.COLUMN
+                            : ResponsiveRowColumnType.ROW,
                         children: [
-                          Expanded(
+                          ResponsiveRowColumnItem(
+                            rowFlex: 1,
                             child: _buildIntField(
                               controller: _piecesPerCartonController,
                               label: 'Pieces per Carton',
@@ -176,8 +215,18 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                               validator: _requiredPositiveInt,
                             ),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
+                          ResponsiveRowColumnItem(
+                            child: SizedBox(
+                              width: AppResponsive.shouldStack(context)
+                                  ? 0
+                                  : AppResponsive.getSectionGap(context),
+                              height: AppResponsive.shouldStack(context)
+                                  ? AppResponsive.getSectionGap(context)
+                                  : 0,
+                            ),
+                          ),
+                          ResponsiveRowColumnItem(
+                            rowFlex: 1,
                             child: _buildIntField(
                               controller: _stockController,
                               label: 'Current Stock',
@@ -185,8 +234,18 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                               validator: _requiredNonNegativeInt,
                             ),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
+                          ResponsiveRowColumnItem(
+                            child: SizedBox(
+                              width: AppResponsive.shouldStack(context)
+                                  ? 0
+                                  : AppResponsive.getSectionGap(context),
+                              height: AppResponsive.shouldStack(context)
+                                  ? AppResponsive.getSectionGap(context)
+                                  : 0,
+                            ),
+                          ),
+                          ResponsiveRowColumnItem(
+                            rowFlex: 1,
                             child: _buildIntField(
                               controller: _lowStockController,
                               label: 'Low Stock Alert',
@@ -198,54 +257,55 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 32),
-                  Row(
+                  SizedBox(height: AppResponsive.getSectionGap(context) + 8),
+                  ResponsiveRowColumn(
+                    layout: AppResponsive.shouldStack(context)
+                        ? ResponsiveRowColumnType.COLUMN
+                        : ResponsiveRowColumnType.ROW,
                     children: [
-                      Expanded(
+                      ResponsiveRowColumnItem(
+                        rowFlex: 1,
                         child: OutlinedButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
                           child: const Text('Cancel'),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        flex: 2,
+                      ResponsiveRowColumnItem(
+                        child: SizedBox(
+                          width: AppResponsive.shouldStack(context)
+                              ? 0
+                              : AppResponsive.getSectionGap(context),
+                          height: AppResponsive.shouldStack(context)
+                              ? AppResponsive.getSectionGap(context)
+                              : 0,
+                        ),
+                      ),
+                      ResponsiveRowColumnItem(
+                        rowFlex: 2,
                         child: ElevatedButton(
                           onPressed: _isSaving ? null : _saveProduct,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: _isSaving
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (_isSaving)
+                                const SizedBox(
+                                  height: 16,
+                                  width: 16,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Colors.white,
                                   ),
-                                )
-                              : Text(
-                                  _isEditing
-                                      ? 'Save Changes'
-                                      : 'Create Product',
                                 ),
+                              if (_isSaving) const SizedBox(width: 8),
+                              Text(
+                                _isEditing ? 'Save Changes' : 'Create Product',
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
+                  SizedBox(height: AppResponsive.getPagePadding(context).top),
                 ],
               ),
             ),
@@ -311,54 +371,14 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
     required String hint,
     String? Function(String?)? validator,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            filled: true,
-            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.primary,
-                width: 2,
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-          ),
-          validator: validator,
-        ),
-      ],
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        border: const OutlineInputBorder(),
+      ),
+      validator: validator,
     );
   }
 
@@ -368,55 +388,15 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
     required String hint,
     String? Function(String?)? validator,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            filled: true,
-            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.primary,
-                width: 2,
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-          ),
-          validator: validator,
-        ),
-      ],
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        border: const OutlineInputBorder(),
+      ),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      validator: validator,
     );
   }
 
@@ -426,55 +406,15 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
     required String hint,
     String? Function(String?)? validator,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            filled: true,
-            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.primary,
-                width: 2,
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-          ),
-          validator: validator,
-        ),
-      ],
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        border: const OutlineInputBorder(),
+      ),
+      keyboardType: TextInputType.number,
+      validator: validator,
     );
   }
 
@@ -663,24 +603,14 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
               style: Theme.of(context).textTheme.labelMedium,
             ),
             const SizedBox(height: 8),
-            TextField(
+            TextFormField(
               controller: _imageUrlController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'https://example.com/image.jpg',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-                ),
-                prefixIcon: const Icon(Icons.link),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+                border: OutlineInputBorder(),
               ),
               onChanged: (value) {
-                if (value.isNotEmpty && value.startsWith('http')) {
+                if (value.startsWith('http')) {
                   setState(() => _selectedImagePath = value);
                 }
               },
@@ -701,14 +631,8 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
             ),
             OutlinedButton.icon(
               onPressed: _pickImageFile,
-              icon: const Icon(Icons.folder_open),
+              icon: const Icon(Icons.folder_open, size: 16),
               label: const Text('Browse'),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-              ),
             ),
           ],
         ),

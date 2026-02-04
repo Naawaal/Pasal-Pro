@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:pasal_pro/core/constants/app_constants.dart';
+import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/theme/app_theme.dart';
 import 'package:pasal_pro/core/widgets/app_navigation_rail.dart';
 import 'package:pasal_pro/core/widgets/pasal_pro_appbar.dart';
@@ -31,14 +33,22 @@ class PasalProApp extends ConsumerWidget {
     // Watch theme mode from settings
     final themeMode = ref.watch(appThemeModeProvider);
 
+    // 📱 MaterialApp with responsive framework support
+    // Enables responsive design based on AppResponsive breakpoints (1024-2560px)
     return MaterialApp(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
 
-      // Modern flat design theme (not Material 3 defaults)
+      // App theme
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
+
+      // Responsive breakpoints wrapper
+      builder: (context, child) => ResponsiveBreakpoints.builder(
+        child: child!,
+        breakpoints: AppResponsive.getBreakpoints(),
+      ),
 
       // Home screen with desktop navigation
       home: const PasalProHome(),

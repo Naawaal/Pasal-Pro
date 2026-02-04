@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/features/settings/presentation/providers/settings_providers.dart';
 import 'package:pasal_pro/features/settings/presentation/widgets/settings_section.dart';
 import 'package:pasal_pro/features/settings/presentation/widgets/settings_item.dart';
@@ -15,12 +16,12 @@ class SettingsPage extends ConsumerWidget {
     return settingsAsync.when(
       data: (settings) => Container(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        padding: const EdgeInsets.all(24),
+        padding: AppResponsive.getPagePadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(context),
-            const SizedBox(height: 24),
+            SizedBox(height: AppResponsive.getSectionGap(context)),
             Expanded(
               child: SingleChildScrollView(
                 child: Column(

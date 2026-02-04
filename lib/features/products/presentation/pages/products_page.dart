@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pasal_pro/core/constants/app_icons.dart';
+import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
 import 'package:pasal_pro/features/products/domain/entities/product.dart';
 import 'package:pasal_pro/features/products/presentation/pages/product_form_page.dart';
@@ -37,17 +38,17 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
 
     return Container(
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      padding: const EdgeInsets.all(24),
+      padding: AppResponsive.getPagePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header with stats
           _buildHeader(context, products),
-          const SizedBox(height: 24),
+          SizedBox(height: AppResponsive.getSectionGap(context)),
 
           // Search and filters
           _buildSearchAndFilters(context),
-          const SizedBox(height: 16),
+          SizedBox(height: AppResponsive.getSectionGap(context) - 8),
 
           // Products list
           Expanded(
@@ -75,7 +76,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
@@ -208,7 +209,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: selected
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
               : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
@@ -240,7 +241,9 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
@@ -278,9 +281,10 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
         border: Border.all(color: Theme.of(context).colorScheme.outline),
       ),
       child: ListView.separated(
-        padding: const EdgeInsets.all(8),
+        padding: EdgeInsets.all(AppResponsive.getSectionGap(context) - 4),
         itemCount: products.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        separatorBuilder: (context, index) =>
+            SizedBox(height: AppResponsive.getSectionGap(context) - 4),
         itemBuilder: (context, index) {
           final product = products[index];
           return ProductListItem(
@@ -304,7 +308,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.error.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
@@ -347,40 +351,10 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     return filtered;
   }
 
-  void _confirmDelete(BuildContext context, Product product) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Delete product?'),
-        content: Text('This will deactivate ${product.name}.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              ref
-                  .read(productsControllerProvider.notifier)
-                  .deleteProduct(product.id);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Deactivate'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _openCreateProduct() async {
-    final created = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const ProductFormPage()),
-    );
+    final created = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => const ProductFormPage()));
     if (created == true && mounted) {
       ref
           .read(productsControllerProvider.notifier)

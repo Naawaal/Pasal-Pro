@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:pasal_pro/core/constants/app_icons.dart';
+import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
 import 'package:pasal_pro/features/customers/domain/entities/customer.dart';
@@ -86,7 +88,7 @@ class _CustomerTransactionsPageState
         children: [
           // Summary cards
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: AppResponsive.getPagePadding(context),
             child: _buildSummaryCards(
               context,
               balanceAsync,
@@ -97,10 +99,16 @@ class _CustomerTransactionsPageState
 
           // Date range filter
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppResponsive.getPagePadding(context).left,
+            ),
+            child: ResponsiveRowColumn(
+              layout: AppResponsive.shouldStack(context)
+                  ? ResponsiveRowColumnType.COLUMN
+                  : ResponsiveRowColumnType.ROW,
               children: [
-                Expanded(
+                ResponsiveRowColumnItem(
+                  rowFlex: 1,
                   child: OutlinedButton.icon(
                     onPressed: _selectDateRange,
                     icon: Icon(AppIcons.calendar),
@@ -209,11 +217,17 @@ class _CustomerTransactionsPageState
     AsyncValue<double> averageTransactionAsync,
   ) {
     return GridView.count(
-      crossAxisCount: 3,
+      crossAxisCount: AppResponsive.getValue<int>(
+        context,
+        small: 1,
+        medium: 2,
+        large: 3,
+        xLarge: 3,
+      ),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
+      mainAxisSpacing: AppResponsive.getSectionGap(context),
+      crossAxisSpacing: AppResponsive.getSectionGap(context),
       childAspectRatio: 1.2,
       children: [
         _buildStatCard(
@@ -250,7 +264,7 @@ class _CustomerTransactionsPageState
     bool isPositive,
   ) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(AppResponsive.getSectionGap(context) - 4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(8),

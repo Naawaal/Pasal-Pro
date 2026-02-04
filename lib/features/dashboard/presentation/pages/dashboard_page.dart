@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:responsive_framework/responsive_framework.dart';
+import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
 import 'package:pasal_pro/features/dashboard/presentation/providers/dashboard_providers.dart';
 import 'package:pasal_pro/features/dashboard/presentation/widgets/metric_card.dart';
@@ -36,11 +38,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
   /// Manual refresh handler
   Future<void> _refreshDashboard() async {
-    setState(() {
-      _lastUpdated = DateTime.now();
-    });
-
-    // Invalidate all dashboard providers to trigger refetch
+    // Invalidate all dashboard providers to trigger refetch (before setState)
     ref.invalidate(todaySalesAmountProvider);
     ref.invalidate(todayProfitProvider);
     ref.invalidate(todayTransactionCountProvider);
@@ -52,8 +50,12 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     ref.invalidate(totalCustomersProvider);
     ref.invalidate(storeStatsProvider);
 
-    // Show brief feedback
     if (mounted) {
+      setState(() {
+        _lastUpdated = DateTime.now();
+      });
+
+      // Show brief feedback
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Dashboard refreshed'),
@@ -74,7 +76,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
     return Container(
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      padding: const EdgeInsets.all(24),
+      padding: AppResponsive.getPagePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -88,25 +90,45 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
               color: Theme.of(context).colorScheme.primary,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  children: [
-                    _buildMetricsGrid(
-                      context,
-                      todaySalesState,
-                      todayProfitState,
-                      transactionCountState,
-                      lowStockCountState,
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(flex: 2, child: RecentActivity()),
-                        const SizedBox(width: 24),
-                        Expanded(child: QuickActions()),
-                      ],
-                    ),
-                  ],
+                child: MaxWidthBox(
+                  maxWidth: AppResponsive.getMaxContentWidth(context),
+                  child: Column(
+                    children: [
+                      _buildMetricsGrid(
+                        context,
+                        todaySalesState,
+                        todayProfitState,
+                        transactionCountState,
+                        lowStockCountState,
+                      ),
+                      const SizedBox(height: 24),
+                      ResponsiveRowColumn(
+                        layout: AppResponsive.shouldStack(context)
+                            ? ResponsiveRowColumnType.COLUMN
+                            : ResponsiveRowColumnType.ROW,
+                        children: [
+                          ResponsiveRowColumnItem(
+                            rowFlex: 2,
+                            child: RecentActivity(),
+                          ),
+                          ResponsiveRowColumnItem(
+                            child: SizedBox(
+                              height: AppResponsive.shouldStack(context)
+                                  ? 24
+                                  : 0,
+                              width: AppResponsive.shouldStack(context)
+                                  ? 0
+                                  : 24,
+                            ),
+                          ),
+                          ResponsiveRowColumnItem(
+                            rowFlex: 1,
+                            child: QuickActions(),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -223,12 +245,21 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     AsyncValue<int> transactionState,
     AsyncValue<int> lowStockState,
   ) {
+    // Responsive column count: 1 on mobile, 2 on tablet, 3 on laptop, 4 on desktop/4K
+    final cols = AppResponsive.getValue<int>(
+      context,
+      small: 1,
+      medium: 2,
+      large: 3,
+      xLarge: 4,
+    );
+
     return GridView.count(
-      crossAxisCount: 4,
+      crossAxisCount: cols,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 16,
-      crossAxisSpacing: 16,
+      mainAxisSpacing: AppResponsive.getSectionGap(context),
+      crossAxisSpacing: AppResponsive.getSectionGap(context),
       childAspectRatio: 1.8,
       children: [
         _buildMetricCardAsync(

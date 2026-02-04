@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:responsive_framework/responsive_framework.dart';
+import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
 import 'package:pasal_pro/features/cheques/presentation/widgets/add_cheque_dialog.dart';
 import 'package:pasal_pro/features/cheques/presentation/widgets/cheque_list_item.dart';
@@ -106,7 +108,7 @@ class _ChequesPageState extends ConsumerState<ChequesPage> {
             ),
           ),
 
-          // Cheques list
+          // Cheques list/grid
           Expanded(
             child: displayCheques.when(
               data: (cheques) {
@@ -114,22 +116,37 @@ class _ChequesPageState extends ConsumerState<ChequesPage> {
                   return _EmptyState(filter: selectedFilter);
                 }
 
+                // Responsive grid: 1 col on mobile, 2 on tablet, 3 on desktop, 4 on 4K
+                final gridColumns = AppResponsive.getValue<int>(
+                  context,
+                  small: 1,
+                  medium: 2,
+                  large: 3,
+                  xLarge: 4,
+                );
+
                 return RefreshIndicator(
                   key: _refreshKey,
                   onRefresh: _refreshCheques,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+                  child: MaxWidthBox(
+                    maxWidth: AppResponsive.getMaxContentWidth(context),
+                    child: GridView.builder(
+                      padding: AppResponsive.getPagePadding(context),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: gridColumns,
+                        mainAxisSpacing: AppResponsive.getSectionGap(context),
+                        crossAxisSpacing: AppResponsive.getSectionGap(context),
+                        childAspectRatio: 1.4,
+                      ),
+                      itemCount: cheques.length,
+                      itemBuilder: (context, index) {
+                        final cheque = cheques[index];
+                        return ChequeListItem(
+                          cheque: cheque,
+                          onStatusChanged: _refreshCheques,
+                        );
+                      },
                     ),
-                    itemCount: cheques.length,
-                    itemBuilder: (context, index) {
-                      final cheque = cheques[index];
-                      return ChequeListItem(
-                        cheque: cheque,
-                        onStatusChanged: _refreshCheques,
-                      );
-                    },
                   ),
                 );
               },

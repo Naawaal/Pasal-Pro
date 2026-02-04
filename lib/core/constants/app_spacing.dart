@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:pasal_pro/core/constants/app_responsive.dart';
 
 /// Standardized spacing values using Gap widget
 /// Usage: AppSpacing.small, AppSpacing.medium, AppSpacing.large
+///
+/// For responsive spacing based on screen size, use:
+/// - AppSpacing.responsivePadding(context)
+/// - AppSpacing.responsiveSymmetricPadding(context)
 class AppSpacing {
   AppSpacing._();
 
@@ -53,4 +58,70 @@ class AppSpacing {
   // Card spacing
   static const cardPadding = EdgeInsets.all(16);
   static const cardMargin = EdgeInsets.all(8);
+
+  // ✨ RESPONSIVE SPACING (Phase 1 Enhancement)
+  // Use these methods for layouts that adapt to screen size
+
+  /// Get responsive padding based on screen size
+  /// Returns: 8px (small), 12px (medium), 16px (large), 20px (xLarge)
+  ///
+  /// Usage:
+  /// ```dart
+  /// Padding(
+  ///   padding: AppSpacing.responsivePadding(context),
+  ///   child: MyWidget(),
+  /// )
+  /// ```
+  static EdgeInsets responsivePadding(BuildContext context) {
+    return EdgeInsets.all(
+      AppResponsive.getValue<double>(
+        context,
+        small: 8,
+        medium: 12,
+        large: 16,
+        xLarge: 20,
+      ),
+    );
+  }
+
+  /// Get responsive symmetric padding for horizontal or vertical direction
+  ///
+  /// Usage (horizontal):
+  /// ```dart
+  /// Padding(
+  ///   padding: AppSpacing.responsiveSymmetricPadding(context, horizontal: true),
+  ///   child: MyRow(),
+  /// )
+  /// ```
+  static EdgeInsets responsiveSymmetricPadding(
+    BuildContext context, {
+    bool horizontal = true,
+  }) {
+    final padding = AppResponsive.getValue<double>(
+      context,
+      small: 8,
+      medium: 12,
+      large: 16,
+      xLarge: 20,
+    );
+
+    if (horizontal) {
+      return EdgeInsets.symmetric(horizontal: padding, vertical: 0);
+    }
+    return EdgeInsets.symmetric(vertical: padding, horizontal: 0);
+  }
+
+  /// Get responsive gap for spacing between widgets in a column/row
+  /// Returns: 12px (small), 16px (medium), 20px (large), 24px (xLarge)
+  static Gap responsiveGap(BuildContext context) {
+    return Gap(
+      AppResponsive.getValue<double>(
+        context,
+        small: 12,
+        medium: 16,
+        large: 20,
+        xLarge: 24,
+      ),
+    );
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
 import 'package:pasal_pro/features/customers/presentation/pages/customer_form_page.dart';
 import 'package:pasal_pro/features/customers/presentation/providers/customer_providers.dart';
@@ -33,14 +34,14 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
       data: (customers) {
         return Container(
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          padding: const EdgeInsets.all(24),
+          padding: AppResponsive.getPagePadding(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeader(context, customers),
-              const SizedBox(height: 24),
+              SizedBox(height: AppResponsive.getSectionGap(context)),
               _buildSearchAndFilters(context),
-              const SizedBox(height: 16),
+              SizedBox(height: AppResponsive.getSectionGap(context) - 8),
               Expanded(child: _buildCustomersList(context, customers)),
             ],
           ),
@@ -89,7 +90,7 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
@@ -179,7 +180,7 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: _showInactive
-                  ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
                   : Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
@@ -213,7 +214,9 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
@@ -251,9 +254,10 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
         border: Border.all(color: Theme.of(context).colorScheme.outline),
       ),
       child: ListView.separated(
-        padding: const EdgeInsets.all(8),
+        padding: EdgeInsets.all(AppResponsive.getSectionGap(context) - 4),
         itemCount: customers.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        separatorBuilder: (context, index) =>
+            SizedBox(height: AppResponsive.getSectionGap(context) - 4),
         itemBuilder: (context, index) {
           final customer = customers[index];
           return CustomerListItem(

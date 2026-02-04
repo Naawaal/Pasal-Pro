@@ -34,6 +34,10 @@ dependencies:
   lucide_icons_flutter: ^3.1.9
   image_picker: ^1.0.0
 
+  # UI Enhancement - Phase 1-4 (Responsive, Components, Styling)
+  responsive_framework: ^1.5.1
+  mix: ^1.0.0
+
   # Printing
   printing: ^5.13.0
   pdf: ^3.10.7

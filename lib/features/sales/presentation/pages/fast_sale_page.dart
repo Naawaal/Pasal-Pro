@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:responsive_framework/responsive_framework.dart';
+import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/features/sales/presentation/widgets/sales_entry_form.dart';
 import 'package:pasal_pro/features/sales/presentation/widgets/daily_sales_log.dart';
 
@@ -50,7 +52,7 @@ class _FastSalePageState extends ConsumerState<FastSalePage> {
       onKeyEvent: _handleKeyboardShortcut,
       child: Container(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        padding: const EdgeInsets.all(24),
+        padding: AppResponsive.getPagePadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -62,7 +64,7 @@ class _FastSalePageState extends ConsumerState<FastSalePage> {
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
-                    ).colorScheme.primary.withOpacity(0.1),
+                    ).colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -97,16 +99,18 @@ class _FastSalePageState extends ConsumerState<FastSalePage> {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: AppResponsive.getSectionGap(context)),
 
-            // 2-Column Layout
+            // Responsive 2-Column/Stacked Layout
             Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              child: ResponsiveRowColumn(
+                layout: AppResponsive.shouldStack(context)
+                    ? ResponsiveRowColumnType.COLUMN
+                    : ResponsiveRowColumnType.ROW,
                 children: [
                   // Entry form panel
-                  Flexible(
-                    flex: 40,
+                  ResponsiveRowColumnItem(
+                    rowFlex: 40,
                     child: Container(
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surface,
@@ -118,11 +122,20 @@ class _FastSalePageState extends ConsumerState<FastSalePage> {
                       child: const SalesEntryForm(),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  ResponsiveRowColumnItem(
+                    child: SizedBox(
+                      height: AppResponsive.shouldStack(context)
+                          ? AppResponsive.getSectionGap(context)
+                          : 0,
+                      width: AppResponsive.shouldStack(context)
+                          ? 0
+                          : AppResponsive.getSectionGap(context),
+                    ),
+                  ),
 
                   // Daily sales log panel
-                  Flexible(
-                    flex: 60,
+                  ResponsiveRowColumnItem(
+                    rowFlex: 60,
                     child: Container(
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surface,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:responsive_framework/responsive_framework.dart';
+import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
 import 'package:pasal_pro/core/utils/app_logger.dart';
 import 'package:pasal_pro/features/customers/domain/entities/customer.dart';
@@ -17,6 +18,7 @@ class CustomerFormPage extends ConsumerStatefulWidget {
 }
 
 class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   late TextEditingController _creditLimitController;
@@ -49,12 +51,8 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
 
   /// Handle form submission (create or update)
   Future<void> _handleSubmit() async {
-    if (_nameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Customer name is required')),
-      );
-      return;
-    }
+    final formState = _formKey.currentState;
+    if (formState == null || !formState.validate()) return;
 
     setState(() => _isLoading = true);
 
@@ -108,172 +106,203 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Customer Name
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'Customer Name',
-                hintText: 'Enter customer name',
-                prefixIcon: const Icon(LucideIcons.user),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-            AppSpacing.medium,
-
-            // Phone Number
-            TextField(
-              controller: _phoneController,
-              decoration: InputDecoration(
-                labelText: 'Phone Number (Optional)',
-                hintText: 'Enter phone number',
-                prefixIcon: const Icon(LucideIcons.phone),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-            AppSpacing.medium,
-
-            // Credit Limit
-            TextField(
-              controller: _creditLimitController,
-              decoration: InputDecoration(
-                labelText: 'Credit Limit',
-                hintText: 'Enter credit limit (0 = unlimited)',
-                prefixIcon: const Icon(LucideIcons.creditCard),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            AppSpacing.medium,
-
-            // Notes
-            TextField(
-              controller: _notesController,
-              decoration: InputDecoration(
-                labelText: 'Notes (Optional)',
-                hintText: 'Add any notes about the customer',
-                prefixIcon: const Icon(LucideIcons.notepadText),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              maxLines: 3,
-            ),
-            AppSpacing.xLarge,
-
-            // Display current balance and purchases (if editing)
-            if (widget.customer != null) ...[
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8),
-                ),
+        padding: AppResponsive.getPagePadding(context),
+        child: Form(
+          key: _formKey,
+          child: ResponsiveRowColumn(
+            layout: AppResponsive.shouldStack(context)
+                ? ResponsiveRowColumnType.COLUMN
+                : ResponsiveRowColumnType.ROW,
+            children: [
+              ResponsiveRowColumnItem(
+                rowFlex: 1,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Customer Summary',
-                      style: Theme.of(context).textTheme.labelLarge,
+                    // Customer Name
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Customer Name',
+                        hintText: 'Enter customer name',
+                        prefixIcon: Icon(Icons.person_outline),
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Customer name is required';
+                        }
+                        return null;
+                      },
                     ),
-                    AppSpacing.small,
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Current Balance:'),
-                        Text(
-                          'Rs. ${widget.customer!.balance.toStringAsFixed(2)}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                    AppSpacing.medium,
+
+                    // Phone Number
+                    TextFormField(
+                      controller: _phoneController,
+                      decoration: const InputDecoration(
+                        labelText: 'Phone Number (Optional)',
+                        hintText: 'Enter phone number',
+                        prefixIcon: Icon(Icons.phone_outlined),
+                        border: OutlineInputBorder(),
+                      ),
                     ),
-                    AppSpacing.xSmall,
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Total Purchases:'),
-                        Text(
-                          'Rs. ${widget.customer!.totalPurchases.toStringAsFixed(2)}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                    AppSpacing.medium,
+
+                    // Credit Limit
+                    TextFormField(
+                      controller: _creditLimitController,
+                      decoration: const InputDecoration(
+                        labelText: 'Credit Limit',
+                        hintText: 'Enter credit limit (0 = unlimited)',
+                        prefixIcon: Icon(Icons.credit_card_outlined),
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
                     ),
-                    AppSpacing.xSmall,
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Transactions:'),
-                        Text(
-                          widget.customer!.transactionCount.toString(),
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                    AppSpacing.medium,
+
+                    // Notes
+                    TextFormField(
+                      controller: _notesController,
+                      decoration: const InputDecoration(
+                        labelText: 'Notes (Optional)',
+                        hintText: 'Add any notes about the customer',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 4,
+                    ),
+                    AppSpacing.xLarge,
+
+                    // Display current balance and purchases (if editing)
+                    if (widget.customer != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(8),
                         ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Customer Summary',
+                              style: Theme.of(context).textTheme.labelLarge,
+                            ),
+                            AppSpacing.small,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('Current Balance:'),
+                                Text(
+                                  'Rs. ${widget.customer!.balance.toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            AppSpacing.xSmall,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('Total Purchases:'),
+                                Text(
+                                  'Rs. ${widget.customer!.totalPurchases.toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            AppSpacing.xSmall,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('Transactions:'),
+                                Text(
+                                  widget.customer!.transactionCount.toString(),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      AppSpacing.xLarge,
+                    ],
+
+                    // Submit Button
+                    ResponsiveRowColumn(
+                      layout: AppResponsive.shouldStack(context)
+                          ? ResponsiveRowColumnType.COLUMN
+                          : ResponsiveRowColumnType.ROW,
+                      children: [
+                        ResponsiveRowColumnItem(
+                          rowFlex: 1,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _handleSubmit,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (_isLoading)
+                                  const SizedBox(
+                                    height: 16,
+                                    width: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                if (_isLoading) const SizedBox(width: 8),
+                                Text(
+                                  widget.customer == null
+                                      ? 'Add Customer'
+                                      : 'Update Customer',
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // Delete button (if editing)
+                        if (widget.customer != null) ...[
+                          ResponsiveRowColumnItem(
+                            child: SizedBox(
+                              width: AppResponsive.shouldStack(context)
+                                  ? 0
+                                  : AppResponsive.getSectionGap(context),
+                              height: AppResponsive.shouldStack(context)
+                                  ? AppResponsive.getSectionGap(context)
+                                  : 0,
+                            ),
+                          ),
+                          ResponsiveRowColumnItem(
+                            rowFlex: 1,
+                            child: ElevatedButton(
+                              onPressed: _isLoading
+                                  ? null
+                                  : _showDeleteConfirmation,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.error,
+                                foregroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.onError,
+                              ),
+                              child: const Text('Delete Customer'),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ],
                 ),
               ),
-              AppSpacing.xLarge,
             ],
-
-            // Submit Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _handleSubmit,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: _isLoading
-                    ? SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation(
-                            Theme.of(context).colorScheme.onPrimary,
-                          ),
-                        ),
-                      )
-                    : Text(
-                        widget.customer == null
-                            ? 'Add Customer'
-                            : 'Update Customer',
-                      ),
-              ),
-            ),
-
-            // Delete button (if editing)
-            if (widget.customer != null) ...[
-              AppSpacing.small,
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: _isLoading ? null : _showDeleteConfirmation,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    foregroundColor: Colors.red,
-                    side: const BorderSide(color: Colors.red),
-                  ),
-                  child: const Text('Delete Customer'),
-                ),
-              ),
-            ],
-          ],
+          ),
         ),
       ),
     );
