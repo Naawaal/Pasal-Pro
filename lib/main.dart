@@ -7,6 +7,7 @@ import 'package:pasal_pro/core/widgets/pasal_pro_appbar.dart';
 import 'package:pasal_pro/core/constants/app_colors.dart';
 import 'package:pasal_pro/core/utils/app_logger.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
+import 'package:pasal_pro/features/sales/presentation/pages/fast_sale_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,7 +55,7 @@ class _PasalProHomeState extends State<PasalProHome> {
 
   final List<NavRailDestination> _destinations = [
     const NavRailDestination(
-      label: 'FAST SALE',
+      label: 'DAILY SALES',
       icon: Icons.shopping_cart,
       shortcut: 'F1',
     ),
@@ -152,7 +153,7 @@ class _PasalProHomeState extends State<PasalProHome> {
   Widget _buildContent() {
     switch (_selectedIndex) {
       case 0:
-        return const _PlaceholderScreen(title: 'Fast Sale');
+        return const FastSalePage();
       case 1:
         return const _PlaceholderScreen(title: 'Dashboard');
       case 2:

@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pasal_pro/core/constants/app_icons.dart';
-import 'package:pasal_pro/core/constants/app_spacing.dart';
-import 'package:pasal_pro/core/theme/app_theme.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
 import 'package:pasal_pro/features/products/domain/entities/product.dart';
 import 'package:pasal_pro/features/products/presentation/pages/product_form_page.dart';
 import 'package:pasal_pro/features/products/presentation/providers/products_providers.dart';
 import 'package:pasal_pro/features/products/presentation/widgets/product_list_item.dart';
 
-/// Products management page.
+/// Modern Products Page with beautiful flat design
 class ProductsPage extends ConsumerStatefulWidget {
   const ProductsPage({super.key});
 
@@ -21,10 +19,6 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
   final TextEditingController _searchController = TextEditingController();
   bool _showInactive = false;
   bool _showLowStockOnly = false;
-  String? _selectedCategory;
-  String _sortOption = 'nameAsc';
-  bool _selectionMode = false;
-  final Set<int> _selectedProductIds = {};
 
   @override
   void dispose() {
@@ -39,269 +33,28 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     final sourceProducts = _searchController.text.trim().isNotEmpty
         ? searchState.valueOrNull ?? []
         : productsState.valueOrNull ?? [];
-    final categories = _extractCategories(
-      productsState.valueOrNull ?? const [],
-    );
-    final products = _applySort(_applyFilters(sourceProducts));
+    final products = _applyFilters(sourceProducts);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: _selectionMode
-            ? Text('${_selectedProductIds.length} selected')
-            : const Text('Products'),
-        leading: _selectionMode
-            ? IconButton(
-                icon: const Icon(AppIcons.close),
-                onPressed: _exitSelectionMode,
-              )
-            : null,
-        actions: _selectionMode
-            ? [
-                IconButton(
-                  icon: const Icon(AppIcons.checkCircle),
-                  tooltip: 'Select all',
-                  onPressed: () => _selectAll(products),
-                ),
-                IconButton(
-                  icon: const Icon(AppIcons.package),
-                  tooltip: 'Bulk adjust stock',
-                  onPressed: _selectedProductIds.isEmpty
-                      ? null
-                      : () => _showBulkAdjustStockDialog(products),
-                ),
-              ]
-            : [
-                IconButton(
-                  icon: Icon(_showInactive ? AppIcons.eyeOff : AppIcons.eye),
-                  tooltip: _showInactive ? 'Hide inactive' : 'Show inactive',
-                  onPressed: () {
-                    setState(() => _showInactive = !_showInactive);
-                    ref
-                        .read(productsControllerProvider.notifier)
-                        .loadProducts(includeInactive: _showInactive);
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(AppIcons.sync),
-                  tooltip: 'Refresh',
-                  onPressed: () => ref
-                      .read(productsControllerProvider.notifier)
-                      .loadProducts(includeInactive: _showInactive),
-                ),
-              ],
-      ),
-      body: Padding(
-        padding: AppSpacing.paddingMedium,
-        child: Column(
-          children: [
-            _buildSearchBar(context),
-            AppSpacing.medium,
-            _buildFilterBar(context, categories),
-            AppSpacing.medium,
-            _buildSummaryCard(context, products),
-            AppSpacing.medium,
-            Expanded(
-              child: productsState.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, _) => _buildErrorState(context, error),
-                data: (_) => _buildList(context, products),
-              ),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: _selectionMode
-          ? null
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                FloatingActionButton(
-                  heroTag: 'select_products',
-                  onPressed: _enterSelectionMode,
-                  child: const Icon(AppIcons.checkCircle),
-                ),
-                AppSpacing.medium,
-                FloatingActionButton.extended(
-                  heroTag: 'add_product',
-                  icon: const Icon(AppIcons.add),
-                  label: const Text('Add Product'),
-                  onPressed: _openCreateProduct,
-                ),
-              ],
-            ),
-    );
-  }
-
-  Widget _buildSearchBar(BuildContext context) {
-    return TextField(
-      controller: _searchController,
-      decoration: InputDecoration(
-        hintText: 'Search by name, barcode, or category',
-        prefixIcon: const Icon(AppIcons.search),
-        suffixIcon: _searchController.text.isEmpty
-            ? null
-            : IconButton(
-                icon: const Icon(AppIcons.close),
-                onPressed: () {
-                  setState(_searchController.clear);
-                  ref.read(productSearchProvider.notifier).clear();
-                },
-              ),
-      ),
-      onChanged: (value) {
-        setState(() {});
-        ref.read(productSearchProvider.notifier).search(value);
-      },
-    );
-  }
-
-  Widget _buildFilterBar(BuildContext context, List<String> categories) {
-    return Row(
-      children: [
-        FilterChip(
-          selected: _showLowStockOnly,
-          label: const Text('Low stock'),
-          avatar: const Icon(AppIcons.alertTriangle, size: 16),
-          onSelected: (value) => setState(() => _showLowStockOnly = value),
-        ),
-        AppSpacing.hSmall,
-        FilterChip(
-          selected: _showInactive,
-          label: const Text('Show inactive'),
-          avatar: Icon(
-            _showInactive ? AppIcons.eyeOff : AppIcons.eye,
-            size: 16,
-          ),
-          onSelected: (value) {
-            setState(() => _showInactive = value);
-            ref
-                .read(productsControllerProvider.notifier)
-                .loadProducts(includeInactive: _showInactive);
-          },
-        ),
-        AppSpacing.hSmall,
-        Expanded(
-          child: DropdownButtonFormField<String>(
-            key: ValueKey(_selectedCategory),
-            initialValue: _selectedCategory,
-            isExpanded: true,
-            decoration: const InputDecoration(
-              labelText: 'Category',
-              prefixIcon: Icon(AppIcons.tag),
-            ),
-            items: [
-              const DropdownMenuItem<String>(
-                value: null,
-                child: Text('All categories'),
-              ),
-              ...categories.map(
-                (category) => DropdownMenuItem<String>(
-                  value: category,
-                  child: Text(category),
-                ),
-              ),
-            ],
-            onChanged: (value) => setState(() => _selectedCategory = value),
-          ),
-        ),
-        AppSpacing.hSmall,
-        PopupMenuButton<String>(
-          tooltip: 'Sort products',
-          icon: const Icon(AppIcons.filter),
-          onSelected: (value) => setState(() => _sortOption = value),
-          itemBuilder: (context) => const [
-            PopupMenuItem(value: 'nameAsc', child: Text('Name (A → Z)')),
-            PopupMenuItem(value: 'nameDesc', child: Text('Name (Z → A)')),
-            PopupMenuItem(
-              value: 'stockDesc',
-              child: Text('Stock (High → Low)'),
-            ),
-            PopupMenuItem(value: 'stockAsc', child: Text('Stock (Low → High)')),
-            PopupMenuItem(
-              value: 'priceDesc',
-              child: Text('Price (High → Low)'),
-            ),
-            PopupMenuItem(value: 'priceAsc', child: Text('Price (Low → High)')),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSummaryCard(BuildContext context, List<Product> products) {
-    final totalProducts = products.length;
-    final lowStockCount = products.where((p) => p.isLowStock).length;
-    final inventoryValue = products.fold<double>(
-      0,
-      (sum, product) => sum + (product.sellingPrice * product.stockPieces),
-    );
-
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: AppSpacing.paddingMedium,
-        child: Row(
-          children: [
-            _buildSummaryItem(
-              context,
-              label: 'Products',
-              value: totalProducts.toString(),
-              icon: AppIcons.package,
-            ),
-            AppSpacing.hLarge,
-            _buildSummaryItem(
-              context,
-              label: 'Low stock',
-              value: lowStockCount.toString(),
-              icon: AppIcons.alertTriangle,
-              valueColor: lowStockCount > 0
-                  ? AppTheme.lowStockColor
-                  : Theme.of(context).colorScheme.onSurface,
-            ),
-            AppSpacing.hLarge,
-            _buildSummaryItem(
-              context,
-              label: 'Stock value',
-              value: CurrencyFormatter.formatCompact(inventoryValue),
-              icon: AppIcons.trendingUp,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSummaryItem(
-    BuildContext context, {
-    required String label,
-    required String value,
-    required IconData icon,
-    Color? valueColor,
-  }) {
-    return Expanded(
-      child: Row(
+    return Container(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
-          AppSpacing.hXSmall,
+          // Header with stats
+          _buildHeader(context, products),
+          const SizedBox(height: 24),
+
+          // Search and filters
+          _buildSearchAndFilters(context),
+          const SizedBox(height: 16),
+
+          // Products list
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color:
-                        valueColor ?? Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ],
+            child: productsState.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, _) => _buildErrorState(context, error),
+              data: (_) => _buildProductsList(context, products),
             ),
           ),
         ],
@@ -309,121 +62,271 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     );
   }
 
-  Widget _buildList(BuildContext context, List<Product> products) {
-    if (products.isEmpty) {
-      return _buildEmptyState(context);
-    }
+  Widget _buildHeader(BuildContext context, List<Product> products) {
+    final totalProducts = products.length;
+    final lowStockCount = products.where((p) => p.isLowStock).length;
+    final inventoryValue = products.fold<double>(
+      0,
+      (sum, p) => sum + (p.sellingPrice * p.stockPieces),
+    );
 
-    return ListView.separated(
-      itemCount: products.length,
-      separatorBuilder: (_, index) => AppSpacing.small,
-      itemBuilder: (context, index) {
-        final product = products[index];
-        final isSelected = _selectedProductIds.contains(product.id);
-
-        if (_selectionMode) {
-          return CheckboxListTile(
-            value: isSelected,
-            onChanged: (_) => _toggleSelection(product.id),
-            secondary: CircleAvatar(
-              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-              child: Icon(
-                AppIcons.package,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            Icons.inventory_2_outlined,
+            color: Theme.of(context).colorScheme.primary,
+            size: 24,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Products',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
-            ),
-            title: Text(product.name),
-            subtitle: Text(
-              '${product.stockPieces} pieces • ${CurrencyFormatter.format(product.sellingPrice)}',
-            ),
-          );
-        }
-
-        return ProductListItem(
-          product: product,
-          onEdit: () => _openEditProduct(product),
-          onAdjustStock: () => _showAdjustStockDialog(context, product),
-          onDelete: () => _confirmDelete(context, product),
-          onToggleActive: () => ref
-              .read(productsControllerProvider.notifier)
-              .toggleActive(product.id, !product.isActive),
-        );
-      },
+              const SizedBox(height: 2),
+              Text(
+                '$totalProducts items${lowStockCount > 0 ? " • $lowStockCount low stock" : ""} • ${CurrencyFormatter.formatCompact(inventoryValue)} value',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        _buildActionButton(
+          context,
+          icon: Icons.add,
+          label: 'Add Product',
+          onPressed: _openCreateProduct,
+        ),
+      ],
     );
   }
 
-  List<Product> _applyFilters(List<Product> products) {
-    var filtered = products;
-    if (!_showInactive) {
-      filtered = filtered.where((product) => product.isActive).toList();
-    }
-    if (_showLowStockOnly) {
-      filtered = filtered.where((product) => product.isLowStock).toList();
-    }
-    if (_selectedCategory != null) {
-      filtered = filtered
-          .where((product) => product.category == _selectedCategory)
-          .toList();
-    }
-    return filtered;
+  Widget _buildActionButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
   }
 
-  List<Product> _applySort(List<Product> products) {
-    final sorted = [...products];
-    switch (_sortOption) {
-      case 'nameDesc':
-        sorted.sort(
-          (a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()),
-        );
-      case 'stockDesc':
-        sorted.sort((a, b) => b.stockPieces.compareTo(a.stockPieces));
-      case 'stockAsc':
-        sorted.sort((a, b) => a.stockPieces.compareTo(b.stockPieces));
-      case 'priceDesc':
-        sorted.sort((a, b) => b.sellingPrice.compareTo(a.sellingPrice));
-      case 'priceAsc':
-        sorted.sort((a, b) => a.sellingPrice.compareTo(b.sellingPrice));
-      case 'nameAsc':
-      default:
-        sorted.sort(
-          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-        );
+  Widget _buildSearchAndFilters(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Theme.of(context).colorScheme.outline),
+            ),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search products...',
+                hintStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  size: 20,
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {});
+                ref.read(productSearchProvider.notifier).search(value);
+              },
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        _buildFilterChip(
+          context,
+          label: 'Low Stock',
+          selected: _showLowStockOnly,
+          onSelected: (value) => setState(() => _showLowStockOnly = value),
+        ),
+        const SizedBox(width: 8),
+        _buildFilterChip(
+          context,
+          label: 'Inactive',
+          selected: _showInactive,
+          onSelected: (value) {
+            setState(() => _showInactive = value);
+            ref
+                .read(productsControllerProvider.notifier)
+                .loadProducts(includeInactive: _showInactive);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterChip(
+    BuildContext context, {
+    required String label,
+    required bool selected,
+    required ValueChanged<bool> onSelected,
+  }) {
+    return GestureDetector(
+      onTap: () => onSelected(!selected),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected
+              ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+              : Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: selected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.outline,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: selected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProductsList(BuildContext context, List<Product> products) {
+    if (products.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
+                Icons.inventory_2_outlined,
+                size: 48,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No products found',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Add your first product to get started',
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      );
     }
-    return sorted;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
+      ),
+      child: ListView.separated(
+        padding: const EdgeInsets.all(8),
+        itemCount: products.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        itemBuilder: (context, index) {
+          final product = products[index];
+          return ProductListItem(
+            product: product,
+            onEdit: () => _openEditProduct(product),
+            onAdjustStock: () => _showAdjustStockDialog(context, product),
+            onToggleActive: () => ref
+                .read(productsControllerProvider.notifier)
+                .toggleActive(product.id, !product.isActive),
+          );
+        },
+      ),
+    );
   }
 
-  List<String> _extractCategories(List<Product> products) {
-    final categories =
-        products
-            .map((product) => product.category)
-            .whereType<String>()
-            .map((category) => category.trim())
-            .where((category) => category.isNotEmpty)
-            .toSet()
-            .toList()
-          ..sort();
-    return categories;
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildErrorState(BuildContext context, Object error) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            AppIcons.package,
-            size: 56,
-            color: Theme.of(context).colorScheme.primary,
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.error.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(
+              Icons.error_outline,
+              size: 48,
+              color: Theme.of(context).colorScheme.error,
+            ),
           ),
-          AppSpacing.medium,
+          const SizedBox(height: 16),
           Text(
-            'No products yet',
-            style: Theme.of(context).textTheme.titleLarge,
+            'Something went wrong',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
           ),
-          AppSpacing.xSmall,
+          const SizedBox(height: 4),
           Text(
-            'Add your first product to start tracking stock and profit.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            error.toString(),
+            style: TextStyle(
+              fontSize: 13,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
@@ -433,57 +336,40 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     );
   }
 
-  Widget _buildErrorState(BuildContext context, Object error) {
-    final message = error.toString();
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(AppIcons.alertTriangle, size: 48, color: AppTheme.lossColor),
-          AppSpacing.medium,
-          Text(
-            'Something went wrong',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          AppSpacing.xSmall,
-          Text(
-            message,
-            style: Theme.of(context).textTheme.bodyMedium,
-            textAlign: TextAlign.center,
-          ),
-          AppSpacing.medium,
-          ElevatedButton.icon(
-            icon: const Icon(AppIcons.sync),
-            label: const Text('Retry'),
-            onPressed: () => ref
-                .read(productsControllerProvider.notifier)
-                .loadProducts(includeInactive: _showInactive),
-          ),
-        ],
-      ),
-    );
+  List<Product> _applyFilters(List<Product> products) {
+    var filtered = products;
+    if (!_showInactive) {
+      filtered = filtered.where((p) => p.isActive).toList();
+    }
+    if (_showLowStockOnly) {
+      filtered = filtered.where((p) => p.isLowStock).toList();
+    }
+    return filtered;
   }
 
   void _confirmDelete(BuildContext context, Product product) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text('Delete product?'),
-        content: Text(
-          'This will deactivate ${product.name}. You can restore it later.',
-        ),
+        content: Text('This will deactivate ${product.name}.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Cancel'),
           ),
-          FilledButton(
+          ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
               ref
                   .read(productsControllerProvider.notifier)
                   .deleteProduct(product.id);
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Deactivate'),
           ),
         ],
@@ -492,9 +378,9 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
   }
 
   Future<void> _openCreateProduct() async {
-    final created = await Navigator.of(
-      context,
-    ).push<bool>(MaterialPageRoute(builder: (_) => const ProductFormPage()));
+    final created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const ProductFormPage()),
+    );
     if (created == true && mounted) {
       ref
           .read(productsControllerProvider.notifier)
@@ -526,148 +412,35 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Adjust stock'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    product.name,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  AppSpacing.small,
-                  TextField(
-                    controller: controller,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Quantity',
-                      prefixIcon: Icon(AppIcons.package),
-                    ),
-                  ),
-                  AppSpacing.small,
-                  SegmentedButton<bool>(
-                    segments: const [
-                      ButtonSegment<bool>(
-                        value: true,
-                        label: Text('Add'),
-                        icon: Icon(AppIcons.packagePlus),
-                      ),
-                      ButtonSegment<bool>(
-                        value: false,
-                        label: Text('Remove'),
-                        icon: Icon(AppIcons.packageMinus),
-                      ),
-                    ],
-                    selected: {isAdd},
-                    onSelectionChanged: (value) {
-                      setDialogState(() => isAdd = value.first);
-                    },
-                  ),
-                ],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(false),
-                  child: const Text('Cancel'),
-                ),
-                FilledButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(true),
-                  child: const Text('Apply'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-
-    if (confirmed != true) {
-      controller.dispose();
-      return;
-    }
-
-    final amount = int.tryParse(controller.text.trim()) ?? 0;
-    controller.dispose();
-    if (amount <= 0) {
-      _showSnack('Enter a quantity greater than zero.');
-      return;
-    }
-
-    final delta = isAdd ? amount : -amount;
-    await ref
-        .read(productsControllerProvider.notifier)
-        .adjustStock(product.id, delta);
-  }
-
-  void _showSnack(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  // Selection mode methods
-  void _enterSelectionMode() {
-    setState(() {
-      _selectionMode = true;
-      _selectedProductIds.clear();
-    });
-  }
-
-  void _exitSelectionMode() {
-    setState(() {
-      _selectionMode = false;
-      _selectedProductIds.clear();
-    });
-  }
-
-  void _toggleSelection(int productId) {
-    setState(() {
-      if (_selectedProductIds.contains(productId)) {
-        _selectedProductIds.remove(productId);
-      } else {
-        _selectedProductIds.add(productId);
-      }
-    });
-  }
-
-  void _selectAll(List<Product> products) {
-    setState(() {
-      _selectedProductIds.addAll(products.map((p) => p.id));
-    });
-  }
-
-  Future<void> _showBulkAdjustStockDialog(List<Product> products) async {
-    final controller = TextEditingController();
-    bool isAdd = true;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Text('Adjust stock (${_selectedProductIds.length} items)'),
+              title: const Text('Adjust Stock'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'This will adjust stock for all selected products.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    product.name,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  AppSpacing.medium,
+                  const SizedBox(height: 16),
                   TextField(
                     controller: controller,
                     keyboardType: TextInputType.number,
-                    autofocus: true,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Quantity',
-                      prefixIcon: Icon(AppIcons.package),
-                      helperText: 'Amount to add or remove',
+                      prefixIcon: const Icon(AppIcons.package),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
-                  AppSpacing.medium,
+                  const SizedBox(height: 16),
                   SegmentedButton<bool>(
                     segments: const [
                       ButtonSegment<bool>(
@@ -693,8 +466,12 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                   onPressed: () => Navigator.of(dialogContext).pop(false),
                   child: const Text('Cancel'),
                 ),
-                FilledButton(
+                ElevatedButton(
                   onPressed: () => Navigator.of(dialogContext).pop(true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Colors.white,
+                  ),
                   child: const Text('Apply'),
                 ),
               ],
@@ -711,38 +488,11 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
 
     final amount = int.tryParse(controller.text.trim()) ?? 0;
     controller.dispose();
-
-    if (amount <= 0) {
-      _showSnack('Enter a quantity greater than zero.');
-      return;
-    }
+    if (amount <= 0) return;
 
     final delta = isAdd ? amount : -amount;
-    await _bulkAdjustStock(products, delta);
-    _exitSelectionMode();
-  }
-
-  Future<void> _bulkAdjustStock(List<Product> products, int delta) async {
-    final controller = ref.read(productsControllerProvider.notifier);
-    int successCount = 0;
-    int failCount = 0;
-
-    for (final productId in _selectedProductIds) {
-      try {
-        await controller.adjustStock(productId, delta);
-        successCount++;
-      } catch (e) {
-        failCount++;
-      }
-    }
-
-    if (mounted) {
-      if (failCount == 0) {
-        _showSnack('Updated $successCount products successfully.');
-      } else {
-        _showSnack('Updated $successCount products. Failed: $failCount.');
-      }
-      await controller.loadProducts(includeInactive: _showInactive);
-    }
+    await ref
+        .read(productsControllerProvider.notifier)
+        .adjustStock(product.id, delta);
   }
 }

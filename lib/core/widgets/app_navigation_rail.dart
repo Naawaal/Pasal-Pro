@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pasal_pro/core/constants/app_colors.dart';
-import 'package:pasal_pro/core/constants/app_spacing.dart';
 
-/// Navigation destination definition for the rail
 class NavRailDestination {
   final String label;
   final IconData icon;
-  final String shortcut; // e.g., "F1", "F2"
+  final String shortcut;
 
   const NavRailDestination({
     required this.label,
@@ -15,9 +12,7 @@ class NavRailDestination {
   });
 }
 
-/// Desktop Navigation Rail Component
-/// Supports collapsed (72px) and expanded (280px) states
-/// Usage: Place on the left side of Scaffold
+/// Modern flat navigation rail with smooth animations
 class AppNavigationRail extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
@@ -38,91 +33,86 @@ class AppNavigationRail extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      width: isExpanded ? 280 : 72,
-      color: AppColors.bgWhite,
+      curve: Curves.easeInOut,
+      width: isExpanded ? 240 : 72,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          right: BorderSide(color: Theme.of(context).colorScheme.outline),
+        ),
+      ),
       child: Column(
         children: [
-          // Header with collapse button
+          // Header
           Container(
             height: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: AppColors.borderColor)),
+              border: Border(
+                bottom: BorderSide(color: Theme.of(context).colorScheme.outline),
+              ),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (isExpanded) ...[
+                if (isExpanded)
                   Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Text(
-                        'PASAL PRO',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    child: Text(
+                      'PASAL PRO',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ),
-                ],
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: GestureDetector(
-                    onTap: onToggleExpanded,
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: Icon(
-                        isExpanded
-                            ? Icons.keyboard_arrow_left
-                            : Icons.keyboard_arrow_right,
-                        color: AppColors.textSecondary,
-                        size: 20,
-                      ),
-                    ),
+                IconButton(
+                  icon: Icon(
+                    isExpanded ? Icons.chevron_left : Icons.chevron_right,
+                    size: 20,
                   ),
+                  onPressed: onToggleExpanded,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
               ],
             ),
           ),
 
-          // Primary destinations
+          // Navigation items
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: List.generate(
-                  destinations.length,
-                  (index) => _NavRailItem(
-                    destination: destinations[index],
-                    isSelected: selectedIndex == index,
-                    isExpanded: isExpanded,
-                    onTap: () => onDestinationSelected(index),
-                  ),
-                ),
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: destinations.length,
+              itemBuilder: (context, index) => _NavItem(
+                destination: destinations[index],
+                isSelected: selectedIndex == index,
+                isExpanded: isExpanded,
+                onTap: () => onDestinationSelected(index),
               ),
             ),
           ),
 
-          // Secondary destinations (Settings, Help)
+          // Footer items
           Container(
             decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: AppColors.borderColor)),
+              border: Border(
+                top: BorderSide(color: Theme.of(context).colorScheme.outline),
+              ),
             ),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                _NavRailItem(
+                _NavItem(
                   destination: const NavRailDestination(
                     label: 'SETTINGS',
-                    icon: Icons.settings,
+                    icon: Icons.settings_outlined,
                     shortcut: 'S',
                   ),
                   isSelected: false,
                   isExpanded: isExpanded,
                   onTap: () {},
                 ),
-                _NavRailItem(
+                _NavItem(
                   destination: const NavRailDestination(
                     label: 'HELP',
                     icon: Icons.help_outline,
@@ -141,14 +131,13 @@ class AppNavigationRail extends StatelessWidget {
   }
 }
 
-/// Individual navigation rail item
-class _NavRailItem extends StatefulWidget {
+class _NavItem extends StatefulWidget {
   final NavRailDestination destination;
   final bool isSelected;
   final bool isExpanded;
   final VoidCallback onTap;
 
-  const _NavRailItem({
+  const _NavItem({
     required this.destination,
     required this.isSelected,
     required this.isExpanded,
@@ -156,14 +145,18 @@ class _NavRailItem extends StatefulWidget {
   });
 
   @override
-  State<_NavRailItem> createState() => _NavRailItemState();
+  State<_NavItem> createState() => _NavItemState();
 }
 
-class _NavRailItemState extends State<_NavRailItem> {
+class _NavItemState extends State<_NavItem> {
   bool _isHovering = false;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isActive = widget.isSelected;
+    final showHover = _isHovering && !isActive;
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
       onExit: (_) => setState(() => _isHovering = false),
@@ -171,85 +164,55 @@ class _NavRailItemState extends State<_NavRailItem> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          width: double.infinity,
-          height: 56,
-          color: _isHovering && !widget.isSelected
-              ? AppColors.bgLight
-              : widget.isSelected
-              ? Colors.transparent
-              : Colors.transparent,
-          child: Row(
-            children: [
-              // Left indicator (3px blue border)
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                width: 3,
-                color: widget.isSelected
-                    ? AppColors.primaryBlue
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            color: isActive
+                ? theme.colorScheme.primary.withOpacity(0.1)
+                : showHover
+                    ? theme.colorScheme.surfaceContainerHighest
                     : Colors.transparent,
-              ),
-              Expanded(
-                child: Padding(
-                  padding: widget.isExpanded
-                      ? AppSpacing.paddingHorizontalMedium
-                      : const EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: widget.isExpanded
-                        ? CrossAxisAlignment.start
-                        : CrossAxisAlignment.center,
-                    children: [
-                      // Icon
-                      Icon(
-                        widget.destination.icon,
-                        color: widget.isSelected
-                            ? AppColors.primaryBlue
-                            : AppColors.iconInactive,
-                        size: 20,
-                      ),
-
-                      // Label with shortcut (visible only when expanded)
-                      if (widget.isExpanded) ...[
-                        const SizedBox(height: 3),
-                        Flexible(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.destination.label,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.labelSmall
-                                    ?.copyWith(
-                                      color: widget.isSelected
-                                          ? AppColors.primaryBlue
-                                          : AppColors.textSecondary,
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w600,
-                                      letterSpacing: 0.2,
-                                      height: 1.0,
-                                    ),
-                              ),
-                              Text(
-                                widget.destination.shortcut,
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(
-                                      color: AppColors.textTertiary,
-                                      fontSize: 8,
-                                      height: 1.0,
-                                    ),
-                              ),
-                            ],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Row(
+              children: [
+                Icon(
+                  widget.destination.icon,
+                  size: 20,
+                  color: isActive
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurfaceVariant,
+                ),
+                if (widget.isExpanded) ...[
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.destination.label,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                            color: isActive
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        Text(
+                          widget.destination.shortcut,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: theme.colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            ],
+                ],
+              ],
+            ),
           ),
         ),
       ),

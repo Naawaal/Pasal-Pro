@@ -1,78 +1,54 @@
 import 'package:flutter/material.dart';
 
-/// Modern Flat Design Color Palette for Pasal Pro
-/// Research-backed colors from design analysis of 18+ modern POS apps
-/// Not Material 3 defaults - contemporary flat design approach
+/// Ultra-Modern Flat Design Colors
+/// Inspired by Linear, Stripe Dashboard, and Tailwind UI
+/// Zero Material 3 - Pure contemporary flat design
 class AppColors {
   AppColors._();
 
-  // Primary Colors
-  static const Color primaryBlue = Color(
-    0xFF3B82F6,
-  ); // Vibrant Blue - Actions, highlights
-  static const Color primaryBlueDark = Color(
-    0xFF2563EB,
-  ); // Darker for hover/pressed
-  static const Color primaryBlueDarker = Color(
-    0xFF1D4ED8,
-  ); // Darkest for active
+  // Core Neutrals (Primary palette)
+  static const white = Color(0xFFFFFFFF);
+  static const gray50 = Color(0xFFFAFAFA);
+  static const gray100 = Color(0xFFF5F5F5);
+  static const gray200 = Color(0xFFE5E5E5);
+  static const gray300 = Color(0xFFD4D4D4);
+  static const gray400 = Color(0xFFA3A3A3);
+  static const gray500 = Color(0xFF737373);
+  static const gray600 = Color(0xFF525252);
+  static const gray700 = Color(0xFF404040);
+  static const gray800 = Color(0xFF262626);
+  static const gray900 = Color(0xFF171717);
 
-  // Success Colors
-  static const Color successGreen = Color(
-    0xFF10B981,
-  ); // Modern Green - Profit, positive
-  static const Color successGreenLight = Color(
-    0xFFD1FAE5,
-  ); // Light green for backgrounds
-  static const Color successGreenDark = Color(
-    0xFF059669,
-  ); // Dark green for text
+  // Accent Colors (Minimal usage)
+  static const blue500 = Color(0xFF3B82F6);
+  static const blue600 = Color(0xFF2563EB);
+  static const green500 = Color(0xFF10B981);
+  static const red500 = Color(0xFFEF4444);
+  static const orange500 = Color(0xFFF59E0B);
 
-  // Warning Colors
-  static const Color warningOrange = Color(
-    0xFFF59E0B,
-  ); // Warm Orange - Stock alerts, caution
-  static const Color warningOrangeLight = Color(
-    0xFFFEF3C7,
-  ); // Light orange for backgrounds
-  static const Color warningOrangeDark = Color(
-    0xFFD97706,
-  ); // Dark orange for text
+  // Semantic Mapping
+  static const background = white;
+  static const surface = gray50;
+  static const surfaceHover = gray100;
+  static const border = gray200;
+  static const borderHover = gray300;
+  static const textPrimary = gray900;
+  static const textSecondary = gray600;
+  static const textTertiary = gray400;
+  static const accent = blue500;
+  static const accentHover = blue600;
 
-  // Danger Colors
-  static const Color dangerRed = Color(
-    0xFFEF4444,
-  ); // Coral Red - Losses, errors, critical
-  static const Color dangerRedLight = Color(
-    0xFFFEE2E2,
-  ); // Light red for backgrounds
-  static const Color dangerRedDark = Color(0xFFDC2626); // Dark red for text
-
-  // Neutral Colors
-  static const Color bgWhite = Color(0xFFFFFFFF); // Pure White - Main canvas
-  static const Color bgLight = Color(
-    0xFFF9FAFB,
-  ); // Very Light Gray - Card backgrounds
-  static const Color bgLighter = Color(
-    0xFFF3F4F6,
-  ); // Lighter Gray - Hover states, section dividers
-
-  static const Color textPrimary = Color(
-    0xFF1F2937,
-  ); // Charcoal - Body text, headings
-  static const Color textSecondary = Color(
-    0xFF6B7280,
-  ); // Medium Gray - Helper text, labels, secondary info
-  static const Color textTertiary = Color(
-    0xFF9CA3AF,
-  ); // Light Gray - Disabled text, icon inactive
-
-  static const Color borderColor = Color(
-    0xFFE5E7EB,
-  ); // Soft Gray - Borders, dividers, card outlines
-  static const Color borderColorDark = Color(
-    0xFFD1D5DB,
-  ); // Darker gray for stronger borders
+  // Legacy aliases (for compatibility)
+  static const primaryBlue = blue500;
+  static const primaryBlueDark = blue600;
+  static const successGreen = green500;
+  static const dangerRed = red500;
+  static const warningOrange = orange500;
+  static const bgWhite = white;
+  static const bgLight = surface;
+  static const bgLighter = surfaceHover;
+  static const borderColor = border;
+  static const borderColorDark = borderHover;
 
   // Icon Colors
   static const Color iconInactive = Color(0xFF9CA3AF); // Inactive icons

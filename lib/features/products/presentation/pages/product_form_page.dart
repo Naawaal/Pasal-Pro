@@ -296,7 +296,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: AppTheme.lossColor),
+      SnackBar(content: Text(message), backgroundColor: Theme.of(context).colorScheme.error),
     );
   }
 }

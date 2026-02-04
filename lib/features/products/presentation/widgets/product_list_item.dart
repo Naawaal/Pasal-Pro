@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:pasal_pro/core/constants/app_icons.dart';
-import 'package:pasal_pro/core/constants/app_spacing.dart';
 import 'package:pasal_pro/core/theme/app_theme.dart';
+import 'package:pasal_pro/core/utils/currency_formatter.dart';
 import 'package:pasal_pro/features/products/domain/entities/product.dart';
 
-/// List item for product rows.
-class ProductListItem extends StatelessWidget {
+/// Modern flat product list item with smooth interactions
+class ProductListItem extends StatefulWidget {
   final Product product;
   final VoidCallback? onEdit;
   final VoidCallback? onAdjustStock;
@@ -22,126 +22,210 @@ class ProductListItem extends StatelessWidget {
   });
 
   @override
+  State<ProductListItem> createState() => _ProductListItemState();
+}
+
+class _ProductListItemState extends State<ProductListItem> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isInactive = !product.isActive;
+    final isInactive = !widget.product.isActive;
 
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: AppSpacing.paddingMedium,
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: _isHovered
+              ? theme.colorScheme.surfaceContainerHighest
+              : theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.colorScheme.outline),
+        ),
         child: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: theme.colorScheme.primaryContainer,
+            // Product icon
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
               child: Icon(
                 AppIcons.package,
-                color: theme.colorScheme.onPrimaryContainer,
+                color: theme.colorScheme.primary,
+                size: 24,
               ),
             ),
-            AppSpacing.hMedium,
+            const SizedBox(width: 16),
+
+            // Product details
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    product.name,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      decoration: isInactive
-                          ? TextDecoration.lineThrough
-                          : TextDecoration.none,
-                    ),
-                  ),
-                  AppSpacing.xxSmall,
                   Row(
                     children: [
-                      Icon(
-                        AppIcons.rupee,
-                        size: 14,
-                        color: theme.colorScheme.primary,
+                      Expanded(
+                        child: Text(
+                          widget.product.name,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface,
+                            decoration: isInactive
+                                ? TextDecoration.lineThrough
+                                : null,
+                          ),
+                        ),
                       ),
-                      AppSpacing.hXSmall,
-                      Text(
-                        '${product.sellingPrice.toStringAsFixed(2)} / pc',
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                      AppSpacing.hMedium,
-                      Icon(
-                        AppIcons.carton,
-                        size: 14,
-                        color: theme.colorScheme.primary,
-                      ),
-                      AppSpacing.hXSmall,
-                      Text(
-                        product.piecesPerCarton.toString(),
-                        style: theme.textTheme.bodyMedium,
-                      ),
+                      if (isInactive)
+                        _buildBadge(
+                          context,
+                          'Inactive',
+                          theme.colorScheme.error,
+                        ),
+                      if (widget.product.isLowStock && !isInactive)
+                        _buildBadge(
+                          context,
+                          'Low Stock',
+                          AppTheme.lowStockColor,
+                        ),
                     ],
                   ),
-                  AppSpacing.xxSmall,
-                  Row(
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 4,
                     children: [
-                      Icon(
-                        product.isLowStock
-                            ? AppIcons.alertTriangle
-                            : AppIcons.checkCircle,
-                        size: 14,
-                        color: product.isLowStock
-                            ? AppTheme.lowStockColor
-                            : AppTheme.profitColor,
+                      _buildInfoChip(
+                        context,
+                        icon: AppIcons.rupee,
+                        label:
+                            '${CurrencyFormatter.format(widget.product.sellingPrice)} / pc',
                       ),
-                      AppSpacing.hXSmall,
-                      Text(
-                        'Stock: ${product.stockPieces}',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: product.isLowStock
-                              ? AppTheme.lowStockColor
-                              : theme.colorScheme.onSurfaceVariant,
-                        ),
+                      _buildInfoChip(
+                        context,
+                        icon: AppIcons.package,
+                        label: 'Stock: ${widget.product.stockPieces}',
                       ),
-                      if (product.category != null) ...[
-                        AppSpacing.hMedium,
-                        Icon(
-                          AppIcons.tag,
-                          size: 14,
-                          color: theme.colorScheme.primary,
+                      _buildInfoChip(
+                        context,
+                        icon: AppIcons.carton,
+                        label: '${widget.product.piecesPerCarton} pcs/carton',
+                      ),
+                      if (widget.product.category != null)
+                        _buildInfoChip(
+                          context,
+                          icon: AppIcons.tag,
+                          label: widget.product.category!,
                         ),
-                        AppSpacing.hXSmall,
-                        Text(
-                          product.category!,
-                          style: theme.textTheme.bodySmall,
-                        ),
-                      ],
                     ],
                   ),
                 ],
               ),
             ),
-            Column(
+            const SizedBox(width: 16),
+
+            // Actions
+            Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  icon: const Icon(AppIcons.edit),
+                _buildActionButton(
+                  context,
+                  icon: AppIcons.edit,
                   tooltip: 'Edit',
-                  onPressed: onEdit,
+                  onPressed: widget.onEdit,
                 ),
-                IconButton(
-                  icon: const Icon(AppIcons.packagePlus),
-                  tooltip: 'Adjust stock',
-                  onPressed: onAdjustStock,
+                const SizedBox(width: 4),
+                _buildActionButton(
+                  context,
+                  icon: AppIcons.packagePlus,
+                  tooltip: 'Adjust Stock',
+                  onPressed: widget.onAdjustStock,
                 ),
-                IconButton(
-                  icon: Icon(isInactive ? AppIcons.unlock : AppIcons.lock),
+                const SizedBox(width: 4),
+                _buildActionButton(
+                  context,
+                  icon: isInactive ? AppIcons.unlock : AppIcons.lock,
                   tooltip: isInactive ? 'Activate' : 'Deactivate',
-                  onPressed: onToggleActive,
-                ),
-                IconButton(
-                  icon: const Icon(AppIcons.delete),
-                  tooltip: 'Delete',
-                  onPressed: onDelete,
+                  onPressed: widget.onToggleActive,
                 ),
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBadge(BuildContext context, String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(BuildContext context,
+      {required IconData icon, required String label}) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 14,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton(
+    BuildContext context, {
+    required IconData icon,
+    required String tooltip,
+    VoidCallback? onPressed,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            size: 18,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ),
     );

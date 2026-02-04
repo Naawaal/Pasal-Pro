@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:pasal_pro/core/constants/app_colors.dart';
-import 'package:pasal_pro/core/constants/app_spacing.dart';
 
-/// Custom AppBar for Pasal Pro Desktop
-/// Compact design (48px), modern flat styling
-/// Features: Search bar, global actions, sync status, user menu
+/// Modern flat AppBar for Pasal Pro
+/// Clean design with smooth interactions
 class PasalProAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
   final VoidCallback? onSearch;
   final VoidCallback? onSync;
-  final String? syncStatus; // null, "syncing", "synced", "error"
+  final String? syncStatus;
   final VoidCallback? onUserMenu;
   final bool showSearch;
 
@@ -20,203 +17,184 @@ class PasalProAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onSync,
     this.syncStatus,
     this.onUserMenu,
-    this.showSearch = true,
+    this.showSearch = false,
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(48);
-
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-      elevation: 0,
-      backgroundColor: AppColors.bgWhite,
-      foregroundColor: AppColors.textPrimary,
-      surfaceTintColor: Colors.transparent,
-      toolbarHeight: 48,
-      automaticallyImplyLeading: false,
-      title: showSearch
-          ? _SearchBar(onTap: onSearch)
-          : Text(
-              title ?? 'Pasal Pro',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-            ),
-      actions: [
-        // Global search shortcut
-        if (!showSearch)
-          Tooltip(
-            message: 'Search (Ctrl+F)',
-            child: IconButton(
-              icon: const Icon(Icons.search, size: 24),
-              onPressed: onSearch,
-              splashRadius: 24,
-            ),
-          ),
-
-        AppSpacing.hSmall,
-
-        // Sync status indicator
-        _SyncStatusButton(status: syncStatus, onTap: onSync),
-
-        AppSpacing.hSmall,
-
-        // User menu
-        Tooltip(
-          message: 'User Menu',
-          child: IconButton(
-            icon: const Icon(Icons.account_circle, size: 24),
-            onPressed: onUserMenu,
-            splashRadius: 24,
-          ),
-        ),
-
-        AppSpacing.hMedium,
-      ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Container(height: 1, color: AppColors.borderColor),
-      ),
-    );
-  }
-}
-
-/// Search bar widget for AppBar
-class _SearchBar extends StatefulWidget {
-  final VoidCallback? onTap;
-
-  const _SearchBar({this.onTap});
-
-  @override
-  State<_SearchBar> createState() => _SearchBarState();
-}
-
-class _SearchBarState extends State<_SearchBar> {
-  late FocusNode _focusNode;
-
-  @override
-  void initState() {
-    super.initState();
-    _focusNode = FocusNode();
-  }
-
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    super.dispose();
-  }
+  Size get preferredSize => const Size.fromHeight(56);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 36,
-      constraints: const BoxConstraints(maxWidth: 400),
+      height: 56,
       decoration: BoxDecoration(
-        color: AppColors.bgLight,
-        border: Border.all(color: AppColors.borderColor),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: TextField(
-        focusNode: _focusNode,
-        onTap: widget.onTap,
-        decoration: InputDecoration(
-          hintText: 'Search products, customers... (Ctrl+F)',
-          hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppColors.textTertiary,
-            fontStyle: FontStyle.italic,
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.outline,
           ),
-          border: InputBorder.none,
-          prefixIcon: const Icon(
-            Icons.search,
-            color: AppColors.textTertiary,
-            size: 18,
-          ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 8),
-          isDense: true,
         ),
-        style: Theme.of(context).textTheme.bodyMedium,
-        textInputAction: TextInputAction.search,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          // Title
+          Text(
+            title ?? 'Pasal Pro',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          const Spacer(),
+
+          // Search button
+          _ActionButton(
+            icon: Icons.search,
+            tooltip: 'Search (Ctrl+F)',
+            onPressed: onSearch,
+          ),
+          const SizedBox(width: 8),
+
+          // Sync status
+          if (syncStatus != null) ...[
+            _SyncIndicator(status: syncStatus!, onTap: onSync),
+            const SizedBox(width: 8),
+          ],
+
+          // User menu
+          _ActionButton(
+            icon: Icons.account_circle_outlined,
+            tooltip: 'Account',
+            onPressed: onUserMenu,
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Sync status indicator button
-class _SyncStatusButton extends StatelessWidget {
-  final String? status;
-  final VoidCallback? onTap;
+class _ActionButton extends StatefulWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onPressed;
 
-  const _SyncStatusButton({this.status, this.onTap});
+  const _ActionButton({
+    required this.icon,
+    required this.tooltip,
+    this.onPressed,
+  });
+
+  @override
+  State<_ActionButton> createState() => _ActionButtonState();
+}
+
+class _ActionButtonState extends State<_ActionButton> {
+  bool _isHovering = false;
 
   @override
   Widget build(BuildContext context) {
-    final isVisible = status != null && status!.isNotEmpty;
-
-    if (!isVisible) return const SizedBox.shrink();
-
-    return Tooltip(
-      message: _getSyncMessage(),
-      child: GestureDetector(
-        onTap: onTap,
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: Padding(
-            padding: AppSpacing.paddingHorizontalSmall,
-            child: Center(
-              child: Row(
-                children: [
-                  // Status indicator icon
-                  _buildStatusIcon(),
-                  AppSpacing.hSmall,
-
-                  // Status text (compact)
-                  Text(
-                    _getStatusText(),
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontSize: 11,
-                      color: _getStatusColor(),
-                    ),
-                  ),
-                ],
-              ),
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovering = true),
+      onExit: (_) => setState(() => _isHovering = false),
+      child: Tooltip(
+        message: widget.tooltip,
+        child: GestureDetector(
+          onTap: widget.onPressed,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: _isHovering
+                  ? Theme.of(context).colorScheme.surfaceContainerHighest
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              widget.icon,
+              size: 20,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildStatusIcon() {
+class _SyncIndicator extends StatelessWidget {
+  final String status;
+  final VoidCallback? onTap;
+
+  const _SyncIndicator({
+    required this.status,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _getStatusColor(context);
+    final icon = _getStatusIcon();
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (status == 'syncing')
+              SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(color),
+                ),
+              )
+            else
+              Icon(icon, size: 14, color: color),
+            const SizedBox(width: 6),
+            Text(
+              _getStatusText(),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getStatusColor(BuildContext context) {
     switch (status) {
       case 'syncing':
-        return SizedBox(
-          width: 16,
-          height: 16,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(_getStatusColor()),
-          ),
-        );
+        return Theme.of(context).colorScheme.primary;
       case 'synced':
-        return Icon(Icons.check_circle, size: 16, color: _getStatusColor());
+        return const Color(0xFF10B981);
       case 'error':
-        return Icon(Icons.error, size: 16, color: _getStatusColor());
+        return Theme.of(context).colorScheme.error;
       default:
-        return const SizedBox.shrink();
+        return Theme.of(context).colorScheme.onSurfaceVariant;
     }
   }
 
-  Color _getStatusColor() {
+  IconData _getStatusIcon() {
     switch (status) {
-      case 'syncing':
-        return AppColors.warningOrange;
       case 'synced':
-        return AppColors.successGreen;
+        return Icons.check_circle;
       case 'error':
-        return AppColors.dangerRed;
+        return Icons.error;
       default:
-        return AppColors.textSecondary;
+        return Icons.sync;
     }
   }
 
@@ -227,20 +205,7 @@ class _SyncStatusButton extends StatelessWidget {
       case 'synced':
         return 'Synced';
       case 'error':
-        return 'Sync Error';
-      default:
-        return '';
-    }
-  }
-
-  String _getSyncMessage() {
-    switch (status) {
-      case 'syncing':
-        return 'Uploading changes to cloud';
-      case 'synced':
-        return 'All changes synced';
-      case 'error':
-        return 'Sync failed - tap to retry';
+        return 'Error';
       default:
         return '';
     }

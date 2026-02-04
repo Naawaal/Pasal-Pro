@@ -5,6 +5,7 @@ import 'package:pasal_pro/core/utils/app_logger.dart';
 import 'package:pasal_pro/features/products/data/models/customer_model.dart';
 import 'package:pasal_pro/features/products/data/models/product_model.dart';
 import 'package:pasal_pro/features/products/data/models/transaction_model.dart';
+import 'package:pasal_pro/features/sales/data/models/sale_model.dart';
 
 /// Singleton service for managing Isar database
 class DatabaseService {
@@ -30,7 +31,12 @@ class DatabaseService {
       final dir = await getApplicationDocumentsDirectory();
 
       final isar = await Isar.open(
-        [ProductModelSchema, CustomerModelSchema, TransactionModelSchema],
+        [
+          ProductModelSchema,
+          CustomerModelSchema,
+          TransactionModelSchema,
+          SaleModelSchema,
+        ],
         directory: dir.path,
         name: AppConstants.databaseName,
         inspector: true, // Enable Isar Inspector for debugging
