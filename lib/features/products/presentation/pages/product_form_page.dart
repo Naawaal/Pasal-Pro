@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pasal_pro/core/constants/app_icons.dart';
-import 'package:pasal_pro/core/constants/app_spacing.dart';
-import 'package:pasal_pro/core/theme/app_theme.dart';
 import 'package:pasal_pro/core/utils/result.dart';
 import 'package:pasal_pro/features/products/domain/entities/product.dart';
 import 'package:pasal_pro/features/products/domain/usecases/create_product.dart';
 import 'package:pasal_pro/features/products/domain/usecases/update_product.dart';
 import 'package:pasal_pro/features/products/presentation/providers/products_providers.dart';
 
-/// Product create/edit form page.
+/// Modern product form with flat design
 class ProductFormPage extends ConsumerStatefulWidget {
   final Product? product;
 
@@ -66,82 +63,180 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? 'Edit Product' : 'Add Product')),
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(
+          _isEditing ? 'Edit Product' : 'Add Product',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+      ),
       body: Form(
         key: _formKey,
-        child: ListView(
-          padding: AppSpacing.paddingLarge,
+        child: Row(
           children: [
-            _buildSectionTitle(context, 'Basic Info'),
-            AppSpacing.formFieldGap,
-            _buildTextField(
-              controller: _nameController,
-              label: 'Product Name',
-              icon: AppIcons.package,
-              validator: _requiredText,
-            ),
-            AppSpacing.formFieldGap,
-            _buildTextField(
-              controller: _categoryController,
-              label: 'Category (optional)',
-              icon: AppIcons.tag,
-            ),
-            AppSpacing.formFieldGap,
-            _buildTextField(
-              controller: _barcodeController,
-              label: 'Barcode / SKU (optional)',
-              icon: AppIcons.barcode,
-            ),
-            AppSpacing.formSectionGap,
-            _buildSectionTitle(context, 'Pricing'),
-            AppSpacing.formFieldGap,
-            _buildNumberField(
-              controller: _costController,
-              label: 'Cost Price (per piece)',
-              icon: AppIcons.cash,
-              validator: _requiredNonNegative,
-            ),
-            AppSpacing.formFieldGap,
-            _buildNumberField(
-              controller: _sellingController,
-              label: 'Selling Price (per piece)',
-              icon: AppIcons.rupee,
-              validator: _requiredNonNegative,
-            ),
-            AppSpacing.formSectionGap,
-            _buildSectionTitle(context, 'Stock'),
-            AppSpacing.formFieldGap,
-            _buildIntField(
-              controller: _piecesPerCartonController,
-              label: 'Pieces per Carton',
-              icon: AppIcons.carton,
-              validator: _requiredPositiveInt,
-            ),
-            AppSpacing.formFieldGap,
-            _buildIntField(
-              controller: _stockController,
-              label: 'Current Stock (pieces)',
-              icon: AppIcons.inStock,
-              validator: _requiredNonNegativeInt,
-            ),
-            AppSpacing.formFieldGap,
-            _buildIntField(
-              controller: _lowStockController,
-              label: 'Low Stock Threshold',
-              icon: AppIcons.alertTriangle,
-              validator: _requiredNonNegativeInt,
-            ),
-            AppSpacing.formSectionGap,
-            FilledButton.icon(
-              onPressed: _isSaving ? null : _saveProduct,
-              icon: Icon(_isEditing ? AppIcons.save : AppIcons.add),
-              label: Text(_isEditing ? 'Save Changes' : 'Create Product'),
-            ),
-            AppSpacing.small,
-            Text(
-              'Selling price should be equal to or higher than cost price.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(24),
+                children: [
+                  _buildSection(
+                    context,
+                    title: 'Basic Information',
+                    icon: Icons.info_outline,
+                    children: [
+                      _buildTextField(
+                        controller: _nameController,
+                        label: 'Product Name',
+                        hint: 'Enter product name',
+                        validator: _requiredText,
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildTextField(
+                              controller: _categoryController,
+                              label: 'Category',
+                              hint: 'Optional',
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildTextField(
+                              controller: _barcodeController,
+                              label: 'Barcode / SKU',
+                              hint: 'Optional',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  _buildSection(
+                    context,
+                    title: 'Pricing',
+                    icon: Icons.payments_outlined,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildNumberField(
+                              controller: _costController,
+                              label: 'Cost Price',
+                              hint: 'Per piece',
+                              validator: _requiredNonNegative,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildNumberField(
+                              controller: _sellingController,
+                              label: 'Selling Price',
+                              hint: 'Per piece',
+                              validator: _requiredNonNegative,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  _buildSection(
+                    context,
+                    title: 'Inventory',
+                    icon: Icons.inventory_2_outlined,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildIntField(
+                              controller: _piecesPerCartonController,
+                              label: 'Pieces per Carton',
+                              hint: 'e.g., 24',
+                              validator: _requiredPositiveInt,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildIntField(
+                              controller: _stockController,
+                              label: 'Current Stock',
+                              hint: 'Pieces',
+                              validator: _requiredNonNegativeInt,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildIntField(
+                              controller: _lowStockController,
+                              label: 'Low Stock Alert',
+                              hint: 'Threshold',
+                              validator: _requiredNonNegativeInt,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton(
+                          onPressed: _isSaving ? null : _saveProduct,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: _isSaving
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(
+                                  _isEditing
+                                      ? 'Save Changes'
+                                      : 'Create Product',
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
@@ -150,56 +245,224 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
     );
   }
 
-  Widget _buildSectionTitle(BuildContext context, String label) {
-    return Text(
-      label,
-      style: Theme.of(
-        context,
-      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+  Widget _buildSection(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  icon,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          ...children,
+        ],
+      ),
     );
   }
 
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
-    required IconData icon,
+    required String hint,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
-      controller: controller,
-      textInputAction: TextInputAction.next,
-      decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
-      validator: validator,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            filled: true,
+            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.primary,
+                width: 2,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+          ),
+          validator: validator,
+        ),
+      ],
     );
   }
 
   Widget _buildNumberField({
     required TextEditingController controller,
     required String label,
-    required IconData icon,
+    required String hint,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      textInputAction: TextInputAction.next,
-      decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
-      validator: validator,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            filled: true,
+            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.primary,
+                width: 2,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+          ),
+          validator: validator,
+        ),
+      ],
     );
   }
 
   Widget _buildIntField({
     required TextEditingController controller,
     required String label,
-    required IconData icon,
+    required String hint,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: TextInputType.number,
-      textInputAction: TextInputAction.next,
-      decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
-      validator: validator,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            filled: true,
+            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.primary,
+                width: 2,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+          ),
+          validator: validator,
+        ),
+      ],
     );
   }
 
@@ -296,7 +559,10 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Theme.of(context).colorScheme.error),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
     );
   }
 }

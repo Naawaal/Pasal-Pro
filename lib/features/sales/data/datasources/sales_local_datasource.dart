@@ -163,6 +163,89 @@ class SalesLocalDataSource {
     }
   }
 
+  /// Get sales for a specific customer
+  Future<List<SaleModel>> getSalesByCustomer(int customerId) async {
+    try {
+      final sales = await _isar.saleModels
+          .filter()
+          .customerIdEqualTo(customerId)
+          .and()
+          .isActiveEqualTo(true)
+          .sortByCreatedAtDesc()
+          .findAll();
+
+      AppLogger.info(
+        'Retrieved ${sales.length} sales for customer $customerId',
+      );
+      return sales;
+    } catch (e) {
+      AppLogger.error('Failed to get sales for customer: $e');
+      rethrow;
+    }
+  }
+
+  /// Get customer's total purchases amount
+  Future<double> getCustomerTotalPurchases(int customerId) async {
+    try {
+      final sales = await getSalesByCustomer(customerId);
+      final total = sales.fold<double>(0.0, (sum, sale) => sum + sale.subtotal);
+
+      AppLogger.info(
+        'Customer $customerId total purchases: Rs${total.toStringAsFixed(2)}',
+      );
+      return total;
+    } catch (e) {
+      AppLogger.error('Failed to get customer total purchases: $e');
+      rethrow;
+    }
+  }
+
+  /// Get customer's credit balance (sum of credit sales)
+  Future<double> getCustomerBalance(int customerId) async {
+    try {
+      final sales = await _isar.saleModels
+          .filter()
+          .customerIdEqualTo(customerId)
+          .and()
+          .paymentMethodEqualTo(SalePaymentMethod.credit)
+          .and()
+          .isActiveEqualTo(true)
+          .findAll();
+
+      final balance = sales.fold<double>(
+        0.0,
+        (sum, sale) => sum + sale.subtotal,
+      );
+
+      AppLogger.info(
+        'Customer $customerId balance: Rs${balance.toStringAsFixed(2)}',
+      );
+      return balance;
+    } catch (e) {
+      AppLogger.error('Failed to get customer balance: $e');
+      rethrow;
+    }
+  }
+
+  /// Get customer's last purchase date
+  Future<DateTime?> getCustomerLastPurchaseDate(int customerId) async {
+    try {
+      final sale = await _isar.saleModels
+          .filter()
+          .customerIdEqualTo(customerId)
+          .and()
+          .isActiveEqualTo(true)
+          .sortByCreatedAtDesc()
+          .findFirst();
+
+      AppLogger.info('Customer $customerId last purchase: ${sale?.createdAt}');
+      return sale?.createdAt;
+    } catch (e) {
+      AppLogger.error('Failed to get customer last purchase: $e');
+      rethrow;
+    }
+  }
+
   /// Get count of sales for today
   Future<int> getTodayCount() async {
     try {

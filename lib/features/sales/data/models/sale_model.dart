@@ -20,6 +20,9 @@ class SaleModel {
   /// Unique identifier (auto-incremented by Isar)
   Id id = Isar.autoIncrement;
 
+  /// Customer reference (optional - for cash/walk-in customers)
+  int? customerId;
+
   /// Creation date indexed for fast queries by date
   @Index(type: IndexType.value)
   late DateTime createdAt;
@@ -55,6 +58,7 @@ class SaleModel {
 
     return Sale(
       id: id > 0 ? id : null,
+      customerId: customerId,
       items: [], // Items would be populated by repo with product data
       paymentMethod: paymentMethod,
       createdAt: createdAt,
@@ -69,6 +73,7 @@ class SaleModel {
         : SalePaymentMethod.credit;
 
     final model = SaleModel()
+      ..customerId = entity.customerId
       ..createdAt = entity.createdAt
       ..paymentMethod = paymentMethod
       ..items = entity.items.map(SaleItemModel.fromEntity).toList()

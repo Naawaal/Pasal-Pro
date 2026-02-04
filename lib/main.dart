@@ -6,9 +6,8 @@ import 'package:pasal_pro/core/widgets/app_navigation_rail.dart';
 import 'package:pasal_pro/core/widgets/pasal_pro_appbar.dart';
 import 'package:pasal_pro/core/constants/app_colors.dart';
 import 'package:pasal_pro/core/utils/app_logger.dart';
-import 'package:pasal_pro/core/constants/app_spacing.dart';
-import 'package:pasal_pro/features/sales/presentation/pages/fast_sale_page.dart';
-import 'package:pasal_pro/features/products/presentation/pages/products_page.dart';
+import 'package:pasal_pro/core/routes/app_routes.dart';
+import 'package:pasal_pro/core/routes/route_builder.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,31 +53,32 @@ class _PasalProHomeState extends State<PasalProHome> {
   bool _railExpanded = true;
   String? _syncStatus;
 
-  final List<NavRailDestination> _destinations = [
-    const NavRailDestination(
-      label: 'DAILY SALES',
-      icon: Icons.shopping_cart,
-      shortcut: 'F1',
-    ),
-    const NavRailDestination(
-      label: 'DASHBOARD',
+  /// Map of main navigation routes with metadata
+  late final List<NavRailDestination> _destinations = [
+    NavRailDestination(
+      label: AppRoutes.getRouteInfo(AppRoutes.dashboard).label,
       icon: Icons.dashboard,
-      shortcut: 'F2',
+      shortcut: AppRoutes.getRouteInfo(AppRoutes.dashboard).shortcut,
     ),
-    const NavRailDestination(
-      label: 'PRODUCTS',
+    NavRailDestination(
+      label: AppRoutes.getRouteInfo(AppRoutes.dailySales).label,
+      icon: Icons.shopping_cart,
+      shortcut: AppRoutes.getRouteInfo(AppRoutes.dailySales).shortcut,
+    ),
+    NavRailDestination(
+      label: AppRoutes.getRouteInfo(AppRoutes.products).label,
       icon: Icons.inventory_2,
-      shortcut: 'F3',
+      shortcut: AppRoutes.getRouteInfo(AppRoutes.products).shortcut,
     ),
-    const NavRailDestination(
-      label: 'CUSTOMERS',
+    NavRailDestination(
+      label: AppRoutes.getRouteInfo(AppRoutes.customers).label,
       icon: Icons.people,
-      shortcut: 'F4',
+      shortcut: AppRoutes.getRouteInfo(AppRoutes.customers).shortcut,
     ),
-    const NavRailDestination(
-      label: 'CHEQUES',
+    NavRailDestination(
+      label: AppRoutes.getRouteInfo(AppRoutes.cheques).label,
       icon: Icons.description,
-      shortcut: 'F5',
+      shortcut: AppRoutes.getRouteInfo(AppRoutes.cheques).shortcut,
     ),
   ];
 
@@ -152,50 +152,10 @@ class _PasalProHomeState extends State<PasalProHome> {
 
   /// Build content based on selected index
   Widget _buildContent() {
-    switch (_selectedIndex) {
-      case 0:
-        return const FastSalePage();
-      case 1:
-        return const _PlaceholderScreen(title: 'Dashboard');
-      case 2:
-        return const ProductsPage();
-      case 3:
-        return const _PlaceholderScreen(title: 'Customers');
-      case 4:
-        return const _PlaceholderScreen(title: 'Cheques');
-      default:
-        return const _PlaceholderScreen(title: 'Home');
+    final routes = AppRoutes.getMainRoutes();
+    if (_selectedIndex < 0 || _selectedIndex >= routes.length) {
+      return RouteBuilder.buildContent(AppRoutes.dashboard);
     }
-  }
-}
-
-/// Placeholder screen for development
-class _PlaceholderScreen extends StatelessWidget {
-  final String title;
-
-  const _PlaceholderScreen({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.construction, size: 64, color: AppColors.textTertiary),
-          AppSpacing.medium,
-          Text(
-            '$title Screen',
-            style: Theme.of(context).textTheme.headlineLarge,
-          ),
-          AppSpacing.xSmall,
-          Text(
-            'Coming soon...',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
-          ),
-        ],
-      ),
-    );
+    return RouteBuilder.buildContent(routes[_selectedIndex]);
   }
 }

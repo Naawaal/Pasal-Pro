@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pasal_pro/core/constants/app_colors.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
+import 'package:pasal_pro/features/customers/domain/entities/customer.dart';
+import 'package:pasal_pro/features/customers/presentation/providers/customer_providers.dart';
 import 'package:pasal_pro/features/products/domain/entities/product.dart';
 import 'package:pasal_pro/features/products/presentation/providers/products_providers.dart';
 import 'package:pasal_pro/features/sales/presentation/providers/fast_sale_providers.dart';
@@ -25,13 +27,18 @@ class _SalesEntryFormState extends ConsumerState<SalesEntryForm> {
   late TextEditingController _productController;
   late TextEditingController _quantityController;
   late TextEditingController _priceController;
+  late TextEditingController _customerController;
   late FocusNode _productFocus;
   late FocusNode _quantityFocus;
   late FocusNode _priceFocus;
+  late FocusNode _customerFocus;
 
   Product? _selectedProduct;
+  Customer? _selectedCustomer;
   List<Product> _searchResults = [];
+  List<Customer> _customerSearchResults = [];
   bool _showSearchDropdown = false;
+  bool _showCustomerDropdown = false;
 
   @override
   void initState() {
@@ -39,9 +46,11 @@ class _SalesEntryFormState extends ConsumerState<SalesEntryForm> {
     _productController = TextEditingController();
     _quantityController = TextEditingController(text: '1');
     _priceController = TextEditingController();
+    _customerController = TextEditingController();
     _productFocus = FocusNode();
     _quantityFocus = FocusNode();
     _priceFocus = FocusNode();
+    _customerFocus = FocusNode();
   }
 
   @override
@@ -49,9 +58,11 @@ class _SalesEntryFormState extends ConsumerState<SalesEntryForm> {
     _productController.dispose();
     _quantityController.dispose();
     _priceController.dispose();
+    _customerController.dispose();
     _productFocus.dispose();
     _quantityFocus.dispose();
     _priceFocus.dispose();
+    _customerFocus.dispose();
     super.dispose();
   }
 
@@ -91,6 +102,41 @@ class _SalesEntryFormState extends ConsumerState<SalesEntryForm> {
       _searchResults = [];
     });
     _quantityFocus.requestFocus();
+  }
+
+  /// Handle customer search
+  void _handleCustomerSearch(String query, List<Customer> allCustomers) {
+    if (query.isEmpty) {
+      setState(() {
+        _customerSearchResults = [];
+        _showCustomerDropdown = false;
+      });
+      return;
+    }
+
+    final results = allCustomers
+        .where(
+          (c) =>
+              c.name.toLowerCase().contains(query.toLowerCase()) ||
+              (c.phone?.toLowerCase().contains(query.toLowerCase()) ?? false),
+        )
+        .toList();
+
+    setState(() {
+      _customerSearchResults = results;
+      _showCustomerDropdown = results.isNotEmpty;
+    });
+  }
+
+  /// Select a customer from search results
+  void _selectCustomer(Customer customer) {
+    setState(() {
+      _selectedCustomer = customer;
+      _customerController.text =
+          '${customer.name} (${customer.phone ?? "No phone"})';
+      _showCustomerDropdown = false;
+      _customerSearchResults = [];
+    });
   }
 
   /// Calculate profit based on cost, price, and quantity
@@ -330,6 +376,140 @@ class _SalesEntryFormState extends ConsumerState<SalesEntryForm> {
                               'Cost: Rs ${_selectedProduct!.costPrice.toStringAsFixed(2)}',
                               style: Theme.of(context).textTheme.labelSmall
                                   ?.copyWith(color: Colors.grey[600]),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              AppSpacing.medium,
+
+              // Customer field (optional) with search dropdown
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Customer (Optional)',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  AppSpacing.xSmall,
+                  Stack(
+                    children: [
+                      // Watch customers for search
+                      ref
+                          .watch(customersProvider)
+                          .when(
+                            data: (customers) {
+                              return TextField(
+                                controller: _customerController,
+                                focusNode: _customerFocus,
+                                decoration: InputDecoration(
+                                  hintText: 'Search customer...',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  contentPadding: AppSpacing.paddingSmall,
+                                  suffixIcon:
+                                      _customerController.text.isNotEmpty
+                                      ? IconButton(
+                                          icon: const Icon(Icons.clear),
+                                          onPressed: () {
+                                            _customerController.clear();
+                                            setState(() {
+                                              _selectedCustomer = null;
+                                              _showCustomerDropdown = false;
+                                              _customerSearchResults = [];
+                                            });
+                                          },
+                                        )
+                                      : null,
+                                ),
+                                onChanged: (value) {
+                                  _handleCustomerSearch(value, customers);
+                                },
+                              );
+                            },
+                            loading: () => TextField(
+                              decoration: InputDecoration(
+                                hintText: 'Loading customers...',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                contentPadding: AppSpacing.paddingSmall,
+                              ),
+                              enabled: false,
+                            ),
+                            error: (error, stack) => TextField(
+                              decoration: InputDecoration(
+                                hintText: 'Error loading customers',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                contentPadding: AppSpacing.paddingSmall,
+                              ),
+                              enabled: false,
+                            ),
+                          ),
+                      // Customer search dropdown
+                      if (_showCustomerDropdown &&
+                          _customerSearchResults.isNotEmpty)
+                        Positioned(
+                          top: 56,
+                          left: 0,
+                          right: 0,
+                          child: Material(
+                            elevation: 4,
+                            borderRadius: BorderRadius.circular(8),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxHeight: 200),
+                              child: ListView.builder(
+                                itemCount: _customerSearchResults.length,
+                                itemBuilder: (context, index) {
+                                  final customer =
+                                      _customerSearchResults[index];
+                                  return ListTile(
+                                    title: Text(customer.name),
+                                    subtitle: Text(
+                                      customer.phone ?? 'No phone',
+                                    ),
+                                    onTap: () => _selectCustomer(customer),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  // Selected customer info
+                  if (_selectedCustomer != null)
+                    Padding(
+                      padding: AppSpacing.paddingSmall,
+                      child: Container(
+                        padding: AppSpacing.paddingSmall,
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withValues(alpha: 0.05),
+                          border: Border.all(color: Colors.blue, width: 1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              _selectedCustomer!.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              'Credit: Rs ${_selectedCustomer!.balance.toStringAsFixed(0)}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
                             ),
                           ],
                         ),

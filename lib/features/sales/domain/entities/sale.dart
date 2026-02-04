@@ -13,6 +13,7 @@ enum PaymentMethod {
 /// Represents a complete sale/transaction
 class Sale extends Equatable {
   final int? id;
+  final int? customerId; // Optional customer reference
   final List<SaleItem> items;
   final PaymentMethod paymentMethod;
   final DateTime createdAt;
@@ -20,6 +21,7 @@ class Sale extends Equatable {
 
   const Sale({
     this.id,
+    this.customerId,
     required this.items,
     required this.paymentMethod,
     required this.createdAt,
@@ -38,8 +40,10 @@ class Sale extends Equatable {
   /// Average profit margin across all items
   double get averageMargin {
     if (items.isEmpty) return 0.0;
-    final totalMarginPoints =
-        items.fold(0.0, (sum, item) => sum + item.profitMargin);
+    final totalMarginPoints = items.fold(
+      0.0,
+      (sum, item) => sum + item.profitMargin,
+    );
     return totalMarginPoints / items.length;
   }
 
@@ -53,11 +57,12 @@ class Sale extends Equatable {
   bool get isNotEmpty => items.isNotEmpty;
 
   @override
-  List<Object?> get props => [id, items, paymentMethod, createdAt];
+  List<Object?> get props => [id, customerId, items, paymentMethod, createdAt];
 
   /// Create a copy with optional field updates
   Sale copyWith({
     int? id,
+    int? customerId,
     List<SaleItem>? items,
     PaymentMethod? paymentMethod,
     DateTime? createdAt,
@@ -65,6 +70,7 @@ class Sale extends Equatable {
   }) {
     return Sale(
       id: id ?? this.id,
+      customerId: customerId ?? this.customerId,
       items: items ?? this.items,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       createdAt: createdAt ?? this.createdAt,
