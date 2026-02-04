@@ -63,16 +63,16 @@ class ProductsController extends StateNotifier<AsyncValue<List<Product>>> {
     required GetProducts getProducts,
     required DeleteProduct deleteProduct,
     required ToggleProductActive toggleProductActive,
-  })  : _getProducts = getProducts,
-        _deleteProduct = deleteProduct,
-        _toggleProductActive = toggleProductActive,
-        super(const AsyncValue.loading());
+  }) : _getProducts = getProducts,
+       _deleteProduct = deleteProduct,
+       _toggleProductActive = toggleProductActive,
+       super(const AsyncValue.loading());
 
   Future<void> loadProducts({bool includeInactive = false}) async {
     state = const AsyncValue.loading();
-    final result = await _getProducts(GetProductsParams(
-      includeInactive: includeInactive,
-    ));
+    final result = await _getProducts(
+      GetProductsParams(includeInactive: includeInactive),
+    );
 
     state = _toAsyncValue(result);
   }
@@ -84,10 +84,8 @@ class ProductsController extends StateNotifier<AsyncValue<List<Product>>> {
 
     result.fold(
       onSuccess: (_) => loadProducts(),
-      onError: (failure) => state = AsyncValue.error(
-        failure.message,
-        StackTrace.current,
-      ),
+      onError: (failure) =>
+          state = AsyncValue.error(failure.message, StackTrace.current),
     );
   }
 
@@ -98,47 +96,43 @@ class ProductsController extends StateNotifier<AsyncValue<List<Product>>> {
 
     result.fold(
       onSuccess: (_) => loadProducts(includeInactive: true),
-      onError: (failure) => state = AsyncValue.error(
-        failure.message,
-        StackTrace.current,
-      ),
+      onError: (failure) =>
+          state = AsyncValue.error(failure.message, StackTrace.current),
     );
   }
 
   AsyncValue<List<Product>> _toAsyncValue(Result<List<Product>> result) {
     return result.fold(
       onSuccess: (data) => AsyncValue.data(data),
-      onError: (failure) => AsyncValue.error(
-        failure.message,
-        StackTrace.current,
-      ),
+      onError: (failure) =>
+          AsyncValue.error(failure.message, StackTrace.current),
     );
   }
 }
 
 final productsControllerProvider =
     StateNotifierProvider<ProductsController, AsyncValue<List<Product>>>(
-  (ref) => ProductsController(
-    getProducts: ref.read(getProductsProvider),
-    deleteProduct: ref.read(deleteProductProvider),
-    toggleProductActive: ref.read(toggleProductActiveProvider),
-  )..loadProducts(),
-);
+      (ref) => ProductsController(
+        getProducts: ref.read(getProductsProvider),
+        deleteProduct: ref.read(deleteProductProvider),
+        toggleProductActive: ref.read(toggleProductActiveProvider),
+      )..loadProducts(),
+    );
 
 /// Search provider for product queries.
 final productSearchProvider =
     StateNotifierProvider<ProductSearchController, AsyncValue<List<Product>>>(
-  (ref) => ProductSearchController(
-    searchProducts: ref.read(searchProductsProvider),
-  ),
-);
+      (ref) => ProductSearchController(
+        searchProducts: ref.read(searchProductsProvider),
+      ),
+    );
 
 class ProductSearchController extends StateNotifier<AsyncValue<List<Product>>> {
   final SearchProducts _searchProducts;
 
   ProductSearchController({required SearchProducts searchProducts})
-      : _searchProducts = searchProducts,
-        super(const AsyncValue.data([]));
+    : _searchProducts = searchProducts,
+      super(const AsyncValue.data([]));
 
   Future<void> search(String query, {String? category}) async {
     if (query.trim().isEmpty) {
@@ -159,10 +153,8 @@ class ProductSearchController extends StateNotifier<AsyncValue<List<Product>>> {
   AsyncValue<List<Product>> _toAsyncValue(Result<List<Product>> result) {
     return result.fold(
       onSuccess: (data) => AsyncValue.data(data),
-      onError: (failure) => AsyncValue.error(
-        failure.message,
-        StackTrace.current,
-      ),
+      onError: (failure) =>
+          AsyncValue.error(failure.message, StackTrace.current),
     );
   }
 }

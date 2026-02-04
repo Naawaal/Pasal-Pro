@@ -53,14 +53,22 @@ class ProductListItem extends StatelessWidget {
                   AppSpacing.xxSmall,
                   Row(
                     children: [
-                      Icon(AppIcons.rupee, size: 14, color: theme.colorScheme.primary),
+                      Icon(
+                        AppIcons.rupee,
+                        size: 14,
+                        color: theme.colorScheme.primary,
+                      ),
                       AppSpacing.hXSmall,
                       Text(
                         '${product.sellingPrice.toStringAsFixed(2)} / pc',
                         style: theme.textTheme.bodyMedium,
                       ),
                       AppSpacing.hMedium,
-                      Icon(AppIcons.carton, size: 14, color: theme.colorScheme.primary),
+                      Icon(
+                        AppIcons.carton,
+                        size: 14,
+                        color: theme.colorScheme.primary,
+                      ),
                       AppSpacing.hXSmall,
                       Text(
                         product.piecesPerCarton.toString(),
@@ -72,7 +80,9 @@ class ProductListItem extends StatelessWidget {
                   Row(
                     children: [
                       Icon(
-                        product.isLowStock ? AppIcons.alertTriangle : AppIcons.checkCircle,
+                        product.isLowStock
+                            ? AppIcons.alertTriangle
+                            : AppIcons.checkCircle,
                         size: 14,
                         color: product.isLowStock
                             ? AppTheme.lowStockColor
@@ -89,7 +99,11 @@ class ProductListItem extends StatelessWidget {
                       ),
                       if (product.category != null) ...[
                         AppSpacing.hMedium,
-                        Icon(AppIcons.tag, size: 14, color: theme.colorScheme.primary),
+                        Icon(
+                          AppIcons.tag,
+                          size: 14,
+                          color: theme.colorScheme.primary,
+                        ),
                         AppSpacing.hXSmall,
                         Text(
                           product.category!,

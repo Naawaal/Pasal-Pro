@@ -130,7 +130,11 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(AppIcons.package, size: 56, color: Theme.of(context).colorScheme.primary),
+          Icon(
+            AppIcons.package,
+            size: 56,
+            color: Theme.of(context).colorScheme.primary,
+          ),
           AppSpacing.medium,
           Text(
             'No products yet',
@@ -140,8 +144,8 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
           Text(
             'Add your first product to start tracking stock and profit.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -196,9 +200,9 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
           FilledButton(
             onPressed: () {
               Navigator.of(context).pop();
-              ref.read(productsControllerProvider.notifier).deleteProduct(
-                    product.id,
-                  );
+              ref
+                  .read(productsControllerProvider.notifier)
+                  .deleteProduct(product.id);
             },
             child: const Text('Deactivate'),
           ),
@@ -208,8 +212,8 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
   }
 
   void _showNotImplemented(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Coming soon in Phase 1 UI.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Coming soon in Phase 1 UI.')));
   }
 }
