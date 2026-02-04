@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pasal_pro/core/constants/app_constants.dart';
-import 'package:pasal_pro/core/constants/app_icons.dart';
-import 'package:pasal_pro/core/constants/app_spacing.dart';
 import 'package:pasal_pro/core/theme/app_theme.dart';
-import 'package:pasal_pro/features/products/presentation/pages/products_page.dart';
+import 'package:pasal_pro/core/widgets/app_navigation_rail.dart';
+import 'package:pasal_pro/core/widgets/pasal_pro_appbar.dart';
+import 'package:pasal_pro/core/constants/app_colors.dart';
 import 'package:pasal_pro/core/utils/app_logger.dart';
+import 'package:pasal_pro/core/constants/app_spacing.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,146 +28,172 @@ class PasalProApp extends StatelessWidget {
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
 
-      // Material 3 theme configuration
+      // Modern flat design theme (not Material 3 defaults)
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
 
-      // Home screen (temporary)
-      home: const ProductsPage(),
+      // Home screen with desktop navigation
+      home: const PasalProHome(),
     );
   }
 }
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+/// Main home screen with desktop navigation rail
+class PasalProHome extends StatefulWidget {
+  const PasalProHome({super.key});
+
+  @override
+  State<PasalProHome> createState() => _PasalProHomeState();
+}
+
+class _PasalProHomeState extends State<PasalProHome> {
+  int _selectedIndex = 0;
+  bool _railExpanded = true;
+  String? _syncStatus;
+
+  final List<NavRailDestination> _destinations = [
+    const NavRailDestination(
+      label: 'FAST SALE',
+      icon: Icons.shopping_cart,
+      shortcut: 'F1',
+    ),
+    const NavRailDestination(
+      label: 'DASHBOARD',
+      icon: Icons.dashboard,
+      shortcut: 'F2',
+    ),
+    const NavRailDestination(
+      label: 'PRODUCTS',
+      icon: Icons.inventory_2,
+      shortcut: 'F3',
+    ),
+    const NavRailDestination(
+      label: 'CUSTOMERS',
+      icon: Icons.people,
+      shortcut: 'F4',
+    ),
+    const NavRailDestination(
+      label: 'CHEQUES',
+      icon: Icons.description,
+      shortcut: 'F5',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppConstants.appName),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(AppIcons.settings),
-            onPressed: () {},
-            tooltip: 'Settings',
+      appBar: PasalProAppBar(
+        title: _getScreenTitle(),
+        onSearch: _handleSearch,
+        onSync: _handleSync,
+        syncStatus: _syncStatus,
+        onUserMenu: _handleUserMenu,
+      ),
+      body: Row(
+        children: [
+          // Navigation Rail
+          AppNavigationRail(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: _handleNavigation,
+            destinations: _destinations,
+            isExpanded: _railExpanded,
+            onToggleExpanded: () {
+              setState(() => _railExpanded = !_railExpanded);
+            },
+          ),
+
+          // Main content area
+          Expanded(
+            child: Container(color: AppColors.bgLight, child: _buildContent()),
           ),
         ],
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // App logo using Lucide icon
-            Icon(
-              AppIcons.store,
-              size: 80,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            AppSpacing.large,
-
-            // App title
-            Text(
-              AppConstants.appName,
-              style: Theme.of(context).textTheme.headlineLarge,
-            ),
-            AppSpacing.xSmall,
-
-            // Tagline
-            Text(
-              AppConstants.appTagline,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            AppSpacing.xxLarge,
-
-            // Status card
-            Card(
-              margin: const EdgeInsets.symmetric(horizontal: 32),
-              child: Padding(
-                padding: AppSpacing.paddingLarge,
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(AppIcons.rocket, size: 20),
-                        AppSpacing.hXSmall,
-                        Text(
-                          'Development in Progress',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                      ],
-                    ),
-                    AppSpacing.medium,
-                    _buildStatusItem(
-                      context,
-                      AppIcons.database,
-                      'Database Models',
-                    ),
-                    AppSpacing.xSmall,
-                    _buildStatusItem(context, AppIcons.palette, 'Theme System'),
-                    AppSpacing.xSmall,
-                    _buildStatusItem(
-                      context,
-                      AppIcons.shield,
-                      'Error Handling',
-                    ),
-                    AppSpacing.xSmall,
-                    _buildStatusItem(context, AppIcons.wrench, 'Utilities'),
-                    AppSpacing.large,
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            AppIcons.forward,
-                            size: 16,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onPrimaryContainer,
-                          ),
-                          AppSpacing.hXSmall,
-                          Text(
-                            'Next: Product Management',
-                            style: Theme.of(context).textTheme.labelLarge
-                                ?.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onPrimaryContainer,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _buildStatusItem(BuildContext context, IconData icon, String label) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(AppIcons.checkCircle, size: 16, color: AppTheme.profitColor),
-        AppSpacing.hXSmall,
-        Icon(icon, size: 16),
-        AppSpacing.hXSmall,
-        Text(label, style: Theme.of(context).textTheme.bodyMedium),
-      ],
+  /// Get screen title based on selected index
+  String _getScreenTitle() {
+    return _destinations[_selectedIndex].label;
+  }
+
+  /// Handle navigation rail selection
+  void _handleNavigation(int index) {
+    setState(() => _selectedIndex = index);
+    AppLogger.info('Navigated to: ${_destinations[index].label}');
+  }
+
+  /// Handle search action
+  void _handleSearch() {
+    AppLogger.info('Search triggered');
+    // TODO: Implement search
+  }
+
+  /// Handle sync action
+  void _handleSync() {
+    setState(() => _syncStatus = 'syncing');
+    AppLogger.info('Sync started');
+
+    // Simulate sync
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() => _syncStatus = 'synced');
+      }
+    });
+  }
+
+  /// Handle user menu
+  void _handleUserMenu() {
+    AppLogger.info('User menu opened');
+    // TODO: Implement user menu
+  }
+
+  /// Build content based on selected index
+  Widget _buildContent() {
+    switch (_selectedIndex) {
+      case 0:
+        return const _PlaceholderScreen(title: 'Fast Sale');
+      case 1:
+        return const _PlaceholderScreen(title: 'Dashboard');
+      case 2:
+        return const _PlaceholderScreen(title: 'Products');
+      case 3:
+        return const _PlaceholderScreen(title: 'Customers');
+      case 4:
+        return const _PlaceholderScreen(title: 'Cheques');
+      default:
+        return const _PlaceholderScreen(title: 'Home');
+    }
+  }
+}
+
+/// Placeholder screen for development
+class _PlaceholderScreen extends StatelessWidget {
+  final String title;
+
+  const _PlaceholderScreen({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.construction, size: 64, color: AppColors.textTertiary),
+          AppSpacing.medium,
+          Text(
+            '$title Screen',
+            style: Theme.of(context).textTheme.headlineLarge,
+          ),
+          AppSpacing.xSmall,
+          Text(
+            'Coming soon...',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
+          ),
+        ],
+      ),
     );
   }
 }

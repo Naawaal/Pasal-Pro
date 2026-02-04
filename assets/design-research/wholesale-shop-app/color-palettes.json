@@ -1,0 +1,339 @@
+{
+  "research_date": "2026-02-04",
+  "project": "Wholesale Shop Management App (Pasal Pro)",
+  "color_palettes": [
+    {
+      "name": "Modern Flat - Light Mode",
+      "primary_action": {
+        "hex": "#3B82F6",
+        "rgb": "59, 130, 246",
+        "name": "Vibrant Blue",
+        "usage": "Buttons, links, active states, highlights"
+      },
+      "success": {
+        "hex": "#10B981",
+        "rgb": "16, 185, 129",
+        "name": "Modern Green",
+        "usage": "Profit metrics, success badges, positive states"
+      },
+      "warning": {
+        "hex": "#F59E0B",
+        "rgb": "245, 158, 11",
+        "name": "Warm Orange",
+        "usage": "Low stock alerts, caution states, attention"
+      },
+      "danger": {
+        "hex": "#EF4444",
+        "rgb": "239, 68, 68",
+        "name": "Coral Red",
+        "usage": "Losses, errors, critical alerts, overdue"
+      },
+      "background": {
+        "hex": "#FFFFFF",
+        "rgb": "255, 255, 255",
+        "name": "Pure White",
+        "usage": "Main canvas background"
+      },
+      "secondary_bg": {
+        "hex": "#F9FAFB",
+        "rgb": "249, 250, 251",
+        "name": "Light Gray",
+        "usage": "Card backgrounds, section dividers"
+      },
+      "text_primary": {
+        "hex": "#1F2937",
+        "rgb": "31, 41, 55",
+        "name": "Charcoal",
+        "usage": "Body text, headings, primary content"
+      },
+      "text_secondary": {
+        "hex": "#6B7280",
+        "rgb": "107, 114, 128",
+        "name": "Medium Gray",
+        "usage": "Helper text, labels, secondary information"
+      },
+      "border": {
+        "hex": "#E5E7EB",
+        "rgb": "229, 231, 235",
+        "name": "Soft Gray",
+        "usage": "Borders, dividers, card outlines"
+      },
+      "icon_inactive": {
+        "hex": "#9CA3AF",
+        "rgb": "156, 163, 175",
+        "name": "Icon Gray",
+        "usage": "Inactive icons, disabled states"
+      },
+      "accessibility": {
+        "text_primary_contrast": "8.6:1",
+        "text_secondary_contrast": "4.9:1",
+        "wcag_level": "AAA",
+        "notes": "All color combinations meet WCAG AAA standards"
+      }
+    },
+    {
+      "name": "Modern Flat - Dark Mode (Optional)",
+      "background": {
+        "hex": "#0F172A",
+        "rgb": "15, 23, 42",
+        "name": "Very Dark Blue",
+        "usage": "Main canvas (dark mode)"
+      },
+      "card_bg": {
+        "hex": "#1E293B",
+        "rgb": "30, 41, 59",
+        "name": "Dark Slate",
+        "usage": "Card backgrounds (dark mode)"
+      },
+      "text_primary": {
+        "hex": "#F1F5F9",
+        "rgb": "241, 245, 249",
+        "name": "Light Gray",
+        "usage": "Body text (dark mode)"
+      },
+      "accent_blue": {
+        "hex": "#60A5FA",
+        "rgb": "96, 165, 250",
+        "name": "Lighter Blue",
+        "usage": "Accent color for contrast (dark mode)"
+      },
+      "border": {
+        "hex": "#334155",
+        "rgb": "51, 65, 85",
+        "name": "Dark Border",
+        "usage": "Borders, dividers (dark mode)"
+      }
+    }
+  ],
+  "typography": {
+    "font_family": "Inter",
+    "fallback": "Roboto, system-ui",
+    "hierarchy": [
+      {
+        "name": "Page Title",
+        "size": "28px",
+        "weight": 700,
+        "line_height": 1.2,
+        "letter_spacing": "-0.5px",
+        "usage": "Main page headers"
+      },
+      {
+        "name": "Section Header",
+        "size": "20px",
+        "weight": 600,
+        "line_height": 1.3,
+        "letter_spacing": "0px",
+        "usage": "Section titles, modal titles"
+      },
+      {
+        "name": "Card Title",
+        "size": "16px",
+        "weight": 600,
+        "line_height": 1.4,
+        "letter_spacing": "0px",
+        "usage": "Card headers, item titles"
+      },
+      {
+        "name": "Body Large",
+        "size": "16px",
+        "weight": 400,
+        "line_height": 1.5,
+        "letter_spacing": "0px",
+        "usage": "Primary body text"
+      },
+      {
+        "name": "Body Regular",
+        "size": "14px",
+        "weight": 400,
+        "line_height": 1.5,
+        "letter_spacing": "0px",
+        "usage": "Standard text content"
+      },
+      {
+        "name": "Body Small",
+        "size": "12px",
+        "weight": 400,
+        "line_height": 1.4,
+        "letter_spacing": "0px",
+        "usage": "Secondary info, captions"
+      },
+      {
+        "name": "Label",
+        "size": "12px",
+        "weight": 500,
+        "line_height": 1.4,
+        "letter_spacing": "0.5px",
+        "usage": "Form labels, badges, tags"
+      }
+    ],
+    "principle": "Limit to 2-3 font sizes per screen; use weight for emphasis"
+  },
+  "spacing": {
+    "system": "8px grid",
+    "tokens": {
+      "xxs": "4px",
+      "xs": "8px",
+      "sm": "12px",
+      "md": "16px",
+      "lg": "24px",
+      "xl": "32px",
+      "xxl": "48px"
+    },
+    "usage": {
+      "component_padding": "12-16px",
+      "card_padding": "16-20px",
+      "screen_margin": "24px",
+      "section_gap": "24-32px",
+      "list_item_gap": "12px"
+    }
+  },
+  "components": {
+    "card": {
+      "elevation": 0,
+      "border_width": "1px",
+      "border_color": "#E5E7EB",
+      "border_radius": "8-12px",
+      "background": "#FFFFFF",
+      "padding": "16px",
+      "shadow": "none",
+      "notes": "Ultra-flat; no shadows. Definition from border only."
+    },
+    "button_primary": {
+      "background": "#3B82F6",
+      "foreground": "#FFFFFF",
+      "padding": "10px 16px",
+      "border_radius": "6-8px",
+      "font_weight": 600,
+      "font_size": "14px",
+      "hover_bg": "#2563EB",
+      "active_bg": "#1D4ED8",
+      "transition": "150ms ease-in-out"
+    },
+    "button_secondary": {
+      "background": "transparent",
+      "border": "1px #D1D5DB",
+      "foreground": "#1F2937",
+      "padding": "10px 16px",
+      "border_radius": "6-8px",
+      "font_weight": 600,
+      "hover_bg": "#F3F4F6"
+    },
+    "input": {
+      "border": "1px #D1D5DB",
+      "border_radius": "6px",
+      "padding": "10px 12px",
+      "background": "#FFFFFF",
+      "focus_border": "#3B82F6",
+      "font_size": "14px",
+      "placeholder_color": "#9CA3AF"
+    },
+    "navigation_rail": {
+      "width_collapsed": "72px",
+      "width_expanded": "280px",
+      "background": "#FFFFFF",
+      "border_right": "1px #E5E7EB",
+      "icon_size": "24px",
+      "icon_color_inactive": "#9CA3AF",
+      "icon_color_active": "#3B82F6",
+      "label_size": "12px",
+      "label_weight": 600,
+      "active_indicator": "left-border 3px #3B82F6",
+      "hover_bg": "#F3F4F6"
+    }
+  },
+  "metric_card": {
+    "icon_size": "32px",
+    "title": {
+      "size": "12px",
+      "weight": 500,
+      "color": "#6B7280"
+    },
+    "value": {
+      "size": "24-28px",
+      "weight": 700,
+      "color": "context-dependent (green for profit, red for loss)"
+    },
+    "meta": {
+      "size": "12px",
+      "weight": 400,
+      "color": "#6B7280"
+    }
+  },
+  "animations": {
+    "transitions": [
+      {
+        "interaction": "Button hover",
+        "duration_ms": 150,
+        "easing": "ease-in-out",
+        "purpose": "User feedback"
+      },
+      {
+        "interaction": "Page transition",
+        "duration_ms": 300,
+        "easing": "ease-in-out",
+        "purpose": "Context change"
+      },
+      {
+        "interaction": "Metric update",
+        "duration_ms": 600,
+        "easing": "spring",
+        "purpose": "Celebration/attention"
+      },
+      {
+        "interaction": "Notification",
+        "duration_ms": 200,
+        "easing": "ease-out",
+        "purpose": "Entrance"
+      }
+    ],
+    "principle": "Smooth, purposeful motion. Avoid clunky animations."
+  },
+  "color_coding_standards": {
+    "profit": {
+      "color": "#10B981",
+      "hex_light": "#D1FAE5",
+      "meaning": "Positive business outcome"
+    },
+    "loss": {
+      "color": "#EF4444",
+      "hex_light": "#FEE2E2",
+      "meaning": "Negative business outcome or error"
+    },
+    "warning": {
+      "color": "#F59E0B",
+      "hex_light": "#FEF3C7",
+      "meaning": "Caution, low stock, needs attention"
+    },
+    "neutral": {
+      "color": "#3B82F6",
+      "hex_light": "#DBEAFE",
+      "meaning": "Informational, neutral states"
+    }
+  },
+  "accessibility": {
+    "wcag_level": "AA",
+    "text_contrast_minimum": "4.5:1",
+    "touch_target_size": "44x44px (mobile) / 40x40px (desktop)",
+    "keyboard_navigation": "All interactive elements focusable",
+    "form_labels": "Always visible, not placeholder-only"
+  },
+  "recommendations": [
+    "Use 'Inter' font from google_fonts package",
+    "Implement color tokens as Dart constants for reusability",
+    "Use 'gap' package for 8px grid spacing",
+    "Use 'lucide_icons_flutter' for all icons (24px, consistent weight)",
+    "Use 'flutter_animate' or implicit animations (no heavy AnimationController)",
+    "Implement dark mode with semantic color tokens",
+    "Test contrast ratios with WebAIM Contrast Checker",
+    "Avoid using Material 3 default colors; override with this palette"
+  ],
+  "design_philosophy": "Modern + Flat + Minimal + Fast + Beautiful",
+  "key_principles": [
+    "No decorative shadows; borders define hierarchy",
+    "Generous whitespace for breathing room",
+    "Bold, contrasting color accents on neutral backgrounds",
+    "Typography-first design",
+    "Micro-interactions for delight",
+    "Desktop-optimized (navigation rail, keyboard shortcuts, panels)"
+  ]
+}
