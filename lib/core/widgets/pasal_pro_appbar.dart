@@ -32,9 +32,7 @@ class PasalProAppBar extends ConsumerWidget implements PreferredSizeWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outline,
-          ),
+          bottom: BorderSide(color: Theme.of(context).colorScheme.outline),
         ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -133,10 +131,7 @@ class _SyncIndicator extends StatelessWidget {
   final String status;
   final VoidCallback? onTap;
 
-  const _SyncIndicator({
-    required this.status,
-    this.onTap,
-  });
+  const _SyncIndicator({required this.status, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -216,6 +211,7 @@ class _SyncIndicator extends StatelessWidget {
     }
   }
 }
+
 /// Theme toggle button with dropdown
 class _ThemeToggleButton extends ConsumerStatefulWidget {
   final WidgetRef notifierRef;
@@ -288,9 +284,7 @@ class _ThemeToggleButtonState extends ConsumerState<_ThemeToggleButton> {
       items: [
         PopupMenuItem(
           onTap: () {
-            ref
-                .read(settingsNotifierProvider.notifier)
-                .setThemeMode('system');
+            ref.read(settingsNotifierProvider.notifier).setThemeMode('system');
           },
           child: const Row(
             children: [
@@ -302,9 +296,7 @@ class _ThemeToggleButtonState extends ConsumerState<_ThemeToggleButton> {
         ),
         PopupMenuItem(
           onTap: () {
-            ref
-                .read(settingsNotifierProvider.notifier)
-                .setThemeMode('light');
+            ref.read(settingsNotifierProvider.notifier).setThemeMode('light');
           },
           child: const Row(
             children: [
@@ -316,9 +308,7 @@ class _ThemeToggleButtonState extends ConsumerState<_ThemeToggleButton> {
         ),
         PopupMenuItem(
           onTap: () {
-            ref
-                .read(settingsNotifierProvider.notifier)
-                .setThemeMode('dark');
+            ref.read(settingsNotifierProvider.notifier).setThemeMode('dark');
           },
           child: const Row(
             children: [

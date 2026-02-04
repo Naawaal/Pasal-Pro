@@ -80,7 +80,11 @@ class SettingsPage extends ConsumerWidget {
                           icon: Icons.palette_outlined,
                           title: 'Theme Mode',
                           subtitle: _themeModeLabel(settings.themeMode),
-                          onTap: () => _selectThemeMode(context, ref, settings.themeMode),
+                          onTap: () => _selectThemeMode(
+                            context,
+                            ref,
+                            settings.themeMode,
+                          ),
                         ),
                         SettingsItem(
                           icon: Icons.language_outlined,
@@ -644,7 +648,10 @@ class SettingsPage extends ConsumerWidget {
               title: const Text('System'),
               subtitle: const Text('Follow device settings'),
               trailing: current == 'system'
-                  ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
                   : null,
               onTap: () {
                 ref
@@ -657,7 +664,10 @@ class SettingsPage extends ConsumerWidget {
               title: const Text('Light'),
               subtitle: const Text('Always use light theme'),
               trailing: current == 'light'
-                  ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
                   : null,
               onTap: () {
                 ref
@@ -670,7 +680,10 @@ class SettingsPage extends ConsumerWidget {
               title: const Text('Dark'),
               subtitle: const Text('Always use dark theme'),
               trailing: current == 'dark'
-                  ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
                   : null,
               onTap: () {
                 ref
