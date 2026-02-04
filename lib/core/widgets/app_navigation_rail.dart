@@ -18,6 +18,10 @@ class AppNavigationRail extends StatelessWidget {
   final ValueChanged<int> onDestinationSelected;
   final bool isExpanded;
   final VoidCallback? onToggleExpanded;
+  final VoidCallback? onSettingsSelected;
+  final VoidCallback? onHelpSelected;
+  final VoidCallback? onAccountSelected;
+  final String? activeFooterLabel;
   final List<NavRailDestination> destinations;
 
   const AppNavigationRail({
@@ -27,6 +31,10 @@ class AppNavigationRail extends StatelessWidget {
     required this.destinations,
     this.isExpanded = true,
     this.onToggleExpanded,
+    this.onSettingsSelected,
+    this.onHelpSelected,
+    this.onAccountSelected,
+    this.activeFooterLabel,
   });
 
   @override
@@ -49,7 +57,9 @@ class AppNavigationRail extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: Theme.of(context).colorScheme.outline),
+                bottom: BorderSide(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
               ),
             ),
             child: Row(
@@ -108,9 +118,11 @@ class AppNavigationRail extends StatelessWidget {
                     icon: Icons.settings_outlined,
                     shortcut: 'S',
                   ),
-                  isSelected: false,
+                  isSelected: activeFooterLabel == 'SETTINGS',
                   isExpanded: isExpanded,
-                  onTap: () {},
+                  onTap: () {
+                    onSettingsSelected?.call();
+                  },
                 ),
                 _NavItem(
                   destination: const NavRailDestination(
@@ -118,9 +130,23 @@ class AppNavigationRail extends StatelessWidget {
                     icon: Icons.help_outline,
                     shortcut: 'H',
                   ),
-                  isSelected: false,
+                  isSelected: activeFooterLabel == 'HELP',
                   isExpanded: isExpanded,
-                  onTap: () {},
+                  onTap: () {
+                    onHelpSelected?.call();
+                  },
+                ),
+                _NavItem(
+                  destination: const NavRailDestination(
+                    label: 'ACCOUNT',
+                    icon: Icons.person_outline,
+                    shortcut: 'A',
+                  ),
+                  isSelected: activeFooterLabel == 'ACCOUNT',
+                  isExpanded: isExpanded,
+                  onTap: () {
+                    onAccountSelected?.call();
+                  },
                 ),
               ],
             ),
@@ -167,10 +193,10 @@ class _NavItemState extends State<_NavItem> {
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
             color: isActive
-                ? theme.colorScheme.primary.withOpacity(0.1)
+                ? theme.colorScheme.primary.withValues(alpha: 0.1)
                 : showHover
-                    ? theme.colorScheme.surfaceContainerHighest
-                    : Colors.transparent,
+                ? theme.colorScheme.surfaceContainerHighest
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Padding(
@@ -194,7 +220,9 @@ class _NavItemState extends State<_NavItem> {
                           widget.destination.label,
                           style: TextStyle(
                             fontSize: 13,
-                            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                            fontWeight: isActive
+                                ? FontWeight.w600
+                                : FontWeight.w500,
                             color: isActive
                                 ? theme.colorScheme.primary
                                 : theme.colorScheme.onSurface,

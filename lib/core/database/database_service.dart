@@ -2,6 +2,7 @@ import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pasal_pro/core/constants/app_constants.dart';
 import 'package:pasal_pro/core/utils/app_logger.dart';
+import 'package:pasal_pro/features/cheques/data/models/cheque_model.dart';
 import 'package:pasal_pro/features/products/data/models/customer_model.dart';
 import 'package:pasal_pro/features/products/data/models/product_model.dart';
 import 'package:pasal_pro/features/products/data/models/transaction_model.dart';
@@ -36,6 +37,7 @@ class DatabaseService {
           CustomerModelSchema,
           TransactionModelSchema,
           SaleModelSchema,
+          ChequeModelSchema,
         ],
         directory: dir.path,
         name: AppConstants.databaseName,

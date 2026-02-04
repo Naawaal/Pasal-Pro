@@ -24,7 +24,6 @@ abstract class AppRoutes {
     products,
     customers,
     cheques,
-    settings,
   ];
 
   /// Get route icon and details

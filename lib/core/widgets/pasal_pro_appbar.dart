@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pasal_pro/features/settings/presentation/providers/settings_providers.dart';
 
 /// Modern flat AppBar for Pasal Pro
 /// Clean design with smooth interactions
-class PasalProAppBar extends ConsumerWidget implements PreferredSizeWidget {
+class PasalProAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
   final VoidCallback? onSearch;
   final VoidCallback? onSync;
   final String? syncStatus;
   final VoidCallback? onUserMenu;
   final bool showSearch;
+  final ValueChanged<String>? onThemeSelected;
 
   const PasalProAppBar({
     super.key,
@@ -20,13 +19,14 @@ class PasalProAppBar extends ConsumerWidget implements PreferredSizeWidget {
     this.syncStatus,
     this.onUserMenu,
     this.showSearch = false,
+    this.onThemeSelected,
   });
 
   @override
   Size get preferredSize => const Size.fromHeight(56);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Container(
       height: 56,
       decoration: BoxDecoration(
@@ -57,22 +57,15 @@ class PasalProAppBar extends ConsumerWidget implements PreferredSizeWidget {
           ),
           const SizedBox(width: 8),
 
-          // Theme toggle button
-          _ThemeToggleButton(notifierRef: ref),
-          const SizedBox(width: 8),
-
           // Sync status
           if (syncStatus != null) ...[
             _SyncIndicator(status: syncStatus!, onTap: onSync),
             const SizedBox(width: 8),
           ],
 
-          // User menu
-          _ActionButton(
-            icon: Icons.account_circle_outlined,
-            tooltip: 'Account',
-            onPressed: onUserMenu,
-          ),
+          // Theme selector
+          _ThemeButton(onThemeSelected: onThemeSelected),
+          const SizedBox(width: 8),
         ],
       ),
     );
@@ -123,6 +116,21 @@ class _ActionButtonState extends State<_ActionButton> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ThemeButton extends StatelessWidget {
+  final ValueChanged<String>? onThemeSelected;
+
+  const _ThemeButton({this.onThemeSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    return _ActionButton(
+      icon: Icons.palette_outlined,
+      tooltip: 'Change theme',
+      onPressed: () => _showThemeMenu(context, onThemeSelected),
     );
   }
 }
@@ -212,113 +220,58 @@ class _SyncIndicator extends StatelessWidget {
   }
 }
 
-/// Theme toggle button with dropdown
-class _ThemeToggleButton extends ConsumerStatefulWidget {
-  final WidgetRef notifierRef;
+Future<void> _showThemeMenu(
+  BuildContext context,
+  ValueChanged<String>? onThemeSelected,
+) async {
+  final RenderBox button = context.findRenderObject() as RenderBox;
+  final RenderBox overlay =
+      Overlay.of(context).context.findRenderObject() as RenderBox;
+  final position = RelativeRect.fromRect(
+    Rect.fromPoints(
+      button.localToGlobal(Offset.zero, ancestor: overlay),
+      button.localToGlobal(
+        button.size.bottomRight(Offset.zero),
+        ancestor: overlay,
+      ),
+    ),
+    Offset.zero & overlay.size,
+  );
 
-  const _ThemeToggleButton({required this.notifierRef});
+  final selection = await showMenu<String>(
+    context: context,
+    position: position,
+    items: const [
+      PopupMenuItem(
+        value: 'system',
+        child: _ThemeMenuItem(label: 'System', icon: Icons.brightness_auto),
+      ),
+      PopupMenuItem(
+        value: 'light',
+        child: _ThemeMenuItem(label: 'Light', icon: Icons.light_mode),
+      ),
+      PopupMenuItem(
+        value: 'dark',
+        child: _ThemeMenuItem(label: 'Dark', icon: Icons.dark_mode),
+      ),
+    ],
+  );
 
-  @override
-  ConsumerState<_ThemeToggleButton> createState() => _ThemeToggleButtonState();
+  if (selection != null) {
+    onThemeSelected?.call(selection);
+  }
 }
 
-class _ThemeToggleButtonState extends ConsumerState<_ThemeToggleButton> {
-  bool _isHovering = false;
+class _ThemeMenuItem extends StatelessWidget {
+  final String label;
+  final IconData icon;
+
+  const _ThemeMenuItem({required this.label, required this.icon});
 
   @override
   Widget build(BuildContext context) {
-    final settingsAsync = ref.watch(settingsNotifierProvider);
-
-    return settingsAsync.maybeWhen(
-      data: (settings) => MouseRegion(
-        onEnter: (_) => setState(() => _isHovering = true),
-        onExit: (_) => setState(() => _isHovering = false),
-        child: Tooltip(
-          message: 'Theme (${_getThemeLabel(settings.themeMode)})',
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => _showThemeMenu(context),
-              borderRadius: BorderRadius.circular(4),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Icon(
-                  _getThemeIcon(settings.themeMode),
-                  size: 20,
-                  color: _isHovering
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-      orElse: () => const SizedBox.shrink(),
-    );
-  }
-
-  /// Get icon for current theme
-  IconData _getThemeIcon(String mode) {
-    return switch (mode) {
-      'light' => Icons.light_mode,
-      'dark' => Icons.dark_mode,
-      _ => Icons.brightness_auto,
-    };
-  }
-
-  /// Get label for theme
-  String _getThemeLabel(String mode) {
-    return switch (mode) {
-      'light' => 'Light',
-      'dark' => 'Dark',
-      _ => 'System',
-    };
-  }
-
-  /// Show theme selection menu
-  void _showThemeMenu(BuildContext context) {
-    showMenu(
-      context: context,
-      position: const RelativeRect.fromLTRB(1000, 56, 0, 0),
-      items: [
-        PopupMenuItem(
-          onTap: () {
-            ref.read(settingsNotifierProvider.notifier).setThemeMode('system');
-          },
-          child: const Row(
-            children: [
-              Icon(Icons.brightness_auto, size: 18),
-              SizedBox(width: 12),
-              Text('System'),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          onTap: () {
-            ref.read(settingsNotifierProvider.notifier).setThemeMode('light');
-          },
-          child: const Row(
-            children: [
-              Icon(Icons.light_mode, size: 18),
-              SizedBox(width: 12),
-              Text('Light'),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          onTap: () {
-            ref.read(settingsNotifierProvider.notifier).setThemeMode('dark');
-          },
-          child: const Row(
-            children: [
-              Icon(Icons.dark_mode, size: 18),
-              SizedBox(width: 12),
-              Text('Dark'),
-            ],
-          ),
-        ),
-      ],
+    return Row(
+      children: [Icon(icon, size: 18), const SizedBox(width: 8), Text(label)],
     );
   }
 }

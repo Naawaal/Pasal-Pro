@@ -5,10 +5,12 @@ import 'package:pasal_pro/core/theme/app_theme.dart';
 import 'package:pasal_pro/core/widgets/app_navigation_rail.dart';
 import 'package:pasal_pro/core/widgets/pasal_pro_appbar.dart';
 import 'package:pasal_pro/core/constants/app_colors.dart';
+import 'package:pasal_pro/core/constants/app_spacing.dart';
 import 'package:pasal_pro/core/utils/app_logger.dart';
 import 'package:pasal_pro/core/routes/app_routes.dart';
 import 'package:pasal_pro/core/routes/route_builder.dart';
 import 'package:pasal_pro/features/settings/presentation/providers/theme_providers.dart';
+import 'package:pasal_pro/features/settings/presentation/providers/settings_providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,17 +68,20 @@ class PasalProApp extends ConsumerWidget {
 }
 
 /// Main home screen with desktop navigation rail
-class PasalProHome extends StatefulWidget {
+class PasalProHome extends ConsumerStatefulWidget {
   const PasalProHome({super.key});
 
   @override
-  State<PasalProHome> createState() => _PasalProHomeState();
+  ConsumerState<PasalProHome> createState() => _PasalProHomeState();
 }
 
-class _PasalProHomeState extends State<PasalProHome> {
+enum _FooterPanel { none, settings, help, account }
+
+class _PasalProHomeState extends ConsumerState<PasalProHome> {
   int _selectedIndex = 0;
   bool _railExpanded = true;
   String? _syncStatus;
+  _FooterPanel _footerPanel = _FooterPanel.none;
 
   /// Map of main navigation routes with metadata
   late final List<NavRailDestination> _destinations = [
@@ -105,11 +110,6 @@ class _PasalProHomeState extends State<PasalProHome> {
       icon: Icons.description,
       shortcut: AppRoutes.getRouteInfo(AppRoutes.cheques).shortcut,
     ),
-    NavRailDestination(
-      label: AppRoutes.getRouteInfo(AppRoutes.settings).label,
-      icon: Icons.settings,
-      shortcut: AppRoutes.getRouteInfo(AppRoutes.settings).shortcut,
-    ),
   ];
 
   @override
@@ -121,6 +121,7 @@ class _PasalProHomeState extends State<PasalProHome> {
         onSync: _handleSync,
         syncStatus: _syncStatus,
         onUserMenu: _handleUserMenu,
+        onThemeSelected: _handleThemeSelection,
       ),
       body: Row(
         children: [
@@ -133,6 +134,10 @@ class _PasalProHomeState extends State<PasalProHome> {
             onToggleExpanded: () {
               setState(() => _railExpanded = !_railExpanded);
             },
+            onSettingsSelected: _handleSettingsSelection,
+            onHelpSelected: _handleHelpSelection,
+            onAccountSelected: _handleAccountSelection,
+            activeFooterLabel: _getActiveFooterLabel(),
           ),
 
           // Main content area
@@ -146,13 +151,54 @@ class _PasalProHomeState extends State<PasalProHome> {
 
   /// Get screen title based on selected index
   String _getScreenTitle() {
+    if (_footerPanel == _FooterPanel.settings) {
+      return AppRoutes.getRouteInfo(AppRoutes.settings).label;
+    }
+    if (_footerPanel == _FooterPanel.help) {
+      return 'HELP';
+    }
+    if (_footerPanel == _FooterPanel.account) {
+      return 'ACCOUNT';
+    }
     return _destinations[_selectedIndex].label;
   }
 
   /// Handle navigation rail selection
   void _handleNavigation(int index) {
-    setState(() => _selectedIndex = index);
+    setState(() {
+      _selectedIndex = index;
+      _footerPanel = _FooterPanel.none;
+    });
     AppLogger.info('Navigated to: ${_destinations[index].label}');
+  }
+
+  void _handleSettingsSelection() {
+    setState(() => _footerPanel = _FooterPanel.settings);
+    AppLogger.info('Navigated to: SETTINGS');
+  }
+
+  void _handleHelpSelection() {
+    setState(() => _footerPanel = _FooterPanel.help);
+    AppLogger.info('Navigated to: HELP');
+  }
+
+  void _handleAccountSelection() {
+    setState(() => _footerPanel = _FooterPanel.account);
+    AppLogger.info('Navigated to: ACCOUNT');
+  }
+
+  Future<void> _handleThemeSelection(String mode) async {
+    await ref.read(settingsNotifierProvider.notifier).setThemeMode(mode);
+    AppLogger.info('Theme changed to: $mode');
+  }
+
+  String? _getActiveFooterLabel() {
+    return switch (_footerPanel) {
+      _FooterPanel.settings => 'SETTINGS',
+      _FooterPanel.help => 'HELP',
+      _FooterPanel.account => 'ACCOUNT',
+      _FooterPanel.none => null,
+    };
   }
 
   /// Handle search action
@@ -182,10 +228,77 @@ class _PasalProHomeState extends State<PasalProHome> {
 
   /// Build content based on selected index
   Widget _buildContent() {
+    switch (_footerPanel) {
+      case _FooterPanel.settings:
+        return RouteBuilder.buildContent(AppRoutes.settings);
+      case _FooterPanel.help:
+        return const _HelpPageContent();
+      case _FooterPanel.account:
+        return const _AccountPageContent();
+      case _FooterPanel.none:
+        break;
+    }
     final routes = AppRoutes.getMainRoutes();
     if (_selectedIndex < 0 || _selectedIndex >= routes.length) {
       return RouteBuilder.buildContent(AppRoutes.dashboard);
     }
     return RouteBuilder.buildContent(routes[_selectedIndex]);
+  }
+}
+
+class _HelpPageContent extends StatelessWidget {
+  const _HelpPageContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.help_outline,
+            size: 64,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          AppSpacing.medium,
+          Text(
+            'Help & Support',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          AppSpacing.xSmall,
+          Text(
+            'Help content will appear here.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AccountPageContent extends StatelessWidget {
+  const _AccountPageContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.person_outline,
+            size: 64,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          AppSpacing.medium,
+          Text('Account', style: Theme.of(context).textTheme.headlineSmall),
+          AppSpacing.xSmall,
+          Text(
+            'Account details will appear here.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
+      ),
+    );
   }
 }
