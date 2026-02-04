@@ -6,6 +6,7 @@ import 'package:pasal_pro/features/sales/presentation/pages/fast_sale_page.dart'
 import 'package:pasal_pro/features/products/presentation/pages/products_page.dart';
 import 'package:pasal_pro/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:pasal_pro/features/customers/presentation/pages/customers_page.dart';
+import 'package:pasal_pro/features/settings/presentation/pages/settings_page.dart';
 
 /// Route builder class to handle content generation based on route name
 class RouteBuilder {
@@ -22,6 +23,8 @@ class RouteBuilder {
         return const CustomersPage();
       case AppRoutes.cheques:
         return const _PlaceholderScreen(title: 'Cheques');
+      case AppRoutes.settings:
+        return const SettingsPage();
       default:
         return const _PlaceholderScreen(title: 'Home');
     }

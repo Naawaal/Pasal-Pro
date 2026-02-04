@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:pasal_pro/core/utils/result.dart';
 import 'package:pasal_pro/features/products/domain/entities/product.dart';
 import 'package:pasal_pro/features/products/domain/usecases/create_product.dart';
@@ -27,7 +29,10 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
   final TextEditingController _lowStockController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _barcodeController = TextEditingController();
+  final TextEditingController _imageUrlController = TextEditingController();
   bool _isSaving = false;
+  String? _selectedImagePath;
+  final ImagePicker _imagePicker = ImagePicker();
 
   bool get _isEditing => widget.product != null;
 
@@ -44,6 +49,8 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
       _lowStockController.text = product.lowStockThreshold.toString();
       _categoryController.text = product.category ?? '';
       _barcodeController.text = product.barcode ?? '';
+      _imageUrlController.text = product.imageUrl ?? '';
+      _selectedImagePath = product.imageUrl;
     }
   }
 
@@ -57,6 +64,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
     _lowStockController.dispose();
     _categoryController.dispose();
     _barcodeController.dispose();
+    _imageUrlController.dispose();
     super.dispose();
   }
 
@@ -121,6 +129,8 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 24),
+                  _buildImageUploadSection(context),
                   const SizedBox(height: 24),
                   _buildSection(
                     context,
@@ -266,7 +276,9 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -523,6 +535,9 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
       barcode: _barcodeController.text.trim().isEmpty
           ? null
           : _barcodeController.text.trim(),
+      imageUrl: _imageUrlController.text.trim().isEmpty
+          ? null
+          : _imageUrlController.text.trim(),
       isActive: existing?.isActive ?? true,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
@@ -563,6 +578,141 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
         content: Text(message),
         backgroundColor: Theme.of(context).colorScheme.error,
       ),
+    );
+  }
+
+  /// Pick an image file from local storage
+  Future<void> _pickImageFile() async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        final file = File(pickedFile.path);
+        final bytes = await file.length();
+
+        // Validate file size (max 5MB)
+        if (bytes > 5 * 1024 * 1024) {
+          _showError('Image must be smaller than 5MB');
+          return;
+        }
+
+        setState(() {
+          _selectedImagePath = file.path;
+          _imageUrlController.text = file.path;
+        });
+      }
+    } catch (e) {
+      _showError('Failed to pick image: $e');
+    }
+  }
+
+  /// Build product image upload section with preview
+  Widget _buildImageUploadSection(BuildContext context) {
+    return _buildSection(
+      context,
+      title: 'Product Image',
+      icon: Icons.image_outlined,
+      children: [
+        // Image preview
+        if (_selectedImagePath != null && _selectedImagePath!.isNotEmpty)
+          Container(
+            width: double.infinity,
+            height: 200,
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Theme.of(context).colorScheme.outline),
+              borderRadius: BorderRadius.circular(8),
+              image: DecorationImage(
+                image: _selectedImagePath!.startsWith('http')
+                    ? NetworkImage(_selectedImagePath!)
+                    : FileImage(File(_selectedImagePath!)) as ImageProvider,
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () {
+                    setState(() {
+                      _selectedImagePath = null;
+                      _imageUrlController.clear();
+                    });
+                  },
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black.withValues(alpha: 0.5),
+                    padding: const EdgeInsets.all(8),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        // URL input field
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Image URL (Internet)',
+              style: Theme.of(context).textTheme.labelMedium,
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _imageUrlController,
+              decoration: InputDecoration(
+                hintText: 'https://example.com/image.jpg',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+                prefixIcon: const Icon(Icons.link),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+              onChanged: (value) {
+                if (value.isNotEmpty && value.startsWith('http')) {
+                  setState(() => _selectedImagePath = value);
+                }
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Paste URL or browse local file',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            OutlinedButton.icon(
+              onPressed: _pickImageFile,
+              icon: const Icon(Icons.folder_open),
+              label: const Text('Browse'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

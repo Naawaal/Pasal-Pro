@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
 import 'package:pasal_pro/features/customers/domain/entities/customer.dart';
+import 'package:pasal_pro/features/customers/presentation/pages/customer_transactions_page.dart';
 
 /// Customer list item widget for displaying customer information in list
 class CustomerListItem extends StatelessWidget {
@@ -85,10 +87,32 @@ class CustomerListItem extends StatelessWidget {
           ],
         ),
         onTap: onTap,
-        trailing: Icon(
-          LucideIcons.chevronRight,
-          color: Colors.grey[400],
-          size: 20,
+        trailing: PopupMenuButton<String>(
+          onSelected: (value) {
+            if (value == 'transactions') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      CustomerTransactionsPage(customer: customer),
+                ),
+              );
+            }
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: 'transactions',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(AppIcons.history, size: 18),
+                  AppSpacing.hSmall,
+                  const Text('View Transactions'),
+                ],
+              ),
+            ),
+          ],
+          child: Icon(AppIcons.moreVertical, color: Colors.grey[400], size: 20),
         ),
       ),
     );

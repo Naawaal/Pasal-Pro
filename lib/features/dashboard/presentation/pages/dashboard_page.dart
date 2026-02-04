@@ -6,12 +6,67 @@ import 'package:pasal_pro/features/dashboard/presentation/widgets/metric_card.da
 import 'package:pasal_pro/features/dashboard/presentation/widgets/quick_actions.dart';
 import 'package:pasal_pro/features/dashboard/presentation/widgets/recent_activity.dart';
 
-/// Modern dashboard with analytics and KPIs
-class DashboardPage extends ConsumerWidget {
+/// Modern dashboard with analytics, KPIs, and real-time updates
+class DashboardPage extends ConsumerStatefulWidget {
   const DashboardPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends ConsumerState<DashboardPage> {
+  late DateTime _lastUpdated;
+
+  @override
+  void initState() {
+    super.initState();
+    _lastUpdated = DateTime.now();
+    // Setup auto-refresh every 30 seconds
+    Future.delayed(const Duration(seconds: 30), _autoRefresh);
+  }
+
+  /// Auto-refresh every 30 seconds
+  void _autoRefresh() {
+    if (mounted) {
+      _refreshDashboard();
+      // Schedule next refresh
+      Future.delayed(const Duration(seconds: 30), _autoRefresh);
+    }
+  }
+
+  /// Manual refresh handler
+  Future<void> _refreshDashboard() async {
+    setState(() {
+      _lastUpdated = DateTime.now();
+    });
+
+    // Invalidate all dashboard providers to trigger refetch
+    ref.invalidate(todaySalesAmountProvider);
+    ref.invalidate(todayProfitProvider);
+    ref.invalidate(todayTransactionCountProvider);
+    ref.invalidate(lowStockCountProvider);
+    ref.invalidate(recentActivityProvider);
+    ref.invalidate(todayCashSalesProvider);
+    ref.invalidate(todayCreditSalesProvider);
+    ref.invalidate(totalOutstandingCreditProvider);
+    ref.invalidate(totalCustomersProvider);
+    ref.invalidate(storeStatsProvider);
+
+    // Show brief feedback
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Dashboard refreshed'),
+          duration: const Duration(milliseconds: 1500),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final todaySalesState = ref.watch(todaySalesAmountProvider);
     final todayProfitState = ref.watch(todayProfitProvider);
     final transactionCountState = ref.watch(todayTransactionCountProvider);
@@ -24,33 +79,90 @@ class DashboardPage extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(context),
+          const SizedBox(height: 12),
+          _buildRefreshBar(context),
           const SizedBox(height: 24),
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  _buildMetricsGrid(
-                    context,
-                    todaySalesState,
-                    todayProfitState,
-                    transactionCountState,
-                    lowStockCountState,
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(flex: 2, child: RecentActivity()),
-                      const SizedBox(width: 24),
-                      Expanded(child: QuickActions()),
-                    ],
-                  ),
-                ],
+            child: RefreshIndicator(
+              onRefresh: _refreshDashboard,
+              color: Theme.of(context).colorScheme.primary,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    _buildMetricsGrid(
+                      context,
+                      todaySalesState,
+                      todayProfitState,
+                      transactionCountState,
+                      lowStockCountState,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 2, child: RecentActivity()),
+                        const SizedBox(width: 24),
+                        Expanded(child: QuickActions()),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  /// Refresh status bar with last updated time
+  Widget _buildRefreshBar(BuildContext context) {
+    final now = DateTime.now();
+    final difference = now.difference(_lastUpdated);
+
+    String timeAgo;
+    if (difference.inSeconds < 60) {
+      timeAgo = 'Just now';
+    } else if (difference.inMinutes < 60) {
+      timeAgo = '${difference.inMinutes}m ago';
+    } else {
+      timeAgo = '${difference.inHours}h ago';
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.sync,
+              size: 16,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Last updated: $timeAgo',
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+        IconButton(
+          icon: Icon(
+            Icons.refresh,
+            size: 20,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          tooltip: 'Refresh dashboard',
+          onPressed: _refreshDashboard,
+          iconSize: 20,
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          padding: const EdgeInsets.all(6),
+        ),
+      ],
     );
   }
 
@@ -67,7 +179,7 @@ class DashboardPage extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
@@ -166,7 +278,7 @@ class DashboardPage extends ConsumerWidget {
         isPositive: true,
         icon: icon,
       ),
-      error: (_, __) => MetricCard(
+      error: (error, stackTrace) => MetricCard(
         title: title,
         value: '—',
         change: 'Error',
@@ -196,7 +308,7 @@ class DashboardPage extends ConsumerWidget {
         isPositive: true,
         icon: icon,
       ),
-      error: (_, __) => MetricCard(
+      error: (error, stackTrace) => MetricCard(
         title: title,
         value: '—',
         change: 'Error',

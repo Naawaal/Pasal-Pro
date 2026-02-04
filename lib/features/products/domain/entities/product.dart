@@ -11,6 +11,7 @@ class Product extends Equatable {
   final int lowStockThreshold;
   final String? category;
   final String? barcode;
+  final String? imageUrl;
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -28,6 +29,7 @@ class Product extends Equatable {
     required this.updatedAt,
     this.category,
     this.barcode,
+    this.imageUrl,
   });
 
   double get profitPerPiece => sellingPrice - costPrice;
@@ -53,6 +55,7 @@ class Product extends Equatable {
     int? lowStockThreshold,
     String? category,
     String? barcode,
+    String? imageUrl,
     bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -67,6 +70,7 @@ class Product extends Equatable {
       lowStockThreshold: lowStockThreshold ?? this.lowStockThreshold,
       category: category ?? this.category,
       barcode: barcode ?? this.barcode,
+      imageUrl: imageUrl ?? this.imageUrl,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -84,6 +88,7 @@ class Product extends Equatable {
     lowStockThreshold,
     category,
     barcode,
+    imageUrl,
     isActive,
     createdAt,
     updatedAt,

@@ -16,6 +16,7 @@ class ProductModelMapper {
       lowStockThreshold: model.lowStockThreshold,
       category: model.category,
       barcode: model.barcode,
+      imageUrl: model.imageUrl,
       isActive: model.isActive,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
@@ -32,6 +33,7 @@ class ProductModelMapper {
       ..lowStockThreshold = entity.lowStockThreshold
       ..category = entity.category
       ..barcode = entity.barcode
+      ..imageUrl = entity.imageUrl
       ..isActive = entity.isActive
       ..createdAt = entity.createdAt
       ..updatedAt = entity.updatedAt;

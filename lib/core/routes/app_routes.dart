@@ -10,6 +10,7 @@ abstract class AppRoutes {
   static const String products = 'products';
   static const String customers = 'customers';
   static const String cheques = 'cheques';
+  static const String settings = 'settings';
 
   // Feature routes
   static const String productForm = 'product_form';
@@ -23,6 +24,7 @@ abstract class AppRoutes {
     products,
     customers,
     cheques,
+    settings,
   ];
 
   /// Get route icon and details
@@ -71,5 +73,10 @@ const _routeInfoMap = {
     label: 'CHEQUES',
     icon: 0xe8d7, // description
     shortcut: 'F5',
+  ),
+  'settings': RouteInfo(
+    label: 'SETTINGS',
+    icon: 0xe8b8, // settings
+    shortcut: 'F6',
   ),
 };

@@ -8,6 +8,7 @@ import 'package:pasal_pro/core/constants/app_colors.dart';
 import 'package:pasal_pro/core/utils/app_logger.dart';
 import 'package:pasal_pro/core/routes/app_routes.dart';
 import 'package:pasal_pro/core/routes/route_builder.dart';
+import 'package:pasal_pro/features/settings/presentation/providers/theme_providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,11 +21,14 @@ Future<void> main() async {
   runApp(const ProviderScope(child: PasalProApp()));
 }
 
-class PasalProApp extends StatelessWidget {
+class PasalProApp extends ConsumerWidget {
   const PasalProApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch theme mode from settings
+    final themeMode = ref.watch(appThemeModeProvider);
+
     return MaterialApp(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
@@ -32,11 +36,32 @@ class PasalProApp extends StatelessWidget {
       // Modern flat design theme (not Material 3 defaults)
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light,
+      themeMode: themeMode,
 
       // Home screen with desktop navigation
       home: const PasalProHome(),
+
+      // Handle named route navigation
+      onGenerateRoute: _handleRouteGeneration,
     );
+  }
+
+  /// Generate routes for named navigation
+  /// Handles secondary routes like /customer-form, feature dialogs, etc.
+  Route? _handleRouteGeneration(RouteSettings settings) {
+    // Map route names to pages
+    // This handles secondary routes outside the main navigation rail
+    switch (settings.name) {
+      case AppRoutes.productForm:
+        return MaterialPageRoute(builder: (_) => const PasalProHome());
+      case AppRoutes.customerDetail:
+        return MaterialPageRoute(builder: (_) => const PasalProHome());
+      case AppRoutes.productDetail:
+        return MaterialPageRoute(builder: (_) => const PasalProHome());
+      // Default: show home
+      default:
+        return null;
+    }
   }
 }
 
@@ -79,6 +104,11 @@ class _PasalProHomeState extends State<PasalProHome> {
       label: AppRoutes.getRouteInfo(AppRoutes.cheques).label,
       icon: Icons.description,
       shortcut: AppRoutes.getRouteInfo(AppRoutes.cheques).shortcut,
+    ),
+    NavRailDestination(
+      label: AppRoutes.getRouteInfo(AppRoutes.settings).label,
+      icon: Icons.settings,
+      shortcut: AppRoutes.getRouteInfo(AppRoutes.settings).shortcut,
     ),
   ];
 

@@ -16,6 +16,7 @@ class AppIcons {
   static const IconData settings = LucideIcons.settings;
   static const IconData more = LucideIcons.ellipsisVertical;
   static const IconData moreHorizontal = LucideIcons.ellipsis;
+  static const IconData moreVertical = LucideIcons.ellipsisVertical;
 
   // CRUD Actions
   static const IconData add = LucideIcons.plus;
@@ -39,6 +40,7 @@ class AppIcons {
   static const IconData rupee = LucideIcons.indianRupee;
   static const IconData cash = LucideIcons.banknote;
   static const IconData credit = LucideIcons.creditCard;
+  static const IconData creditCard = LucideIcons.creditCard;
   static const IconData wallet = LucideIcons.wallet;
   static const IconData trendingUp = LucideIcons.trendingUp;
   static const IconData trendingDown = LucideIcons.trendingDown;
@@ -81,11 +83,14 @@ class AppIcons {
   static const IconData download = LucideIcons.download;
   static const IconData upload = LucideIcons.upload;
   static const IconData print = LucideIcons.printer;
+  static const IconData inbox = LucideIcons.inbox;
+  static const IconData history = LucideIcons.history;
 
   // Dashboard & Analytics
   static const IconData dashboard = LucideIcons.layoutDashboard;
   static const IconData analytics = LucideIcons.chartBarBig;
   static const IconData activity = LucideIcons.activity;
+  static const IconData barChart3 = LucideIcons.chartBarBig;
 
   // Data Management
   static const IconData database = LucideIcons.database;

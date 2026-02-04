@@ -35,6 +35,9 @@ class ProductModel {
   @Index(unique: true, replace: true, type: IndexType.hash)
   String? barcode;
 
+  /// Product image URL (optional - local file path or internet URL)
+  String? imageUrl;
+
   /// Is product active (for soft delete)
   late bool isActive;
 

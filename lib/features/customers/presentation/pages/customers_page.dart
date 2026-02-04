@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
+import 'package:pasal_pro/features/customers/presentation/pages/customer_form_page.dart';
 import 'package:pasal_pro/features/customers/presentation/providers/customer_providers.dart';
 import 'package:pasal_pro/features/customers/presentation/widgets/customer_list_item.dart';
 
@@ -259,10 +260,11 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
             customer: customer,
             onTap: () {
               // Navigate to customer detail/edit page
-              Navigator.pushNamed(
+              Navigator.push(
                 context,
-                '/customer-form',
-                arguments: customer,
+                MaterialPageRoute(
+                  builder: (context) => CustomerFormPage(customer: customer),
+                ),
               );
             },
           );

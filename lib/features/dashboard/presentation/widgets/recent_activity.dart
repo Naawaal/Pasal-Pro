@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
+import 'package:pasal_pro/features/dashboard/presentation/providers/dashboard_providers.dart';
+import 'package:pasal_pro/features/sales/data/models/sale_model.dart';
 
-/// Recent activity feed showing latest transactions
-class RecentActivity extends StatelessWidget {
+/// Recent activity feed showing latest transactions with real data
+class RecentActivity extends ConsumerWidget {
   const RecentActivity({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final recentActivityAsync = ref.watch(recentActivityProvider);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -16,6 +21,7 @@ class RecentActivity extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -28,154 +34,154 @@ class RecentActivity extends StatelessWidget {
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
-              TextButton(
-                onPressed: () {},
-                child: const Text('View All'),
-              ),
+              TextButton(onPressed: () {}, child: const Text('View All')),
             ],
           ),
           const SizedBox(height: 16),
-          ..._buildActivityItems(context),
+          SizedBox(
+            height: 400,
+            child: recentActivityAsync.when(
+              loading: () => Center(
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              error: (error, stack) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 40,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Failed to load activity',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              data: (activities) {
+                if (activities.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.history, size: 40, color: Colors.grey[400]),
+                        const SizedBox(height: 8),
+                        Text(
+                          'No activity yet',
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return ListView.separated(
+                  itemCount: activities.length,
+                  separatorBuilder: (context, index) => Divider(
+                    color: Theme.of(context).colorScheme.outline,
+                    height: 16,
+                  ),
+                  itemBuilder: (context, index) =>
+                      _buildActivityItem(context, activities[index]),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
   }
 
-  List<Widget> _buildActivityItems(BuildContext context) {
-    final activities = [
-      _ActivityData(
-        icon: Icons.shopping_cart,
-        title: 'New sale completed',
-        subtitle: '5 items • Cash payment',
-        amount: 2450.00,
-        time: '2 min ago',
-        isPositive: true,
-      ),
-      _ActivityData(
-        icon: Icons.inventory_2,
-        title: 'Stock adjusted',
-        subtitle: 'Coca Cola 500ml',
-        amount: null,
-        time: '15 min ago',
-        isPositive: null,
-      ),
-      _ActivityData(
-        icon: Icons.shopping_cart,
-        title: 'New sale completed',
-        subtitle: '3 items • Credit payment',
-        amount: 1850.00,
-        time: '32 min ago',
-        isPositive: true,
-      ),
-      _ActivityData(
-        icon: Icons.person_add,
-        title: 'New customer added',
-        subtitle: 'Ram Sharma',
-        amount: null,
-        time: '1 hour ago',
-        isPositive: null,
-      ),
-      _ActivityData(
-        icon: Icons.shopping_cart,
-        title: 'New sale completed',
-        subtitle: '8 items • Cash payment',
-        amount: 4250.00,
-        time: '2 hours ago',
-        isPositive: true,
-      ),
-    ];
+  Widget _buildActivityItem(BuildContext context, SaleModel sale) {
+    final paymentLabel = sale.paymentMethod == SalePaymentMethod.cash
+        ? 'Cash'
+        : 'Credit';
+    final now = DateTime.now();
+    final difference = now.difference(sale.createdAt);
+    String timeLabel;
+    if (difference.inMinutes < 1) {
+      timeLabel = 'Just now';
+    } else if (difference.inMinutes < 60) {
+      timeLabel = '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      timeLabel = '${difference.inHours}h ago';
+    } else {
+      timeLabel = DateFormat('MMM d, HH:mm').format(sale.createdAt);
+    }
 
-    return activities
-        .map((activity) => _buildActivityItem(context, activity))
-        .toList();
-  }
-
-  Widget _buildActivityItem(BuildContext context, _ActivityData activity) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              activity.icon,
-              size: 20,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+    return Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: sale.paymentMethod == SalePaymentMethod.cash
+                ? Colors.green.withValues(alpha: 0.1)
+                : Colors.orange.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  activity.title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  activity.subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
+          child: Icon(
+            sale.paymentMethod == SalePaymentMethod.cash
+                ? Icons.attach_money
+                : Icons.credit_card,
+            size: 20,
+            color: sale.paymentMethod == SalePaymentMethod.cash
+                ? Colors.green
+                : Colors.orange,
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (activity.amount != null)
-                Text(
-                  CurrencyFormatter.format(activity.amount!),
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: activity.isPositive == true
-                        ? Colors.green
-                        : Theme.of(context).colorScheme.onSurface,
-                  ),
+              Text(
+                'Sale completed',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
+              ),
               const SizedBox(height: 2),
               Text(
-                activity.time,
+                '${sale.items.length} items • $paymentLabel payment',
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 12,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
           ),
-        ],
-      ),
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              CurrencyFormatter.format(sale.subtotal),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.green,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              timeLabel,
+              style: TextStyle(
+                fontSize: 11,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
-}
-
-class _ActivityData {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final double? amount;
-  final String time;
-  final bool? isPositive;
-
-  _ActivityData({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.amount,
-    required this.time,
-    required this.isPositive,
-  });
 }
