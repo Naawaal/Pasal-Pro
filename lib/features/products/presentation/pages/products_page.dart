@@ -21,6 +21,10 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
   final TextEditingController _searchController = TextEditingController();
   bool _showInactive = false;
   bool _showLowStockOnly = false;
+  String? _selectedCategory;
+  String _sortOption = 'nameAsc';
+  bool _selectionMode = false;
+  final Set<int> _selectedProductIds = {};
 
   @override
   void dispose() {
@@ -35,30 +39,56 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     final sourceProducts = _searchController.text.trim().isNotEmpty
         ? searchState.valueOrNull ?? []
         : productsState.valueOrNull ?? [];
-    final products = _applyFilters(sourceProducts);
+    final categories = _extractCategories(
+      productsState.valueOrNull ?? const [],
+    );
+    final products = _applySort(_applyFilters(sourceProducts));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Products'),
-        actions: [
-          IconButton(
-            icon: Icon(_showInactive ? AppIcons.eyeOff : AppIcons.eye),
-            tooltip: _showInactive ? 'Hide inactive' : 'Show inactive',
-            onPressed: () {
-              setState(() => _showInactive = !_showInactive);
-              ref
-                  .read(productsControllerProvider.notifier)
-                  .loadProducts(includeInactive: _showInactive);
-            },
-          ),
-          IconButton(
-            icon: const Icon(AppIcons.sync),
-            tooltip: 'Refresh',
-            onPressed: () => ref
-                .read(productsControllerProvider.notifier)
-                .loadProducts(includeInactive: _showInactive),
-          ),
-        ],
+        title: _selectionMode
+            ? Text('${_selectedProductIds.length} selected')
+            : const Text('Products'),
+        leading: _selectionMode
+            ? IconButton(
+                icon: const Icon(AppIcons.close),
+                onPressed: _exitSelectionMode,
+              )
+            : null,
+        actions: _selectionMode
+            ? [
+                IconButton(
+                  icon: const Icon(AppIcons.checkCircle),
+                  tooltip: 'Select all',
+                  onPressed: () => _selectAll(products),
+                ),
+                IconButton(
+                  icon: const Icon(AppIcons.package),
+                  tooltip: 'Bulk adjust stock',
+                  onPressed: _selectedProductIds.isEmpty
+                      ? null
+                      : () => _showBulkAdjustStockDialog(products),
+                ),
+              ]
+            : [
+                IconButton(
+                  icon: Icon(_showInactive ? AppIcons.eyeOff : AppIcons.eye),
+                  tooltip: _showInactive ? 'Hide inactive' : 'Show inactive',
+                  onPressed: () {
+                    setState(() => _showInactive = !_showInactive);
+                    ref
+                        .read(productsControllerProvider.notifier)
+                        .loadProducts(includeInactive: _showInactive);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(AppIcons.sync),
+                  tooltip: 'Refresh',
+                  onPressed: () => ref
+                      .read(productsControllerProvider.notifier)
+                      .loadProducts(includeInactive: _showInactive),
+                ),
+              ],
       ),
       body: Padding(
         padding: AppSpacing.paddingMedium,
@@ -66,7 +96,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
           children: [
             _buildSearchBar(context),
             AppSpacing.medium,
-            _buildFilterBar(context),
+            _buildFilterBar(context, categories),
             AppSpacing.medium,
             _buildSummaryCard(context, products),
             AppSpacing.medium,
@@ -80,11 +110,26 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(AppIcons.add),
-        label: const Text('Add Product'),
-        onPressed: _openCreateProduct,
-      ),
+      floatingActionButton: _selectionMode
+          ? null
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                FloatingActionButton(
+                  heroTag: 'select_products',
+                  onPressed: _enterSelectionMode,
+                  child: const Icon(AppIcons.checkCircle),
+                ),
+                AppSpacing.medium,
+                FloatingActionButton.extended(
+                  heroTag: 'add_product',
+                  icon: const Icon(AppIcons.add),
+                  label: const Text('Add Product'),
+                  onPressed: _openCreateProduct,
+                ),
+              ],
+            ),
     );
   }
 
@@ -111,7 +156,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     );
   }
 
-  Widget _buildFilterBar(BuildContext context) {
+  Widget _buildFilterBar(BuildContext context, List<String> categories) {
     return Row(
       children: [
         FilterChip(
@@ -134,6 +179,51 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                 .read(productsControllerProvider.notifier)
                 .loadProducts(includeInactive: _showInactive);
           },
+        ),
+        AppSpacing.hSmall,
+        Expanded(
+          child: DropdownButtonFormField<String>(
+            key: ValueKey(_selectedCategory),
+            initialValue: _selectedCategory,
+            isExpanded: true,
+            decoration: const InputDecoration(
+              labelText: 'Category',
+              prefixIcon: Icon(AppIcons.tag),
+            ),
+            items: [
+              const DropdownMenuItem<String>(
+                value: null,
+                child: Text('All categories'),
+              ),
+              ...categories.map(
+                (category) => DropdownMenuItem<String>(
+                  value: category,
+                  child: Text(category),
+                ),
+              ),
+            ],
+            onChanged: (value) => setState(() => _selectedCategory = value),
+          ),
+        ),
+        AppSpacing.hSmall,
+        PopupMenuButton<String>(
+          tooltip: 'Sort products',
+          icon: const Icon(AppIcons.filter),
+          onSelected: (value) => setState(() => _sortOption = value),
+          itemBuilder: (context) => const [
+            PopupMenuItem(value: 'nameAsc', child: Text('Name (A → Z)')),
+            PopupMenuItem(value: 'nameDesc', child: Text('Name (Z → A)')),
+            PopupMenuItem(
+              value: 'stockDesc',
+              child: Text('Stock (High → Low)'),
+            ),
+            PopupMenuItem(value: 'stockAsc', child: Text('Stock (Low → High)')),
+            PopupMenuItem(
+              value: 'priceDesc',
+              child: Text('Price (High → Low)'),
+            ),
+            PopupMenuItem(value: 'priceAsc', child: Text('Price (Low → High)')),
+          ],
         ),
       ],
     );
@@ -229,6 +319,26 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
       separatorBuilder: (_, index) => AppSpacing.small,
       itemBuilder: (context, index) {
         final product = products[index];
+        final isSelected = _selectedProductIds.contains(product.id);
+
+        if (_selectionMode) {
+          return CheckboxListTile(
+            value: isSelected,
+            onChanged: (_) => _toggleSelection(product.id),
+            secondary: CircleAvatar(
+              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+              child: Icon(
+                AppIcons.package,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
+            ),
+            title: Text(product.name),
+            subtitle: Text(
+              '${product.stockPieces} pieces • ${CurrencyFormatter.format(product.sellingPrice)}',
+            ),
+          );
+        }
+
         return ProductListItem(
           product: product,
           onEdit: () => _openEditProduct(product),
@@ -250,7 +360,49 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     if (_showLowStockOnly) {
       filtered = filtered.where((product) => product.isLowStock).toList();
     }
+    if (_selectedCategory != null) {
+      filtered = filtered
+          .where((product) => product.category == _selectedCategory)
+          .toList();
+    }
     return filtered;
+  }
+
+  List<Product> _applySort(List<Product> products) {
+    final sorted = [...products];
+    switch (_sortOption) {
+      case 'nameDesc':
+        sorted.sort(
+          (a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()),
+        );
+      case 'stockDesc':
+        sorted.sort((a, b) => b.stockPieces.compareTo(a.stockPieces));
+      case 'stockAsc':
+        sorted.sort((a, b) => a.stockPieces.compareTo(b.stockPieces));
+      case 'priceDesc':
+        sorted.sort((a, b) => b.sellingPrice.compareTo(a.sellingPrice));
+      case 'priceAsc':
+        sorted.sort((a, b) => a.sellingPrice.compareTo(b.sellingPrice));
+      case 'nameAsc':
+      default:
+        sorted.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
+    }
+    return sorted;
+  }
+
+  List<String> _extractCategories(List<Product> products) {
+    final categories =
+        products
+            .map((product) => product.category)
+            .whereType<String>()
+            .map((category) => category.trim())
+            .where((category) => category.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+    return categories;
   }
 
   Widget _buildEmptyState(BuildContext context) {
@@ -450,5 +602,147 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  // Selection mode methods
+  void _enterSelectionMode() {
+    setState(() {
+      _selectionMode = true;
+      _selectedProductIds.clear();
+    });
+  }
+
+  void _exitSelectionMode() {
+    setState(() {
+      _selectionMode = false;
+      _selectedProductIds.clear();
+    });
+  }
+
+  void _toggleSelection(int productId) {
+    setState(() {
+      if (_selectedProductIds.contains(productId)) {
+        _selectedProductIds.remove(productId);
+      } else {
+        _selectedProductIds.add(productId);
+      }
+    });
+  }
+
+  void _selectAll(List<Product> products) {
+    setState(() {
+      _selectedProductIds.addAll(products.map((p) => p.id));
+    });
+  }
+
+  Future<void> _showBulkAdjustStockDialog(List<Product> products) async {
+    final controller = TextEditingController();
+    bool isAdd = true;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text('Adjust stock (${_selectedProductIds.length} items)'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'This will adjust stock for all selected products.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  AppSpacing.medium,
+                  TextField(
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Quantity',
+                      prefixIcon: Icon(AppIcons.package),
+                      helperText: 'Amount to add or remove',
+                    ),
+                  ),
+                  AppSpacing.medium,
+                  SegmentedButton<bool>(
+                    segments: const [
+                      ButtonSegment<bool>(
+                        value: true,
+                        label: Text('Add'),
+                        icon: Icon(AppIcons.packagePlus),
+                      ),
+                      ButtonSegment<bool>(
+                        value: false,
+                        label: Text('Remove'),
+                        icon: Icon(AppIcons.packageMinus),
+                      ),
+                    ],
+                    selected: {isAdd},
+                    onSelectionChanged: (value) {
+                      setDialogState(() => isAdd = value.first);
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: const Text('Apply'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (confirmed != true) {
+      controller.dispose();
+      return;
+    }
+
+    final amount = int.tryParse(controller.text.trim()) ?? 0;
+    controller.dispose();
+
+    if (amount <= 0) {
+      _showSnack('Enter a quantity greater than zero.');
+      return;
+    }
+
+    final delta = isAdd ? amount : -amount;
+    await _bulkAdjustStock(products, delta);
+    _exitSelectionMode();
+  }
+
+  Future<void> _bulkAdjustStock(List<Product> products, int delta) async {
+    final controller = ref.read(productsControllerProvider.notifier);
+    int successCount = 0;
+    int failCount = 0;
+
+    for (final productId in _selectedProductIds) {
+      try {
+        await controller.adjustStock(productId, delta);
+        successCount++;
+      } catch (e) {
+        failCount++;
+      }
+    }
+
+    if (mounted) {
+      if (failCount == 0) {
+        _showSnack('Updated $successCount products successfully.');
+      } else {
+        _showSnack('Updated $successCount products. Failed: $failCount.');
+      }
+      await controller.loadProducts(includeInactive: _showInactive);
+    }
   }
 }
