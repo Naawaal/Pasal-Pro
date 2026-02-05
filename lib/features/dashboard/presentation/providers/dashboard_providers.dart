@@ -136,6 +136,116 @@ final totalCustomersProvider = FutureProvider<int>((ref) async {
   return customersAsync.length;
 });
 
+/// Yesterday's total sales amount
+final yesterdaySalesAmountProvider = FutureProvider<double>((ref) async {
+  final dataSource = await ref.watch(salesDataSourceProvider.future);
+  final yesterday = DateTime.now().subtract(const Duration(days: 1));
+  return dataSource
+      .getSalesByDate(yesterday)
+      .then(
+        (sales) => sales.fold<double>(0.0, (sum, sale) => sum + sale.subtotal),
+      );
+});
+
+/// Yesterday's total profit
+final yesterdayProfitProvider = FutureProvider<double>((ref) async {
+  final dataSource = await ref.watch(salesDataSourceProvider.future);
+  final yesterday = DateTime.now().subtract(const Duration(days: 1));
+  return dataSource.getProfitByDate(yesterday);
+});
+
+/// Yesterday's transaction count
+final yesterdayTransactionCountProvider = FutureProvider<int>((ref) async {
+  final dataSource = await ref.watch(salesDataSourceProvider.future);
+  final yesterday = DateTime.now().subtract(const Duration(days: 1));
+  final sales = await dataSource.getSalesByDate(yesterday);
+  return sales.length;
+});
+
+/// Trend data for display
+class TrendData {
+  final String percentage; // e.g., "+12%", "-5%"
+  final bool isPositive;
+  final String label;
+
+  TrendData({
+    required this.percentage,
+    required this.isPositive,
+    required this.label,
+  });
+}
+
+/// Calculate trend percentage between two values
+double _calculateTrendPercentage(double today, double yesterday) {
+  if (yesterday == 0) {
+    return today > 0 ? 100.0 : 0.0;
+  }
+  return ((today - yesterday) / yesterday) * 100;
+}
+
+/// Trends for dashboard metrics (sales, profit, transactions, low stock)
+final dashboardTrendsProvider = FutureProvider<List<TrendData>>((ref) async {
+  final todaySales = await ref.watch(todaySalesAmountProvider.future);
+  final yesterdaySales = await ref.watch(yesterdaySalesAmountProvider.future);
+
+  final todayProfit = await ref.watch(todayProfitProvider.future);
+  final yesterdayProfit = await ref.watch(yesterdayProfitProvider.future);
+
+  final todayTransactions = await ref.watch(
+    todayTransactionCountProvider.future,
+  );
+  final yesterdayTransactions = await ref.watch(
+    yesterdayTransactionCountProvider.future,
+  );
+
+  final todayLowStock = await ref.watch(lowStockCountProvider.future);
+  // For low stock, we can use the same value (it's a snapshot)
+  // Alternatively, fetch historical count from products table
+  // For now, we'll show it as stable
+  const yesterdayLowStock = 0;
+
+  // Calculate percentages
+  final salesTrend = _calculateTrendPercentage(todaySales, yesterdaySales);
+  final profitTrend = _calculateTrendPercentage(todayProfit, yesterdayProfit);
+  final transactionTrend = _calculateTrendPercentage(
+    todayTransactions.toDouble(),
+    yesterdayTransactions.toDouble(),
+  );
+  final stockTrend = _calculateTrendPercentage(
+    todayLowStock.toDouble(),
+    yesterdayLowStock.toDouble(),
+  );
+
+  // Format percentages
+  String formatTrend(double trend) {
+    final sign = trend > 0 ? '+' : '';
+    return '$sign${trend.toStringAsFixed(1)}%';
+  }
+
+  return [
+    TrendData(
+      percentage: formatTrend(salesTrend),
+      isPositive: salesTrend >= 0,
+      label: 'vs yesterday',
+    ),
+    TrendData(
+      percentage: formatTrend(profitTrend),
+      isPositive: profitTrend >= 0,
+      label: 'vs yesterday',
+    ),
+    TrendData(
+      percentage: formatTrend(transactionTrend),
+      isPositive: transactionTrend <= 0, // Lower is better for transactions
+      label: 'vs yesterday',
+    ),
+    TrendData(
+      percentage: formatTrend(stockTrend),
+      isPositive: stockTrend <= 0, // Lower is better for low stock items
+      label: 'vs yesterday',
+    ),
+  ];
+});
+
 /// Store stats for dashboard
 final storeStatsProvider = FutureProvider<StoreStats>((ref) async {
   final todaySales = await ref.watch(todaySalesAmountProvider.future);

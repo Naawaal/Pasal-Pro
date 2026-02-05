@@ -101,249 +101,268 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
           ),
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: ResponsiveRowColumn(
-          layout: AppResponsive.shouldStack(context)
-              ? ResponsiveRowColumnType.COLUMN
-              : ResponsiveRowColumnType.ROW,
-          children: [
-            // Main form fields (left side / full width on mobile)
-            ResponsiveRowColumnItem(
-              rowFlex: 2,
-              child: ListView(
-                padding: AppResponsive.getPagePadding(context),
-                children: [
-                  _buildSection(
-                    context,
-                    title: 'Basic Information',
-                    icon: AppIcons.info,
-                    primaryColor: primaryColor,
-                    primaryLight: primaryLight,
-                    surfaceColor: surfaceColor,
-                    borderColor: borderColor,
-                    textPrimary: textPrimary,
+      body: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: ResponsiveRowColumn(
+            layout: AppResponsive.shouldStack(context)
+                ? ResponsiveRowColumnType.COLUMN
+                : ResponsiveRowColumnType.ROW,
+            children: [
+              // Main form fields (left side / full width on mobile)
+              ResponsiveRowColumnItem(
+                rowFlex: 2,
+                child: Padding(
+                  padding: AppResponsive.getPagePadding(context),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      _buildTextField(
-                        controller: _nameController,
-                        label: 'Product Name',
-                        hint: 'Enter product name',
-                        validator: _requiredText,
-                      ),
-                      SizedBox(height: AppResponsive.getSectionGap(context)),
-                      ResponsiveRowColumn(
-                        layout: AppResponsive.shouldStack(context)
-                            ? ResponsiveRowColumnType.COLUMN
-                            : ResponsiveRowColumnType.ROW,
+                      _buildSection(
+                        context,
+                        title: 'Basic Information',
+                        icon: AppIcons.info,
+                        primaryColor: primaryColor,
+                        primaryLight: primaryLight,
+                        surfaceColor: surfaceColor,
+                        borderColor: borderColor,
+                        textPrimary: textPrimary,
                         children: [
-                          ResponsiveRowColumnItem(
-                            rowFlex: 1,
-                            child: _buildTextField(
-                              controller: _categoryController,
-                              label: 'Category',
-                              hint: 'Optional',
-                            ),
+                          _buildTextField(
+                            controller: _nameController,
+                            label: 'Product Name',
+                            hint: 'Enter product name',
+                            validator: _requiredText,
                           ),
-                          ResponsiveRowColumnItem(
-                            child: SizedBox(
-                              width: AppResponsive.shouldStack(context)
-                                  ? 0
-                                  : AppResponsive.getSectionGap(context),
-                              height: AppResponsive.shouldStack(context)
-                                  ? AppResponsive.getSectionGap(context)
-                                  : 0,
-                            ),
+                          SizedBox(
+                            height: AppResponsive.getSectionGap(context),
                           ),
-                          ResponsiveRowColumnItem(
-                            rowFlex: 1,
-                            child: _buildTextField(
-                              controller: _barcodeController,
-                              label: 'Barcode / SKU',
-                              hint: 'Optional',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: AppResponsive.getSectionGap(context) + 8),
-                  _buildImageUploadSection(
-                    context,
-                    primaryColor: primaryColor,
-                    primaryLight: primaryLight,
-                    surfaceColor: surfaceColor,
-                    borderColor: borderColor,
-                    textPrimary: textPrimary,
-                    textSecondary: textSecondary,
-                  ),
-                  SizedBox(height: AppResponsive.getSectionGap(context) + 8),
-                  _buildSection(
-                    context,
-                    title: 'Pricing',
-                    icon: AppIcons.rupee,
-                    primaryColor: primaryColor,
-                    primaryLight: primaryLight,
-                    surfaceColor: surfaceColor,
-                    borderColor: borderColor,
-                    textPrimary: textPrimary,
-                    children: [
-                      ResponsiveRowColumn(
-                        layout: AppResponsive.shouldStack(context)
-                            ? ResponsiveRowColumnType.COLUMN
-                            : ResponsiveRowColumnType.ROW,
-                        children: [
-                          ResponsiveRowColumnItem(
-                            rowFlex: 1,
-                            child: _buildNumberField(
-                              controller: _costController,
-                              label: 'Cost Price',
-                              hint: 'Per piece',
-                              validator: _requiredNonNegative,
-                            ),
-                          ),
-                          ResponsiveRowColumnItem(
-                            child: SizedBox(
-                              width: AppResponsive.shouldStack(context)
-                                  ? 0
-                                  : AppResponsive.getSectionGap(context),
-                              height: AppResponsive.shouldStack(context)
-                                  ? AppResponsive.getSectionGap(context)
-                                  : 0,
-                            ),
-                          ),
-                          ResponsiveRowColumnItem(
-                            rowFlex: 1,
-                            child: _buildNumberField(
-                              controller: _sellingController,
-                              label: 'Selling Price',
-                              hint: 'Per piece',
-                              validator: _requiredNonNegative,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: AppResponsive.getSectionGap(context) + 8),
-                  _buildSection(
-                    context,
-                    title: 'Inventory',
-                    icon: AppIcons.warehouse,
-                    primaryColor: primaryColor,
-                    primaryLight: primaryLight,
-                    surfaceColor: surfaceColor,
-                    borderColor: borderColor,
-                    textPrimary: textPrimary,
-                    children: [
-                      ResponsiveRowColumn(
-                        layout: AppResponsive.shouldStack(context)
-                            ? ResponsiveRowColumnType.COLUMN
-                            : ResponsiveRowColumnType.ROW,
-                        children: [
-                          ResponsiveRowColumnItem(
-                            rowFlex: 1,
-                            child: _buildIntField(
-                              controller: _piecesPerCartonController,
-                              label: 'Pieces per Carton',
-                              hint: 'e.g., 24',
-                              validator: _requiredPositiveInt,
-                            ),
-                          ),
-                          ResponsiveRowColumnItem(
-                            child: SizedBox(
-                              width: AppResponsive.shouldStack(context)
-                                  ? 0
-                                  : AppResponsive.getSectionGap(context),
-                              height: AppResponsive.shouldStack(context)
-                                  ? AppResponsive.getSectionGap(context)
-                                  : 0,
-                            ),
-                          ),
-                          ResponsiveRowColumnItem(
-                            rowFlex: 1,
-                            child: _buildIntField(
-                              controller: _stockController,
-                              label: 'Current Stock',
-                              hint: 'Pieces',
-                              validator: _requiredNonNegativeInt,
-                            ),
-                          ),
-                          ResponsiveRowColumnItem(
-                            child: SizedBox(
-                              width: AppResponsive.shouldStack(context)
-                                  ? 0
-                                  : AppResponsive.getSectionGap(context),
-                              height: AppResponsive.shouldStack(context)
-                                  ? AppResponsive.getSectionGap(context)
-                                  : 0,
-                            ),
-                          ),
-                          ResponsiveRowColumnItem(
-                            rowFlex: 1,
-                            child: _buildIntField(
-                              controller: _lowStockController,
-                              label: 'Low Stock Alert',
-                              hint: 'Threshold',
-                              validator: _requiredNonNegativeInt,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: AppResponsive.getSectionGap(context) + 8),
-                  ResponsiveRowColumn(
-                    layout: AppResponsive.shouldStack(context)
-                        ? ResponsiveRowColumnType.COLUMN
-                        : ResponsiveRowColumnType.ROW,
-                    children: [
-                      ResponsiveRowColumnItem(
-                        rowFlex: 1,
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('Cancel'),
-                        ),
-                      ),
-                      ResponsiveRowColumnItem(
-                        child: SizedBox(
-                          width: AppResponsive.shouldStack(context)
-                              ? 0
-                              : AppResponsive.getSectionGap(context),
-                          height: AppResponsive.shouldStack(context)
-                              ? AppResponsive.getSectionGap(context)
-                              : 0,
-                        ),
-                      ),
-                      ResponsiveRowColumnItem(
-                        rowFlex: 2,
-                        child: ElevatedButton(
-                          onPressed: _isSaving ? null : _saveProduct,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                          ResponsiveRowColumn(
+                            layout: AppResponsive.shouldStack(context)
+                                ? ResponsiveRowColumnType.COLUMN
+                                : ResponsiveRowColumnType.ROW,
                             children: [
-                              if (_isSaving)
-                                const SizedBox(
-                                  height: 16,
-                                  width: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
+                              ResponsiveRowColumnItem(
+                                rowFlex: 1,
+                                child: _buildTextField(
+                                  controller: _categoryController,
+                                  label: 'Category',
+                                  hint: 'Optional',
                                 ),
-                              if (_isSaving) const SizedBox(width: 8),
-                              Text(
-                                _isEditing ? 'Save Changes' : 'Create Product',
+                              ),
+                              ResponsiveRowColumnItem(
+                                child: SizedBox(
+                                  width: AppResponsive.shouldStack(context)
+                                      ? 0
+                                      : AppResponsive.getSectionGap(context),
+                                  height: AppResponsive.shouldStack(context)
+                                      ? AppResponsive.getSectionGap(context)
+                                      : 0,
+                                ),
+                              ),
+                              ResponsiveRowColumnItem(
+                                rowFlex: 1,
+                                child: _buildTextField(
+                                  controller: _barcodeController,
+                                  label: 'Barcode / SKU',
+                                  hint: 'Optional',
+                                ),
                               ),
                             ],
                           ),
-                        ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: AppResponsive.getSectionGap(context) + 8,
+                      ),
+                      _buildImageUploadSection(
+                        context,
+                        primaryColor: primaryColor,
+                        primaryLight: primaryLight,
+                        surfaceColor: surfaceColor,
+                        borderColor: borderColor,
+                        textPrimary: textPrimary,
+                        textSecondary: textSecondary,
+                      ),
+                      SizedBox(
+                        height: AppResponsive.getSectionGap(context) + 8,
+                      ),
+                      _buildSection(
+                        context,
+                        title: 'Pricing',
+                        icon: AppIcons.rupee,
+                        primaryColor: primaryColor,
+                        primaryLight: primaryLight,
+                        surfaceColor: surfaceColor,
+                        borderColor: borderColor,
+                        textPrimary: textPrimary,
+                        children: [
+                          ResponsiveRowColumn(
+                            layout: AppResponsive.shouldStack(context)
+                                ? ResponsiveRowColumnType.COLUMN
+                                : ResponsiveRowColumnType.ROW,
+                            children: [
+                              ResponsiveRowColumnItem(
+                                rowFlex: 1,
+                                child: _buildNumberField(
+                                  controller: _costController,
+                                  label: 'Cost Price',
+                                  hint: 'Per piece',
+                                  validator: _requiredNonNegative,
+                                ),
+                              ),
+                              ResponsiveRowColumnItem(
+                                child: SizedBox(
+                                  width: AppResponsive.shouldStack(context)
+                                      ? 0
+                                      : AppResponsive.getSectionGap(context),
+                                  height: AppResponsive.shouldStack(context)
+                                      ? AppResponsive.getSectionGap(context)
+                                      : 0,
+                                ),
+                              ),
+                              ResponsiveRowColumnItem(
+                                rowFlex: 1,
+                                child: _buildNumberField(
+                                  controller: _sellingController,
+                                  label: 'Selling Price',
+                                  hint: 'Per piece',
+                                  validator: _requiredNonNegative,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: AppResponsive.getSectionGap(context) + 8,
+                      ),
+                      _buildSection(
+                        context,
+                        title: 'Inventory',
+                        icon: AppIcons.warehouse,
+                        primaryColor: primaryColor,
+                        primaryLight: primaryLight,
+                        surfaceColor: surfaceColor,
+                        borderColor: borderColor,
+                        textPrimary: textPrimary,
+                        children: [
+                          ResponsiveRowColumn(
+                            layout: AppResponsive.shouldStack(context)
+                                ? ResponsiveRowColumnType.COLUMN
+                                : ResponsiveRowColumnType.ROW,
+                            children: [
+                              ResponsiveRowColumnItem(
+                                rowFlex: 1,
+                                child: _buildIntField(
+                                  controller: _piecesPerCartonController,
+                                  label: 'Pieces per Carton',
+                                  hint: 'e.g., 24',
+                                  validator: _requiredPositiveInt,
+                                ),
+                              ),
+                              ResponsiveRowColumnItem(
+                                child: SizedBox(
+                                  width: AppResponsive.shouldStack(context)
+                                      ? 0
+                                      : AppResponsive.getSectionGap(context),
+                                  height: AppResponsive.shouldStack(context)
+                                      ? AppResponsive.getSectionGap(context)
+                                      : 0,
+                                ),
+                              ),
+                              ResponsiveRowColumnItem(
+                                rowFlex: 1,
+                                child: _buildIntField(
+                                  controller: _stockController,
+                                  label: 'Current Stock',
+                                  hint: 'Pieces',
+                                  validator: _requiredNonNegativeInt,
+                                ),
+                              ),
+                              ResponsiveRowColumnItem(
+                                child: SizedBox(
+                                  width: AppResponsive.shouldStack(context)
+                                      ? 0
+                                      : AppResponsive.getSectionGap(context),
+                                  height: AppResponsive.shouldStack(context)
+                                      ? AppResponsive.getSectionGap(context)
+                                      : 0,
+                                ),
+                              ),
+                              ResponsiveRowColumnItem(
+                                rowFlex: 1,
+                                child: _buildIntField(
+                                  controller: _lowStockController,
+                                  label: 'Low Stock Alert',
+                                  hint: 'Threshold',
+                                  validator: _requiredNonNegativeInt,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: AppResponsive.getSectionGap(context) + 8,
+                      ),
+                      ResponsiveRowColumn(
+                        layout: AppResponsive.shouldStack(context)
+                            ? ResponsiveRowColumnType.COLUMN
+                            : ResponsiveRowColumnType.ROW,
+                        children: [
+                          ResponsiveRowColumnItem(
+                            rowFlex: 1,
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('Cancel'),
+                            ),
+                          ),
+                          ResponsiveRowColumnItem(
+                            child: SizedBox(
+                              width: AppResponsive.shouldStack(context)
+                                  ? 0
+                                  : AppResponsive.getSectionGap(context),
+                              height: AppResponsive.shouldStack(context)
+                                  ? AppResponsive.getSectionGap(context)
+                                  : 0,
+                            ),
+                          ),
+                          ResponsiveRowColumnItem(
+                            rowFlex: 2,
+                            child: ElevatedButton(
+                              onPressed: _isSaving ? null : _saveProduct,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (_isSaving)
+                                    const SizedBox(
+                                      height: 16,
+                                      width: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  if (_isSaving) const SizedBox(width: 8),
+                                  Text(
+                                    _isEditing
+                                        ? 'Save Changes'
+                                        : 'Create Product',
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: AppResponsive.getPagePadding(context).top,
                       ),
                     ],
                   ),
-                  SizedBox(height: AppResponsive.getPagePadding(context).top),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

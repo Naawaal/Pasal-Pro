@@ -53,6 +53,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     ref.invalidate(totalOutstandingCreditProvider);
     ref.invalidate(totalCustomersProvider);
     ref.invalidate(storeStatsProvider);
+    ref.invalidate(dashboardTrendsProvider);
 
     if (mounted) {
       setState(() {
@@ -77,6 +78,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final todayProfitState = ref.watch(todayProfitProvider);
     final transactionCountState = ref.watch(todayTransactionCountProvider);
     final lowStockCountState = ref.watch(lowStockCountProvider);
+    final trendsState = ref.watch(dashboardTrendsProvider);
     final surfaceAlt = PasalColorToken.surfaceAlt.token.resolve(context);
     final primaryColor = PasalColorToken.primary.token.resolve(context);
     final primaryLight = primaryColor.withValues(alpha: 0.1);
@@ -119,6 +121,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                         todayProfitState,
                         transactionCountState,
                         lowStockCountState,
+                        trendsState,
                       ),
                       SizedBox(height: DashboardSpacing.sectionGap), // 32px
                       ResponsiveRowColumn(
@@ -255,6 +258,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     AsyncValue<double> profitState,
     AsyncValue<int> transactionState,
     AsyncValue<int> lowStockState,
+    AsyncValue<List<TrendData>> trendsState,
   ) {
     // Responsive column count: 3 cols @1366px, 4 cols @1920px+
     final cols = AppResponsive.getValue<int>(
@@ -265,37 +269,104 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       xLarge: 4,
     );
 
-    return GridView.count(
-      crossAxisCount: cols,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: DashboardSpacing.cardGap,
-      crossAxisSpacing: DashboardSpacing.cardGap,
-      childAspectRatio: 1.6, // Slightly wider for better proportions
-      children: [
-        _buildMetricCardAsync(
-          title: 'Today\'s Sales',
-          state: salesState,
-          format: (v) => CurrencyFormatter.format(v),
-          icon: AppIcons.trendingUp,
-        ),
-        _buildMetricCardAsync(
-          title: 'Total Profit',
-          state: profitState,
-          format: (v) => CurrencyFormatter.format(v),
-          icon: AppIcons.wallet,
-        ),
-        _buildMetricCardAsyncInt(
-          title: 'Transactions',
-          state: transactionState,
-          icon: AppIcons.receipt,
-        ),
-        _buildMetricCardAsyncInt(
-          title: 'Low Stock Items',
-          state: lowStockState,
-          icon: AppIcons.warehouse,
-        ),
-      ],
+    return trendsState.when(
+      data: (trends) => GridView.count(
+        crossAxisCount: cols,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        mainAxisSpacing: DashboardSpacing.cardGap,
+        crossAxisSpacing: DashboardSpacing.cardGap,
+        childAspectRatio: 1.6,
+        children: [
+          _buildMetricCardAsync(
+            title: 'Today\'s Sales',
+            state: salesState,
+            format: (v) => CurrencyFormatter.format(v),
+            icon: AppIcons.trendingUp,
+            trend: trends[0],
+          ),
+          _buildMetricCardAsync(
+            title: 'Total Profit',
+            state: profitState,
+            format: (v) => CurrencyFormatter.format(v),
+            icon: AppIcons.wallet,
+            trend: trends[1],
+          ),
+          _buildMetricCardAsyncInt(
+            title: 'Transactions',
+            state: transactionState,
+            icon: AppIcons.receipt,
+            trend: trends[2],
+          ),
+          _buildMetricCardAsyncInt(
+            title: 'Low Stock Items',
+            state: lowStockState,
+            icon: AppIcons.warehouse,
+            trend: trends[3],
+          ),
+        ],
+      ),
+      loading: () => GridView.count(
+        crossAxisCount: cols,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        mainAxisSpacing: DashboardSpacing.cardGap,
+        crossAxisSpacing: DashboardSpacing.cardGap,
+        childAspectRatio: 1.6,
+        children: List.generate(4, (_) => const MetricCardSkeleton()),
+      ),
+      error: (error, stackTrace) => GridView.count(
+        crossAxisCount: cols,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        mainAxisSpacing: DashboardSpacing.cardGap,
+        crossAxisSpacing: DashboardSpacing.cardGap,
+        childAspectRatio: 1.6,
+        children: [
+          _buildMetricCardAsync(
+            title: 'Today\'s Sales',
+            state: salesState,
+            format: (v) => CurrencyFormatter.format(v),
+            icon: AppIcons.trendingUp,
+            trend: TrendData(
+              percentage: '—',
+              isPositive: false,
+              label: 'vs yesterday',
+            ),
+          ),
+          _buildMetricCardAsync(
+            title: 'Total Profit',
+            state: profitState,
+            format: (v) => CurrencyFormatter.format(v),
+            icon: AppIcons.wallet,
+            trend: TrendData(
+              percentage: '—',
+              isPositive: false,
+              label: 'vs yesterday',
+            ),
+          ),
+          _buildMetricCardAsyncInt(
+            title: 'Transactions',
+            state: transactionState,
+            icon: AppIcons.receipt,
+            trend: TrendData(
+              percentage: '—',
+              isPositive: false,
+              label: 'vs yesterday',
+            ),
+          ),
+          _buildMetricCardAsyncInt(
+            title: 'Low Stock Items',
+            state: lowStockState,
+            icon: AppIcons.warehouse,
+            trend: TrendData(
+              percentage: '—',
+              isPositive: false,
+              label: 'vs yesterday',
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -304,13 +375,15 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     required AsyncValue<double> state,
     required String Function(double) format,
     required IconData icon,
+    required TrendData trend,
   }) {
     return state.when(
       data: (value) => MetricCard(
         title: title,
         value: format(value),
-        trend: '↑ 12% vs yesterday', // TODO: Calculate from historical data
-        isPositive: true,
+        trend:
+            '${trend.isPositive ? '↑' : '↓'} ${trend.percentage} ${trend.label}',
+        isPositive: trend.isPositive,
         icon: icon,
         timestamp: 'Last updated: just now',
       ),
@@ -329,13 +402,15 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     required String title,
     required AsyncValue<int> state,
     required IconData icon,
+    required TrendData trend,
   }) {
     return state.when(
       data: (value) => MetricCard(
         title: title,
         value: value.toString(),
-        trend: '↓ 5% vs yesterday', // TODO: Calculate from historical data
-        isPositive: false,
+        trend:
+            '${trend.isPositive ? '↑' : '↓'} ${trend.percentage} ${trend.label}',
+        isPositive: trend.isPositive,
         icon: icon,
         timestamp: 'Last updated: just now',
       ),
