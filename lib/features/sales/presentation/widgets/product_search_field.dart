@@ -112,6 +112,7 @@ class _ProductSearchFieldState extends State<ProductSearchField> {
               controller: widget.controller,
               focusNode: widget.focusNode,
               decoration: InputDecoration(
+                prefixIcon: const Icon(AppIcons.package, size: 20),
                 hintText: 'Search or create...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(

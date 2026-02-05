@@ -156,13 +156,15 @@ class AppResponsive {
     int customLarge = 3,
     int customXLarge = 4,
   }) {
-    return getValue<int>(
+    final cols = getValue<int>(
       context,
       small: customSmall,
       medium: customMedium,
       large: customLarge,
       xLarge: customXLarge,
     );
+    // Ensure at least 1 column to prevent division by zero
+    return cols > 0 ? cols : 1;
   }
 
   /// Get responsive max width for content constraint on large screens
@@ -212,7 +214,9 @@ class AppResponsive {
   /// Automatically calculates based on available width and desired columns
   static double getGridItemExtent(BuildContext context) {
     final cols = getGridColumns(context);
+    // Ensure cols is at least 1 to prevent division by zero
+    final safeColumns = cols > 0 ? cols : 1;
     // Rough calculation: (available width - padding - gaps) / columns
-    return (MediaQuery.of(context).size.width - 48) / cols;
+    return (MediaQuery.of(context).size.width - 48) / safeColumns;
   }
 }

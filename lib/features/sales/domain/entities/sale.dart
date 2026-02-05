@@ -28,8 +28,8 @@ class Sale extends Equatable {
     this.notes,
   });
 
-  /// Total quantity of items in the sale
-  int get totalQuantity => items.fold(0, (sum, item) => sum + item.quantity);
+  /// Total quantity of items in the sale (sum of all item quantities)
+  num get totalQuantity => items.fold(0, (sum, item) => sum + item.quantity);
 
   /// Subtotal (before any taxes/discounts)
   double get subtotal => items.fold(0.0, (sum, item) => sum + item.totalPrice);

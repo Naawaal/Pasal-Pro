@@ -47,6 +47,11 @@ class ProductModel {
   /// Last update timestamp
   late DateTime updatedAt;
 
+  /// Quantity type: 'units' or 'weight' (kg/g)
+  /// Defaults to 'units' for normal products
+  /// Set to 'weight' for products sold by kg/grams (rice, flour, sugar, etc.)
+  late String quantityType;
+
   /// Computed: Profit per piece
   @Ignore()
   double get profitPerPiece => sellingPrice - costPrice;

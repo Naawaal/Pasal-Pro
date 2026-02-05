@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/features/sales/constants/sales_spacing.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -13,13 +14,16 @@ class SalesLogSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final baseColor = PasalColorToken.surfaceAlt.token.resolve(context);
+    final highlightColor = PasalColorToken.surface.token.resolve(context);
+    final dividerColor = PasalColorToken.border.token.resolve(context);
     return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
+      baseColor: baseColor,
+      highlightColor: highlightColor,
       child: ListView.separated(
         itemCount: rowCount,
         separatorBuilder: (context, index) =>
-            Divider(color: Colors.grey[200], height: 1),
+            Divider(color: dividerColor, height: 1),
         itemBuilder: (context, index) {
           return Container(
             height: SalesSpacing.logRowHeight,

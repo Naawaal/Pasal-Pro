@@ -534,6 +534,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
       isActive: existing?.isActive ?? true,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
+      quantityType: existing?.quantityType ?? 'units',
     );
 
     final result = _isEditing

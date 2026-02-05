@@ -20,6 +20,7 @@ class ProductModelMapper {
       isActive: model.isActive,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
+      quantityType: model.quantityType,
     );
   }
 
@@ -36,7 +37,8 @@ class ProductModelMapper {
       ..imageUrl = entity.imageUrl
       ..isActive = entity.isActive
       ..createdAt = entity.createdAt
-      ..updatedAt = entity.updatedAt;
+      ..updatedAt = entity.updatedAt
+      ..quantityType = entity.quantityType;
 
     if (entity.id > 0) {
       model.id = entity.id;

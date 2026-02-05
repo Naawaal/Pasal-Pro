@@ -39,11 +39,13 @@ class PriceInputField extends StatefulWidget {
 
 class _PriceInputFieldState extends State<PriceInputField> {
   late bool _isFocused;
+  late bool _hasBeenTouched;
 
   @override
   void initState() {
     super.initState();
     _isFocused = false;
+    _hasBeenTouched = false;
     widget.focusNode.addListener(_onFocusChange);
   }
 
@@ -54,7 +56,13 @@ class _PriceInputFieldState extends State<PriceInputField> {
   }
 
   void _onFocusChange() {
-    setState(() => _isFocused = widget.focusNode.hasFocus);
+    setState(() {
+      _isFocused = widget.focusNode.hasFocus;
+      // Mark as touched when focus is lost
+      if (!_isFocused) {
+        _hasBeenTouched = true;
+      }
+    });
   }
 
   /// Validate that input is a positive decimal number
@@ -77,7 +85,8 @@ class _PriceInputFieldState extends State<PriceInputField> {
     final textSecondary = PasalColorToken.textSecondary.token.resolve(context);
     final errorColor = PasalColorToken.error.token.resolve(context);
     final primaryColor = PasalColorToken.primary.token.resolve(context);
-    final borderColor = _validatePrice(widget.controller.text).isNotEmpty
+    final borderColor =
+        _hasBeenTouched && _validatePrice(widget.controller.text).isNotEmpty
         ? errorColor
         : (_isFocused ? primaryColor : Colors.grey[300]!);
 
@@ -93,88 +102,78 @@ class _PriceInputFieldState extends State<PriceInputField> {
           ),
         ),
         const Gap(SalesSpacing.inputFieldSpacing),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(SalesSpacing.inputBorderRadius),
-            boxShadow: _isFocused
-                ? [
-                    BoxShadow(
-                      color: primaryColor.withValues(alpha: 0.1),
-                      blurRadius: 8,
-                      spreadRadius: 1,
-                    ),
-                  ]
-                : [],
-          ),
-          child: Semantics(
-            container: true,
-            label: 'Selling price in rupees',
-            child: TextField(
-              controller: widget.controller,
-              focusNode: widget.focusNode,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
+        Semantics(
+          container: true,
+          label: 'Selling price in rupees',
+          child: TextField(
+            controller: widget.controller,
+            focusNode: widget.focusNode,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              prefixIcon: const Icon(AppIcons.rupee, size: 20),
+              label: const Text('Price'),
+              hintText: '0.00',
+              helperText:
+                  (!_hasBeenTouched ||
+                      _validatePrice(widget.controller.text).isEmpty)
+                  ? 'Enter selling price per unit'
+                  : null,
+              helperMaxLines: 2,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(
+                  SalesSpacing.inputBorderRadius,
+                ),
               ),
-              decoration: InputDecoration(
-                label: const Text('Price'),
-                hintText: '0.00',
-                helperText: _validatePrice(widget.controller.text).isNotEmpty
-                    ? null
-                    : 'Enter selling price per unit',
-                helperMaxLines: 2,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                    SalesSpacing.inputBorderRadius,
-                  ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(
+                  SalesSpacing.inputBorderRadius,
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                    SalesSpacing.inputBorderRadius,
-                  ),
-                  borderSide: BorderSide(color: borderColor, width: 1.0),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                    SalesSpacing.inputBorderRadius,
-                  ),
-                  borderSide: BorderSide(color: primaryColor, width: 2.0),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                    SalesSpacing.inputBorderRadius,
-                  ),
-                  borderSide: BorderSide(color: errorColor, width: 1.5),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                    SalesSpacing.inputBorderRadius,
-                  ),
-                  borderSide: BorderSide(color: errorColor, width: 2.0),
-                ),
-                contentPadding: SalesSpacing.getInputFieldPadding(),
-                prefixText: 'Rs ',
-                prefixStyle: TextStyle(
-                  fontSize: SalesSpacing.fieldInputFontSize,
-                  fontWeight: FontWeight.w500,
-                ),
-                errorText: _validatePrice(widget.controller.text).isEmpty
-                    ? null
-                    : _validatePrice(widget.controller.text),
-                errorStyle: TextStyle(
-                  fontSize: SalesSpacing.fieldErrorFontSize,
-                  color: errorColor,
-                ),
-                suffixIcon: _validatePrice(widget.controller.text).isNotEmpty
-                    ? Icon(AppIcons.error, color: errorColor, size: 20)
-                    : null,
+                borderSide: BorderSide(color: borderColor, width: 1.0),
               ),
-              onChanged: (value) {
-                setState(() {}); // Update error state
-                widget.onChanged(value);
-              },
-              onSubmitted: (_) => widget.onSubmitted?.call(),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(
+                  SalesSpacing.inputBorderRadius,
+                ),
+                borderSide: BorderSide(color: primaryColor, width: 2.0),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(
+                  SalesSpacing.inputBorderRadius,
+                ),
+                borderSide: BorderSide(color: errorColor, width: 1.5),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(
+                  SalesSpacing.inputBorderRadius,
+                ),
+                borderSide: BorderSide(color: errorColor, width: 2.0),
+              ),
+              contentPadding: SalesSpacing.getInputFieldPadding(),
+              prefixText: 'Rs ',
+              prefixStyle: TextStyle(
+                fontSize: SalesSpacing.fieldInputFontSize,
+                fontWeight: FontWeight.w500,
+              ),
+              errorText:
+                  _hasBeenTouched &&
+                      _validatePrice(widget.controller.text).isNotEmpty
+                  ? _validatePrice(widget.controller.text)
+                  : null,
+              errorStyle: TextStyle(
+                fontSize: SalesSpacing.fieldErrorFontSize,
+                color: errorColor,
+              ),
+              suffixIcon:
+                  _hasBeenTouched &&
+                      _validatePrice(widget.controller.text).isNotEmpty
+                  ? Icon(AppIcons.error, color: errorColor, size: 20)
+                  : null,
             ),
+            onChanged: (value) {
+              setState(() {}); // Update error state
+              widget.onChanged(value);
+            },
+            onSubmitted: (_) => widget.onSubmitted?.call(),
           ),
         ),
       ],

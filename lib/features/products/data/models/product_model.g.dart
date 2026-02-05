@@ -62,18 +62,23 @@ const ProductModelSchema = CollectionSchema(
       name: r'piecesPerCarton',
       type: IsarType.long,
     ),
-    r'sellingPrice': PropertySchema(
+    r'quantityType': PropertySchema(
       id: 9,
+      name: r'quantityType',
+      type: IsarType.string,
+    ),
+    r'sellingPrice': PropertySchema(
+      id: 10,
       name: r'sellingPrice',
       type: IsarType.double,
     ),
     r'stockPieces': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'stockPieces',
       type: IsarType.long,
     ),
     r'updatedAt': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -144,6 +149,7 @@ int _productModelEstimateSize(
     }
   }
   bytesCount += 3 + object.name.length * 3;
+  bytesCount += 3 + object.quantityType.length * 3;
   return bytesCount;
 }
 
@@ -162,9 +168,10 @@ void _productModelSerialize(
   writer.writeLong(offsets[6], object.lowStockThreshold);
   writer.writeString(offsets[7], object.name);
   writer.writeLong(offsets[8], object.piecesPerCarton);
-  writer.writeDouble(offsets[9], object.sellingPrice);
-  writer.writeLong(offsets[10], object.stockPieces);
-  writer.writeDateTime(offsets[11], object.updatedAt);
+  writer.writeString(offsets[9], object.quantityType);
+  writer.writeDouble(offsets[10], object.sellingPrice);
+  writer.writeLong(offsets[11], object.stockPieces);
+  writer.writeDateTime(offsets[12], object.updatedAt);
 }
 
 ProductModel _productModelDeserialize(
@@ -184,9 +191,10 @@ ProductModel _productModelDeserialize(
   object.lowStockThreshold = reader.readLong(offsets[6]);
   object.name = reader.readString(offsets[7]);
   object.piecesPerCarton = reader.readLong(offsets[8]);
-  object.sellingPrice = reader.readDouble(offsets[9]);
-  object.stockPieces = reader.readLong(offsets[10]);
-  object.updatedAt = reader.readDateTime(offsets[11]);
+  object.quantityType = reader.readString(offsets[9]);
+  object.sellingPrice = reader.readDouble(offsets[10]);
+  object.stockPieces = reader.readLong(offsets[11]);
+  object.updatedAt = reader.readDateTime(offsets[12]);
   return object;
 }
 
@@ -216,10 +224,12 @@ P _productModelDeserializeProp<P>(
     case 8:
       return (reader.readLong(offset)) as P;
     case 9:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 10:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 11:
+      return (reader.readLong(offset)) as P;
+    case 12:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1479,6 +1489,142 @@ extension ProductModelQueryFilter
   }
 
   QueryBuilder<ProductModel, ProductModel, QAfterFilterCondition>
+      quantityTypeEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'quantityType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ProductModel, ProductModel, QAfterFilterCondition>
+      quantityTypeGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'quantityType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ProductModel, ProductModel, QAfterFilterCondition>
+      quantityTypeLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'quantityType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ProductModel, ProductModel, QAfterFilterCondition>
+      quantityTypeBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'quantityType',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ProductModel, ProductModel, QAfterFilterCondition>
+      quantityTypeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'quantityType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ProductModel, ProductModel, QAfterFilterCondition>
+      quantityTypeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'quantityType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ProductModel, ProductModel, QAfterFilterCondition>
+      quantityTypeContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'quantityType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ProductModel, ProductModel, QAfterFilterCondition>
+      quantityTypeMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'quantityType',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ProductModel, ProductModel, QAfterFilterCondition>
+      quantityTypeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'quantityType',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ProductModel, ProductModel, QAfterFilterCondition>
+      quantityTypeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'quantityType',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ProductModel, ProductModel, QAfterFilterCondition>
       sellingPriceEqualTo(
     double value, {
     double epsilon = Query.epsilon,
@@ -1777,6 +1923,19 @@ extension ProductModelQuerySortBy
     });
   }
 
+  QueryBuilder<ProductModel, ProductModel, QAfterSortBy> sortByQuantityType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'quantityType', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ProductModel, ProductModel, QAfterSortBy>
+      sortByQuantityTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'quantityType', Sort.desc);
+    });
+  }
+
   QueryBuilder<ProductModel, ProductModel, QAfterSortBy> sortBySellingPrice() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'sellingPrice', Sort.asc);
@@ -1942,6 +2101,19 @@ extension ProductModelQuerySortThenBy
     });
   }
 
+  QueryBuilder<ProductModel, ProductModel, QAfterSortBy> thenByQuantityType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'quantityType', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ProductModel, ProductModel, QAfterSortBy>
+      thenByQuantityTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'quantityType', Sort.desc);
+    });
+  }
+
   QueryBuilder<ProductModel, ProductModel, QAfterSortBy> thenBySellingPrice() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'sellingPrice', Sort.asc);
@@ -2043,6 +2215,13 @@ extension ProductModelQueryWhereDistinct
     });
   }
 
+  QueryBuilder<ProductModel, ProductModel, QDistinct> distinctByQuantityType(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'quantityType', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<ProductModel, ProductModel, QDistinct> distinctBySellingPrice() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'sellingPrice');
@@ -2122,6 +2301,12 @@ extension ProductModelQueryProperty
   QueryBuilder<ProductModel, int, QQueryOperations> piecesPerCartonProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'piecesPerCarton');
+    });
+  }
+
+  QueryBuilder<ProductModel, String, QQueryOperations> quantityTypeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'quantityType');
     });
   }
 

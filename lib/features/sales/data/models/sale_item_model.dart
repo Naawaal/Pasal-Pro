@@ -17,8 +17,8 @@ class SaleItemModel {
   /// Product barcode (snapshot at time of sale)
   String? barcode;
 
-  /// Quantity purchased in this transaction
-  late int quantity;
+  /// Quantity purchased in this transaction (int for units, double for weight)
+  late double quantity;
 
   /// Unit selling price at time of purchase
   late double unitPrice;
@@ -43,7 +43,7 @@ class SaleItemModel {
       ..productId = entity.product.id
       ..productName = entity.product.name
       ..barcode = entity.product.barcode
-      ..quantity = entity.quantity
+      ..quantity = entity.quantity.toDouble()
       ..unitPrice = entity.unitPrice
       ..costPrice = entity.product.costPrice;
     return model;

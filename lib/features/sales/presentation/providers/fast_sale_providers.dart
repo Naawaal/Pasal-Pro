@@ -19,6 +19,14 @@ final salesLocalDataSourceProvider = FutureProvider<SalesLocalDataSource>((
   return SalesLocalDataSource(isar);
 });
 
+/// Provider for today's persisted sales (daily log source of truth)
+final todaySalesProvider = FutureProvider.autoDispose<List<SaleModel>>((
+  ref,
+) async {
+  final dataSource = await ref.watch(salesLocalDataSourceProvider.future);
+  return dataSource.getTodaySales();
+});
+
 // ============================================================================
 // Current Sale State (Cart Items & Metadata)
 // ============================================================================
@@ -41,7 +49,7 @@ class CurrentSaleNotifier extends StateNotifier<Sale> {
       );
 
   /// Add a product to the sale with specified quantity and selling price
-  void addItem(Product product, int quantity, [double? sellingPrice]) {
+  void addItem(Product product, num quantity, [double? sellingPrice]) {
     if (quantity <= 0) return;
 
     final price = sellingPrice ?? product.sellingPrice;

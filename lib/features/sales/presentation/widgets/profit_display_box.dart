@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pasal_pro/core/constants/app_colors.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/features/sales/constants/sales_spacing.dart';
 
 /// Reusable profit display box for sales entry form
@@ -60,6 +60,7 @@ class _ProfitDisplayBoxState extends State<ProfitDisplayBox>
 
   @override
   Widget build(BuildContext context) {
+    final successColor = PasalColorToken.success.token.resolve(context);
     return ScaleTransition(
       scale: _scaleAnimation,
       child: Column(
@@ -69,8 +70,8 @@ class _ProfitDisplayBoxState extends State<ProfitDisplayBox>
             width: double.infinity,
             padding: SalesSpacing.getProfitBoxPadding(),
             decoration: BoxDecoration(
-              color: AppColors.successGreen.withValues(alpha: 0.1),
-              border: Border.all(color: AppColors.successGreen, width: 1.5),
+              color: successColor.withValues(alpha: 0.1),
+              border: Border.all(color: successColor, width: 1.5),
               borderRadius: BorderRadius.circular(
                 SalesSpacing.inputBorderRadius,
               ),
@@ -83,7 +84,7 @@ class _ProfitDisplayBoxState extends State<ProfitDisplayBox>
                   style: TextStyle(
                     fontSize: SalesSpacing.profitBoxLabelFontSize,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.successGreen,
+                    color: successColor,
                   ),
                 ),
                 SalesSpacing.xSmall,
@@ -92,7 +93,7 @@ class _ProfitDisplayBoxState extends State<ProfitDisplayBox>
                   style: TextStyle(
                     fontSize: SalesSpacing.profitBoxFontSize,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.successGreen,
+                    color: successColor,
                   ),
                 ),
               ],

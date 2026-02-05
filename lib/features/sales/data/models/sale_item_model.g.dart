@@ -36,7 +36,7 @@ const SaleItemModelSchema = Schema(
     r'quantity': PropertySchema(
       id: 4,
       name: r'quantity',
-      type: IsarType.long,
+      type: IsarType.double,
     ),
     r'unitPrice': PropertySchema(
       id: 5,
@@ -76,7 +76,7 @@ void _saleItemModelSerialize(
   writer.writeDouble(offsets[1], object.costPrice);
   writer.writeLong(offsets[2], object.productId);
   writer.writeString(offsets[3], object.productName);
-  writer.writeLong(offsets[4], object.quantity);
+  writer.writeDouble(offsets[4], object.quantity);
   writer.writeDouble(offsets[5], object.unitPrice);
 }
 
@@ -91,7 +91,7 @@ SaleItemModel _saleItemModelDeserialize(
   object.costPrice = reader.readDouble(offsets[1]);
   object.productId = reader.readLong(offsets[2]);
   object.productName = reader.readString(offsets[3]);
-  object.quantity = reader.readLong(offsets[4]);
+  object.quantity = reader.readDouble(offsets[4]);
   object.unitPrice = reader.readDouble(offsets[5]);
   return object;
 }
@@ -112,7 +112,7 @@ P _saleItemModelDeserializeProp<P>(
     case 3:
       return (reader.readString(offset)) as P;
     case 4:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 5:
       return (reader.readDouble(offset)) as P;
     default:
@@ -535,49 +535,58 @@ extension SaleItemModelQueryFilter
   }
 
   QueryBuilder<SaleItemModel, SaleItemModel, QAfterFilterCondition>
-      quantityEqualTo(int value) {
+      quantityEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'quantity',
         value: value,
+        epsilon: epsilon,
       ));
     });
   }
 
   QueryBuilder<SaleItemModel, SaleItemModel, QAfterFilterCondition>
       quantityGreaterThan(
-    int value, {
+    double value, {
     bool include = false,
+    double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
         property: r'quantity',
         value: value,
+        epsilon: epsilon,
       ));
     });
   }
 
   QueryBuilder<SaleItemModel, SaleItemModel, QAfterFilterCondition>
       quantityLessThan(
-    int value, {
+    double value, {
     bool include = false,
+    double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
         property: r'quantity',
         value: value,
+        epsilon: epsilon,
       ));
     });
   }
 
   QueryBuilder<SaleItemModel, SaleItemModel, QAfterFilterCondition>
       quantityBetween(
-    int lower,
-    int upper, {
+    double lower,
+    double upper, {
     bool includeLower = true,
     bool includeUpper = true,
+    double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
@@ -586,6 +595,7 @@ extension SaleItemModelQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+        epsilon: epsilon,
       ));
     });
   }

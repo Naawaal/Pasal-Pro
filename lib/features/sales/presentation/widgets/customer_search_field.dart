@@ -111,6 +111,7 @@ class _CustomerSearchFieldState extends State<CustomerSearchField> {
               controller: widget.controller,
               focusNode: widget.focusNode,
               decoration: InputDecoration(
+                prefixIcon: const Icon(AppIcons.user, size: 20),
                 hintText: 'Search customer...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(

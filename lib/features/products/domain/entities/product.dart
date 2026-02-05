@@ -15,6 +15,7 @@ class Product extends Equatable {
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String quantityType; // 'units' or 'weight'
 
   const Product({
     required this.id,
@@ -27,6 +28,7 @@ class Product extends Equatable {
     required this.isActive,
     required this.createdAt,
     required this.updatedAt,
+    required this.quantityType,
     this.category,
     this.barcode,
     this.imageUrl,
@@ -59,6 +61,7 @@ class Product extends Equatable {
     bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? quantityType,
   }) {
     return Product(
       id: id ?? this.id,
@@ -74,6 +77,7 @@ class Product extends Equatable {
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      quantityType: quantityType ?? this.quantityType,
     );
   }
 
@@ -92,5 +96,6 @@ class Product extends Equatable {
     isActive,
     createdAt,
     updatedAt,
+    quantityType,
   ];
 }

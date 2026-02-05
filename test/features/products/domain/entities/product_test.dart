@@ -16,6 +16,7 @@ void main() {
       isActive: true,
       createdAt: now,
       updatedAt: now,
+      quantityType: 'units',
     );
 
     group('Profit Calculations', () {
@@ -133,6 +134,7 @@ void main() {
           isActive: true,
           createdAt: now,
           updatedAt: now,
+          quantityType: 'units',
         );
 
         final product2 = Product(
@@ -146,6 +148,7 @@ void main() {
           isActive: true,
           createdAt: now,
           updatedAt: now,
+          quantityType: 'units',
         );
 
         expect(product1, product2);
@@ -160,6 +163,29 @@ void main() {
       test('products with different names are not equal', () {
         final product1 = testProduct;
         final product2 = testProduct.copyWith(name: 'Different');
+        expect(product1, isNot(product2));
+      });
+    });
+
+    group('Quantity Type', () {
+      test('product can be created with units type', () {
+        final product = testProduct.copyWith(quantityType: 'units');
+        expect(product.quantityType, 'units');
+      });
+
+      test('product can be created with weight type', () {
+        final product = testProduct.copyWith(quantityType: 'weight');
+        expect(product.quantityType, 'weight');
+      });
+
+      test('copyWith preserves quantityType when not provided', () {
+        final updated = testProduct.copyWith(name: 'Updated');
+        expect(updated.quantityType, testProduct.quantityType);
+      });
+
+      test('products with different quantityType are not equal', () {
+        final product1 = testProduct.copyWith(quantityType: 'units');
+        final product2 = testProduct.copyWith(quantityType: 'weight');
         expect(product1, isNot(product2));
       });
     });
