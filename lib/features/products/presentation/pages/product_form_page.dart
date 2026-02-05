@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mix/mix.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/utils/result.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/features/products/domain/entities/product.dart';
 import 'package:pasal_pro/features/products/domain/usecases/create_product.dart';
 import 'package:pasal_pro/features/products/domain/usecases/update_product.dart';
@@ -72,10 +74,13 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final bgColor = PasalColorToken.background.token.resolve(context);
+    final surfaceColor = PasalColorToken.surface.token.resolve(context);
+
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: surfaceColor,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close),
@@ -86,7 +91,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
+            color: PasalColorToken.textPrimary.token.resolve(context),
           ),
         ),
       ),
@@ -321,40 +326,37 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
     required IconData icon,
     required List<Widget> children,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).colorScheme.outline),
-      ),
+    final primaryColor = PasalColorToken.primary.token.resolve(context);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+    final sectionStyle = BoxStyler()
+        .paddingAll(20)
+        .borderRounded(12)
+        .color(PasalColorToken.surface.token.resolve(context))
+        .borderAll(color: PasalColorToken.border.token.resolve(context));
+
+    return Box(
+      style: sectionStyle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  size: 18,
-                  color: Theme.of(context).colorScheme.primary,
+              Box(
+                style: BoxStyler()
+                    .paddingAll(8)
+                    .borderRounded(8)
+                    .color(primaryColor.withValues(alpha: 0.1)),
+                child: StyledIcon(
+                  icon: icon,
+                  style: IconStyler().size(18).color(primaryColor),
                 ),
               ),
               const SizedBox(width: 12),
-              Text(
+              StyledText(
                 title,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
+                style: TextStyler()
+                    .style(PasalTextStyleToken.title.token.mix())
+                    .color(textPrimary),
               ),
             ],
           ),
@@ -516,7 +518,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Theme.of(context).colorScheme.error,
+        backgroundColor: PasalColorToken.error.token.resolve(context),
       ),
     );
   }
@@ -565,7 +567,9 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
             height: 200,
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              border: Border.all(color: Theme.of(context).colorScheme.outline),
+              border: Border.all(
+                color: PasalColorToken.border.token.resolve(context),
+              ),
               borderRadius: BorderRadius.circular(8),
               image: DecorationImage(
                 image: _selectedImagePath!.startsWith('http')
@@ -625,7 +629,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                 'Paste URL or browse local file',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: PasalColorToken.textSecondary.token.resolve(context),
                 ),
               ),
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pasal_pro/core/constants/app_colors.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/features/products/domain/entities/product.dart';
 import 'package:pasal_pro/features/sales/presentation/providers/fast_sale_providers.dart';
 import 'package:pasal_pro/features/sales/presentation/widgets/product_search_item.dart';
@@ -46,8 +47,10 @@ class _SearchPanelState extends ConsumerState<SearchPanel> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border.all(color: Theme.of(context).colorScheme.outline),
+        color: PasalColorToken.surface.token.resolve(context),
+        border: Border.all(
+          color: PasalColorToken.border.token.resolve(context),
+        ),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -57,21 +60,31 @@ class _SearchPanelState extends ConsumerState<SearchPanel> {
           Container(
             margin: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              color: PasalColorToken.surfaceAlt.token.resolve(context),
               borderRadius: BorderRadius.circular(6),
             ),
             child: TextField(
               controller: _searchController,
               focusNode: _searchFocus,
-              onChanged: (value) => ref.read(searchQueryProvider.notifier).state = value,
+              onChanged: (value) =>
+                  ref.read(searchQueryProvider.notifier).state = value,
               decoration: const InputDecoration(
                 hintText: 'Search products...',
                 hintStyle: TextStyle(color: AppColors.textTertiary),
-                prefixIcon: Icon(Icons.search, color: AppColors.textTertiary, size: 20),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: AppColors.textTertiary,
+                  size: 20,
+                ),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              style: TextStyle(
+                color: PasalColorToken.textPrimary.token.resolve(context),
+              ),
             ),
           ),
 
@@ -103,7 +116,10 @@ class _SearchPanelState extends ConsumerState<SearchPanel> {
                     child: GestureDetector(
                       onTap: () => _handleProductSelect(product),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(16),

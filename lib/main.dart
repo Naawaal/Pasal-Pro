@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mix/mix.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:pasal_pro/core/constants/app_constants.dart';
 import 'package:pasal_pro/core/constants/app_responsive.dart';
-import 'package:pasal_pro/core/theme/app_theme.dart';
+import 'package:pasal_pro/core/theme/mix_theme.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/core/widgets/app_navigation_rail.dart';
 import 'package:pasal_pro/core/widgets/pasal_pro_appbar.dart';
-import 'package:pasal_pro/core/constants/app_colors.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
 import 'package:pasal_pro/core/utils/app_logger.dart';
 import 'package:pasal_pro/core/routes/app_routes.dart';
@@ -32,29 +33,39 @@ class PasalProApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch theme mode from settings
     final themeMode = ref.watch(appThemeModeProvider);
+    final brightness = themeMode == ThemeMode.system
+        ? WidgetsBinding.instance.platformDispatcher.platformBrightness
+        : themeMode == ThemeMode.dark
+        ? Brightness.dark
+        : Brightness.light;
+    final mixTheme = PasalMixTheme.forBrightness(brightness);
 
     // 📱 MaterialApp with responsive framework support
     // Enables responsive design based on AppResponsive breakpoints (1024-2560px)
-    return MaterialApp(
-      title: AppConstants.appName,
-      debugShowCheckedModeBanner: false,
+    return MixScope(
+      colors: mixTheme.colors,
+      textStyles: mixTheme.textStyles,
+      spaces: mixTheme.spaces,
+      radii: mixTheme.radii,
+      child: MaterialApp(
+        title: AppConstants.appName,
+        debugShowCheckedModeBanner: false,
 
-      // App theme
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeMode,
+        // MixScope (above) handles all theming - no Material theme needed
+        // This ensures consistent styling via Mix design tokens across the app
 
-      // Responsive breakpoints wrapper
-      builder: (context, child) => ResponsiveBreakpoints.builder(
-        child: child!,
-        breakpoints: AppResponsive.getBreakpoints(),
+        // Responsive breakpoints wrapper
+        builder: (context, child) => ResponsiveBreakpoints.builder(
+          child: child!,
+          breakpoints: AppResponsive.getBreakpoints(),
+        ),
+
+        // Home screen with desktop navigation
+        home: const PasalProHome(),
+
+        // Handle named route navigation
+        onGenerateRoute: _handleRouteGeneration,
       ),
-
-      // Home screen with desktop navigation
-      home: const PasalProHome(),
-
-      // Handle named route navigation
-      onGenerateRoute: _handleRouteGeneration,
     );
   }
 
@@ -124,7 +135,12 @@ class _PasalProHomeState extends ConsumerState<PasalProHome> {
 
   @override
   Widget build(BuildContext context) {
+    // Resolve Mix background token for Scaffold
+    final backgroundColor = PasalColorToken.background.token.resolve(context);
+    final surfaceColor = PasalColorToken.surface.token.resolve(context);
+
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: PasalProAppBar(
         title: _getScreenTitle(),
         onSearch: _handleSearch,
@@ -152,7 +168,7 @@ class _PasalProHomeState extends ConsumerState<PasalProHome> {
 
           // Main content area
           Expanded(
-            child: Container(color: AppColors.bgLight, child: _buildContent()),
+            child: Container(color: surfaceColor, child: _buildContent()),
           ),
         ],
       ),
@@ -268,7 +284,7 @@ class _HelpPageContent extends StatelessWidget {
           Icon(
             Icons.help_outline,
             size: 64,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            color: PasalColorToken.textSecondary.token.resolve(context),
           ),
           AppSpacing.medium,
           Text(
@@ -298,7 +314,7 @@ class _AccountPageContent extends StatelessWidget {
           Icon(
             Icons.person_outline,
             size: 64,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            color: PasalColorToken.textSecondary.token.resolve(context),
           ),
           AppSpacing.medium,
           Text('Account', style: Theme.of(context).textTheme.headlineSmall),

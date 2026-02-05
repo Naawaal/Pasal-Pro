@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:pasal_pro/core/constants/app_responsive.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
 import 'package:pasal_pro/features/dashboard/presentation/providers/dashboard_providers.dart';
 import 'package:pasal_pro/features/dashboard/presentation/widgets/metric_card.dart';
@@ -75,7 +76,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final lowStockCountState = ref.watch(lowStockCountProvider);
 
     return Container(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      color: PasalColorToken.surfaceAlt.token.resolve(context),
       padding: AppResponsive.getPagePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,7 +88,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: _refreshDashboard,
-              color: Theme.of(context).colorScheme.primary,
+              color: PasalColorToken.primary.token.resolve(context),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: MaxWidthBox(
@@ -160,14 +161,14 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
             Icon(
               Icons.sync,
               size: 16,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: PasalColorToken.textSecondary.token.resolve(context),
             ),
             const SizedBox(width: 8),
             Text(
               'Last updated: $timeAgo',
               style: TextStyle(
                 fontSize: 12,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: PasalColorToken.textSecondary.token.resolve(context),
               ),
             ),
           ],
@@ -176,7 +177,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
           icon: Icon(
             Icons.refresh,
             size: 20,
-            color: Theme.of(context).colorScheme.primary,
+            color: PasalColorToken.primary.token.resolve(context),
           ),
           tooltip: 'Refresh dashboard',
           onPressed: _refreshDashboard,
@@ -201,13 +202,14 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            color: PasalColorToken.primary.token
+                .resolve(context)
+                .withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             Icons.dashboard_outlined,
-            color: Theme.of(context).colorScheme.primary,
-            size: 24,
+            color: PasalColorToken.primary.token.resolve(context),
           ),
         ),
         const SizedBox(width: 16),
@@ -220,7 +222,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface,
+                  color: PasalColorToken.textPrimary.token.resolve(context),
                 ),
               ),
               const SizedBox(height: 2),
@@ -228,7 +230,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 'Here\'s what\'s happening with your store today',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: PasalColorToken.textSecondary.token.resolve(context),
                 ),
               ),
             ],

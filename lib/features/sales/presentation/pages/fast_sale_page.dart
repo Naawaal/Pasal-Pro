@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:pasal_pro/core/constants/app_responsive.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/features/sales/presentation/widgets/sales_entry_form.dart';
 import 'package:pasal_pro/features/sales/presentation/widgets/daily_sales_log.dart';
 
@@ -51,7 +52,7 @@ class _FastSalePageState extends ConsumerState<FastSalePage> {
       focusNode: _focusNode,
       onKeyEvent: _handleKeyboardShortcut,
       child: Container(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: PasalColorToken.surfaceAlt.token.resolve(context),
         padding: AppResponsive.getPagePadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,7 +70,7 @@ class _FastSalePageState extends ConsumerState<FastSalePage> {
                   ),
                   child: Icon(
                     Icons.point_of_sale,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: PasalColorToken.primary.token.resolve(context),
                     size: 24,
                   ),
                 ),
@@ -83,7 +84,9 @@ class _FastSalePageState extends ConsumerState<FastSalePage> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: PasalColorToken.textPrimary.token.resolve(
+                            context,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -91,7 +94,9 @@ class _FastSalePageState extends ConsumerState<FastSalePage> {
                         'Record sales and track profit',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: PasalColorToken.textSecondary.token.resolve(
+                            context,
+                          ),
                         ),
                       ),
                     ],
@@ -113,10 +118,10 @@ class _FastSalePageState extends ConsumerState<FastSalePage> {
                     rowFlex: 40,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
+                        color: PasalColorToken.surface.token.resolve(context),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Theme.of(context).colorScheme.outline,
+                          color: PasalColorToken.border.token.resolve(context),
                         ),
                       ),
                       child: const SalesEntryForm(),
@@ -138,10 +143,10 @@ class _FastSalePageState extends ConsumerState<FastSalePage> {
                     rowFlex: 60,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
+                        color: PasalColorToken.surface.token.resolve(context),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Theme.of(context).colorScheme.outline,
+                          color: PasalColorToken.border.token.resolve(context),
                         ),
                       ),
                       child: const DailySalesLog(),

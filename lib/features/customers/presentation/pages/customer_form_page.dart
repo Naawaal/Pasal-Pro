@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mix/mix.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
 import 'package:pasal_pro/core/utils/app_logger.dart';
 import 'package:pasal_pro/features/customers/domain/entities/customer.dart';
 import 'package:pasal_pro/features/customers/presentation/providers/customer_providers.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 
 /// Form page for creating and editing customers
 class CustomerFormPage extends ConsumerStatefulWidget {
@@ -100,6 +102,9 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final surfaceAlt = PasalColorToken.surfaceAlt.token.resolve(context);
+    final borderColor = PasalColorToken.border.token.resolve(context);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.customer == null ? 'Add Customer' : 'Edit Customer'),
@@ -176,18 +181,21 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
 
                     // Display current balance and purchases (if editing)
                     if (widget.customer != null) ...[
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                      Box(
+                        style: BoxStyler()
+                            .paddingAll(12)
+                            .borderRounded(8)
+                            .color(surfaceAlt)
+                            .borderAll(color: borderColor),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            StyledText(
                               'Customer Summary',
-                              style: Theme.of(context).textTheme.labelLarge,
+                              style: TextStyler()
+                                  .style(PasalTextStyleToken.body.token.mix())
+                                  .fontWeight(FontWeight.w600)
+                                  .color(textPrimary),
                             ),
                             AppSpacing.small,
                             Row(

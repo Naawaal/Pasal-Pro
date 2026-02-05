@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mix/mix.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 
-/// Individual settings item with icon, title, subtitle, and optional trailing widget
-class SettingsItem extends StatefulWidget {
+/// Individual settings item with icon, title, subtitle, and optional trailing widget using Mix
+class SettingsItem extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
@@ -18,71 +20,53 @@ class SettingsItem extends StatefulWidget {
   });
 
   @override
-  State<SettingsItem> createState() => _SettingsItemState();
-}
-
-class _SettingsItemState extends State<SettingsItem> {
-  bool _isHovered = false;
-
-  @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: InkWell(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: _isHovered && widget.onTap != null
-                ? Theme.of(context).colorScheme.surfaceContainerHighest
-                : Colors.transparent,
+    final surfaceHover = PasalColorToken.surfaceHover.token.resolve(context);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+    final textSecondary = PasalColorToken.textSecondary.token.resolve(context);
+
+    return PressableBox(
+      onPress: onTap,
+      style: BoxStyler()
+          .paddingX(16.0)
+          .paddingY(12.0)
+          .onHovered(BoxStyler().color(surfaceHover)),
+      child: Row(
+        children: [
+          StyledIcon(
+            icon: icon,
+            style: IconStyler().size(20).color(textSecondary),
           ),
-          child: Row(
-            children: [
-              Icon(
-                widget.icon,
-                size: 20,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.title,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                    if (widget.subtitle != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        widget.subtitle!,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                StyledText(
+                  title,
+                  style: TextStyler()
+                      .fontSize(14)
+                      .fontWeight(FontWeight.w500)
+                      .color(textPrimary),
                 ),
-              ),
-              if (widget.trailing != null)
-                widget.trailing!
-              else if (widget.onTap != null)
-                Icon(
-                  Icons.chevron_right,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-            ],
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  StyledText(
+                    subtitle!,
+                    style: TextStyler().fontSize(12).color(textSecondary),
+                  ),
+                ],
+              ],
+            ),
           ),
-        ),
+          if (trailing != null)
+            trailing!
+          else if (onTap != null)
+            StyledIcon(
+              icon: Icons.chevron_right,
+              style: IconStyler().size(20).color(textSecondary),
+            ),
+        ],
       ),
     );
   }

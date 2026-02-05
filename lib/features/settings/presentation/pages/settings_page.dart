@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pasal_pro/core/constants/app_responsive.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/features/settings/presentation/providers/settings_providers.dart';
 import 'package:pasal_pro/features/settings/presentation/widgets/settings_section.dart';
 import 'package:pasal_pro/features/settings/presentation/widgets/settings_item.dart';
@@ -14,197 +15,206 @@ class SettingsPage extends ConsumerWidget {
     final settingsAsync = ref.watch(settingsNotifierProvider);
 
     return settingsAsync.when(
-      data: (settings) => Container(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        padding: AppResponsive.getPagePadding(context),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context),
-            SizedBox(height: AppResponsive.getSectionGap(context)),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // Business Information Section
-                    SettingsSection(
-                      title: 'Business Information',
-                      icon: Icons.business_outlined,
-                      children: [
-                        SettingsItem(
-                          icon: Icons.store_outlined,
-                          title: 'Store Name',
-                          subtitle: settings.storeName,
-                          onTap: () =>
-                              _editStoreName(context, ref, settings.storeName),
-                        ),
-                        SettingsItem(
-                          icon: Icons.location_on_outlined,
-                          title: 'Address',
-                          subtitle: settings.storeAddress ?? 'Not set',
-                          onTap: () => _editStoreAddress(
-                            context,
-                            ref,
-                            settings.storeAddress,
+      data: (settings) {
+        final bgColor = PasalColorToken.background.token.resolve(context);
+        return Container(
+          color: bgColor,
+          padding: AppResponsive.getPagePadding(context),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context),
+              SizedBox(height: AppResponsive.getSectionGap(context)),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // Business Information Section
+                      SettingsSection(
+                        title: 'Business Information',
+                        icon: Icons.business_outlined,
+                        children: [
+                          SettingsItem(
+                            icon: Icons.store_outlined,
+                            title: 'Store Name',
+                            subtitle: settings.storeName,
+                            onTap: () => _editStoreName(
+                              context,
+                              ref,
+                              settings.storeName,
+                            ),
                           ),
-                        ),
-                        SettingsItem(
-                          icon: Icons.phone_outlined,
-                          title: 'Contact',
-                          subtitle: settings.storePhone ?? 'Not set',
-                          onTap: () => _editStorePhone(
-                            context,
-                            ref,
-                            settings.storePhone,
+                          SettingsItem(
+                            icon: Icons.location_on_outlined,
+                            title: 'Address',
+                            subtitle: settings.storeAddress ?? 'Not set',
+                            onTap: () => _editStoreAddress(
+                              context,
+                              ref,
+                              settings.storeAddress,
+                            ),
                           ),
-                        ),
-                        SettingsItem(
-                          icon: Icons.receipt_outlined,
-                          title: 'Tax Rate',
-                          subtitle:
-                              'VAT ${settings.taxRate?.toStringAsFixed(1)}%',
-                          onTap: () => _editTaxRate(
-                            context,
-                            ref,
-                            settings.taxRate ?? 13.0,
+                          SettingsItem(
+                            icon: Icons.phone_outlined,
+                            title: 'Contact',
+                            subtitle: settings.storePhone ?? 'Not set',
+                            onTap: () => _editStorePhone(
+                              context,
+                              ref,
+                              settings.storePhone,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    // Application Section
-                    SettingsSection(
-                      title: 'Application',
-                      icon: Icons.settings_outlined,
-                      children: [
-                        SettingsItem(
-                          icon: Icons.palette_outlined,
-                          title: 'Theme Mode',
-                          subtitle: _themeModeLabel(settings.themeMode),
-                          onTap: () => _selectThemeMode(
-                            context,
-                            ref,
-                            settings.themeMode,
+                          SettingsItem(
+                            icon: Icons.receipt_outlined,
+                            title: 'Tax Rate',
+                            subtitle:
+                                'VAT ${settings.taxRate?.toStringAsFixed(1)}%',
+                            onTap: () => _editTaxRate(
+                              context,
+                              ref,
+                              settings.taxRate ?? 13.0,
+                            ),
                           ),
-                        ),
-                        SettingsItem(
-                          icon: Icons.language_outlined,
-                          title: 'Language',
-                          subtitle: settings.language == 'en'
-                              ? 'English'
-                              : 'नेपाली',
-                          onTap: () =>
-                              _selectLanguage(context, ref, settings.language),
-                        ),
-                        SettingsItem(
-                          icon: Icons.currency_rupee,
-                          title: 'Currency',
-                          subtitle: settings.currency,
-                        ),
-                        SettingsItem(
-                          icon: Icons.notifications_outlined,
-                          title: 'Low Stock Alerts',
-                          subtitle: 'Notify when inventory is low',
-                          trailing: Switch(
-                            value: settings.lowStockAlerts,
-                            onChanged: (value) {
-                              ref
-                                  .read(settingsNotifierProvider.notifier)
-                                  .toggleLowStockAlerts();
-                            },
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // Application Section
+                      SettingsSection(
+                        title: 'Application',
+                        icon: Icons.settings_outlined,
+                        children: [
+                          SettingsItem(
+                            icon: Icons.palette_outlined,
+                            title: 'Theme Mode',
+                            subtitle: _themeModeLabel(settings.themeMode),
+                            onTap: () => _selectThemeMode(
+                              context,
+                              ref,
+                              settings.themeMode,
+                            ),
                           ),
-                        ),
-                        SettingsItem(
-                          icon: Icons.insert_chart_outlined,
-                          title: 'Daily Reports',
-                          subtitle: 'Get daily business summary',
-                          trailing: Switch(
-                            value: settings.dailyReportNotifications,
-                            onChanged: (value) {
-                              ref
-                                  .read(settingsNotifierProvider.notifier)
-                                  .toggleDailyReportNotifications();
-                            },
+                          SettingsItem(
+                            icon: Icons.language_outlined,
+                            title: 'Language',
+                            subtitle: settings.language == 'en'
+                                ? 'English'
+                                : 'नेपाली',
+                            onTap: () => _selectLanguage(
+                              context,
+                              ref,
+                              settings.language,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    // Data & Backup Section
-                    SettingsSection(
-                      title: 'Data & Backup',
-                      icon: Icons.cloud_outlined,
-                      children: [
-                        SettingsItem(
-                          icon: Icons.sync_outlined,
-                          title: 'Auto Sync',
-                          subtitle: 'Sync data automatically',
-                          trailing: Switch(
-                            value: settings.autoSync,
-                            onChanged: (value) {
-                              ref
-                                  .read(settingsNotifierProvider.notifier)
-                                  .toggleAutoSync();
-                            },
+                          SettingsItem(
+                            icon: Icons.currency_rupee,
+                            title: 'Currency',
+                            subtitle: settings.currency,
                           ),
-                        ),
-                        SettingsItem(
-                          icon: Icons.backup_outlined,
-                          title: 'Backup Data',
-                          subtitle: settings.lastBackupTime != null
-                              ? 'Last backup: ${_formatDateTime(settings.lastBackupTime!)}'
-                              : 'No backup yet',
-                          onTap: () => _performBackup(context, ref),
-                        ),
-                        SettingsItem(
-                          icon: Icons.restore_outlined,
-                          title: 'Restore Data',
-                          subtitle: 'Restore from backup',
-                          onTap: () => _showRestoreDialog(context),
-                        ),
-                        SettingsItem(
-                          icon: Icons.download_outlined,
-                          title: 'Export Data',
-                          subtitle: 'Export to CSV/Excel',
-                          onTap: () => _showExportDialog(context),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    // About Section
-                    SettingsSection(
-                      title: 'About',
-                      icon: Icons.info_outlined,
-                      children: [
-                        SettingsItem(
-                          icon: Icons.info_outlined,
-                          title: 'Version',
-                          subtitle: settings.version,
-                        ),
-                        SettingsItem(
-                          icon: Icons.description_outlined,
-                          title: 'Terms & Conditions',
-                          onTap: () => _showTermsDialog(context),
-                        ),
-                        SettingsItem(
-                          icon: Icons.privacy_tip_outlined,
-                          title: 'Privacy Policy',
-                          onTap: () => _showPrivacyDialog(context),
-                        ),
-                        SettingsItem(
-                          icon: Icons.help_outline,
-                          title: 'Help & Support',
-                          onTap: () => _showHelpDialog(context),
-                        ),
-                      ],
-                    ),
-                  ],
+                          SettingsItem(
+                            icon: Icons.notifications_outlined,
+                            title: 'Low Stock Alerts',
+                            subtitle: 'Notify when inventory is low',
+                            trailing: Switch(
+                              value: settings.lowStockAlerts,
+                              onChanged: (value) {
+                                ref
+                                    .read(settingsNotifierProvider.notifier)
+                                    .toggleLowStockAlerts();
+                              },
+                            ),
+                          ),
+                          SettingsItem(
+                            icon: Icons.insert_chart_outlined,
+                            title: 'Daily Reports',
+                            subtitle: 'Get daily business summary',
+                            trailing: Switch(
+                              value: settings.dailyReportNotifications,
+                              onChanged: (value) {
+                                ref
+                                    .read(settingsNotifierProvider.notifier)
+                                    .toggleDailyReportNotifications();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // Data & Backup Section
+                      SettingsSection(
+                        title: 'Data & Backup',
+                        icon: Icons.cloud_outlined,
+                        children: [
+                          SettingsItem(
+                            icon: Icons.sync_outlined,
+                            title: 'Auto Sync',
+                            subtitle: 'Sync data automatically',
+                            trailing: Switch(
+                              value: settings.autoSync,
+                              onChanged: (value) {
+                                ref
+                                    .read(settingsNotifierProvider.notifier)
+                                    .toggleAutoSync();
+                              },
+                            ),
+                          ),
+                          SettingsItem(
+                            icon: Icons.backup_outlined,
+                            title: 'Backup Data',
+                            subtitle: settings.lastBackupTime != null
+                                ? 'Last backup: ${_formatDateTime(settings.lastBackupTime!)}'
+                                : 'No backup yet',
+                            onTap: () => _performBackup(context, ref),
+                          ),
+                          SettingsItem(
+                            icon: Icons.restore_outlined,
+                            title: 'Restore Data',
+                            subtitle: 'Restore from backup',
+                            onTap: () => _showRestoreDialog(context),
+                          ),
+                          SettingsItem(
+                            icon: Icons.download_outlined,
+                            title: 'Export Data',
+                            subtitle: 'Export to CSV/Excel',
+                            onTap: () => _showExportDialog(context),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // About Section
+                      SettingsSection(
+                        title: 'About',
+                        icon: Icons.info_outlined,
+                        children: [
+                          SettingsItem(
+                            icon: Icons.info_outlined,
+                            title: 'Version',
+                            subtitle: settings.version,
+                          ),
+                          SettingsItem(
+                            icon: Icons.description_outlined,
+                            title: 'Terms & Conditions',
+                            onTap: () => _showTermsDialog(context),
+                          ),
+                          SettingsItem(
+                            icon: Icons.privacy_tip_outlined,
+                            title: 'Privacy Policy',
+                            onTap: () => _showPrivacyDialog(context),
+                          ),
+                          SettingsItem(
+                            icon: Icons.help_outline,
+                            title: 'Help & Support',
+                            onTap: () => _showHelpDialog(context),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) => Center(child: Text('Error: $error')),
     );
@@ -357,7 +367,7 @@ class SettingsPage extends ConsumerWidget {
               trailing: current == 'en'
                   ? Icon(
                       Icons.check,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: PasalColorToken.primary.token.resolve(context),
                     )
                   : null,
               onTap: () {
@@ -372,7 +382,7 @@ class SettingsPage extends ConsumerWidget {
               trailing: current == 'ne'
                   ? Icon(
                       Icons.check,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: PasalColorToken.primary.token.resolve(context),
                     )
                   : null,
               onTap: () {
@@ -574,12 +584,14 @@ class SettingsPage extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            color: PasalColorToken.primary.token
+                .resolve(context)
+                .withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             Icons.settings_outlined,
-            color: Theme.of(context).colorScheme.primary,
+            color: PasalColorToken.primary.token.resolve(context),
             size: 24,
           ),
         ),
@@ -593,7 +605,7 @@ class SettingsPage extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface,
+                  color: PasalColorToken.textPrimary.token.resolve(context),
                 ),
               ),
               const SizedBox(height: 2),
@@ -601,7 +613,7 @@ class SettingsPage extends ConsumerWidget {
                 'Manage your app preferences and configurations',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: PasalColorToken.textSecondary.token.resolve(context),
                 ),
               ),
             ],
@@ -651,7 +663,7 @@ class SettingsPage extends ConsumerWidget {
               trailing: current == 'system'
                   ? Icon(
                       Icons.check,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: PasalColorToken.primary.token.resolve(context),
                     )
                   : null,
               onTap: () {
@@ -667,7 +679,7 @@ class SettingsPage extends ConsumerWidget {
               trailing: current == 'light'
                   ? Icon(
                       Icons.check,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: PasalColorToken.primary.token.resolve(context),
                     )
                   : null,
               onTap: () {
@@ -683,7 +695,7 @@ class SettingsPage extends ConsumerWidget {
               trailing: current == 'dark'
                   ? Icon(
                       Icons.check,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: PasalColorToken.primary.token.resolve(context),
                     )
                   : null,
               onTap: () {

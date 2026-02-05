@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
 import 'package:pasal_pro/features/customers/domain/entities/customer.dart';
 import 'package:pasal_pro/features/customers/presentation/providers/customer_transactions_providers.dart';
@@ -145,7 +146,7 @@ class _CustomerTransactionsPageState
                         Icon(
                           AppIcons.inbox,
                           size: 48,
-                          color: Theme.of(context).colorScheme.outline,
+                          color: PasalColorToken.border.token.resolve(context),
                         ),
                         AppSpacing.medium,
                         Text(
@@ -170,7 +171,7 @@ class _CustomerTransactionsPageState
                   padding: const EdgeInsets.all(16),
                   itemCount: transactionsWithBalance.length,
                   separatorBuilder: (context, index) => Divider(
-                    color: Theme.of(context).colorScheme.outline,
+                    color: PasalColorToken.border.token.resolve(context),
                     height: 16,
                   ),
                   itemBuilder: (context, index) {
@@ -192,7 +193,7 @@ class _CustomerTransactionsPageState
                     Icon(
                       AppIcons.error,
                       size: 48,
-                      color: Theme.of(context).colorScheme.error,
+                      color: PasalColorToken.error.token.resolve(context),
                     ),
                     AppSpacing.medium,
                     Text(
@@ -266,9 +267,11 @@ class _CustomerTransactionsPageState
     return Container(
       padding: EdgeInsets.all(AppResponsive.getSectionGap(context) - 4),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: PasalColorToken.surface.token.resolve(context),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Theme.of(context).colorScheme.outline),
+        border: Border.all(
+          color: PasalColorToken.border.token.resolve(context),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,7 +284,7 @@ class _CustomerTransactionsPageState
               Icon(
                 icon,
                 size: 14,
-                color: Theme.of(context).colorScheme.primary,
+                color: PasalColorToken.primary.token.resolve(context),
               ),
             ],
           ),
@@ -315,9 +318,11 @@ class _CustomerTransactionsPageState
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLowest,
+        color: PasalColorToken.surfaceAlt.token.resolve(context),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Theme.of(context).colorScheme.outline),
+        border: Border.all(
+          color: PasalColorToken.border.token.resolve(context),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -414,7 +419,7 @@ class _CustomerTransactionsPageState
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: PasalColorToken.primary.token.resolve(context),
                         ),
                       ),
                     ],

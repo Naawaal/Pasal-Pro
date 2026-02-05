@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mix/mix.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 
-/// Settings section container with title and icon
+/// Settings section container with title and icon using Mix
 class SettingsSection extends StatelessWidget {
   final String title;
   final IconData icon;
@@ -15,46 +17,45 @@ class SettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).colorScheme.outline),
-      ),
+    final surfaceColor = PasalColorToken.surface.token.resolve(context);
+    final borderColor = PasalColorToken.border.token.resolve(context);
+    final primaryColor = PasalColorToken.primary.token.resolve(context);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+
+    return Box(
+      style: BoxStyler()
+          .borderRounded(12.0)
+          .color(surfaceColor)
+          .borderAll(color: borderColor),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
+          Box(
+            style: BoxStyler().paddingAll(16.0),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    icon,
-                    size: 18,
-                    color: Theme.of(context).colorScheme.primary,
+                Box(
+                  style: BoxStyler()
+                      .paddingAll(8.0)
+                      .borderRounded(8.0)
+                      .color(primaryColor.withValues(alpha: 0.1)),
+                  child: StyledIcon(
+                    icon: icon,
+                    style: IconStyler().size(18).color(primaryColor),
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text(
+                StyledText(
                   title,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
+                  style: TextStyler()
+                      .fontSize(15)
+                      .fontWeight(FontWeight.w600)
+                      .color(textPrimary),
                 ),
               ],
             ),
           ),
-          Divider(height: 1, color: Theme.of(context).colorScheme.outline),
+          Divider(height: 1, color: borderColor),
           ...children,
         ],
       ),

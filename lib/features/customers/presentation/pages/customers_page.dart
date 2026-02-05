@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pasal_pro/core/constants/app_responsive.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
 import 'package:pasal_pro/features/customers/presentation/pages/customer_form_page.dart';
 import 'package:pasal_pro/features/customers/presentation/providers/customer_providers.dart';
@@ -33,7 +34,7 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
       error: (error, stack) => _buildErrorState(context, error),
       data: (customers) {
         return Container(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          color: PasalColorToken.surfaceAlt.token.resolve(context),
           padding: AppResponsive.getPagePadding(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,7 +54,7 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
   Widget _buildLoadingState(BuildContext context) {
     return Center(
       child: CircularProgressIndicator(
-        color: Theme.of(context).colorScheme.primary,
+        color: PasalColorToken.primary.token.resolve(context),
       ),
     );
   }
@@ -66,14 +67,14 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
           Icon(
             Icons.error_outline,
             size: 48,
-            color: Theme.of(context).colorScheme.error,
+            color: PasalColorToken.error.token.resolve(context),
           ),
           const SizedBox(height: 16),
           Text(
             'Error loading customers',
             style: TextStyle(
               fontSize: 16,
-              color: Theme.of(context).colorScheme.error,
+              color: PasalColorToken.error.token.resolve(context),
             ),
           ),
         ],
@@ -90,12 +91,14 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            color: PasalColorToken.primary.token
+                .resolve(context)
+                .withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             Icons.people_outline,
-            color: Theme.of(context).colorScheme.primary,
+            color: PasalColorToken.primary.token.resolve(context),
             size: 24,
           ),
         ),
@@ -109,7 +112,7 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface,
+                  color: PasalColorToken.textPrimary.token.resolve(context),
                 ),
               ),
               const SizedBox(height: 2),
@@ -117,7 +120,7 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
                 '$totalCustomers customers • ${CurrencyFormatter.formatCompact(totalCredit)} credit',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: PasalColorToken.textSecondary.token.resolve(context),
                 ),
               ),
             ],
@@ -128,7 +131,7 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
           icon: const Icon(Icons.add, size: 18),
           label: const Text('Add Customer'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
+            backgroundColor: PasalColorToken.primary.token.resolve(context),
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             shape: RoundedRectangleBorder(
@@ -146,20 +149,22 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
         Expanded(
           child: Container(
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color: PasalColorToken.surface.token.resolve(context),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Theme.of(context).colorScheme.outline),
+              border: Border.all(
+                color: PasalColorToken.border.token.resolve(context),
+              ),
             ),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search customers...',
                 hintStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: PasalColorToken.textSecondary.token.resolve(context),
                 ),
                 prefixIcon: Icon(
                   Icons.search,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: PasalColorToken.textSecondary.token.resolve(context),
                   size: 20,
                 ),
                 border: InputBorder.none,
@@ -180,13 +185,15 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: _showInactive
-                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
-                  : Theme.of(context).colorScheme.surface,
+                  ? PasalColorToken.primary.token
+                        .resolve(context)
+                        .withValues(alpha: 0.1)
+                  : PasalColorToken.surface.token.resolve(context),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: _showInactive
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.outline,
+                    ? PasalColorToken.primary.token.resolve(context)
+                    : PasalColorToken.border.token.resolve(context),
               ),
             ),
             child: Text(
@@ -195,8 +202,8 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
                 color: _showInactive
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.onSurface,
+                    ? PasalColorToken.primary.token.resolve(context)
+                    : PasalColorToken.textPrimary.token.resolve(context),
               ),
             ),
           ),
@@ -214,15 +221,15 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.1),
+                color: PasalColorToken.primary.token
+                    .resolve(context)
+                    .withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
                 Icons.people_outline,
                 size: 48,
-                color: Theme.of(context).colorScheme.primary,
+                color: PasalColorToken.primary.token.resolve(context),
               ),
             ),
             const SizedBox(height: 16),
@@ -231,7 +238,7 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.onSurface,
+                color: PasalColorToken.textPrimary.token.resolve(context),
               ),
             ),
             const SizedBox(height: 4),
@@ -239,7 +246,7 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
               'Add your first customer to get started',
               style: TextStyle(
                 fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: PasalColorToken.textSecondary.token.resolve(context),
               ),
             ),
           ],
@@ -249,9 +256,11 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: PasalColorToken.surface.token.resolve(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).colorScheme.outline),
+        border: Border.all(
+          color: PasalColorToken.border.token.resolve(context),
+        ),
       ),
       child: ListView.separated(
         padding: EdgeInsets.all(AppResponsive.getSectionGap(context) - 4),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/features/products/domain/entities/product.dart';
 
 /// Individual product item in the search list
@@ -30,7 +31,7 @@ class _ProductSearchItemState extends State<ProductSearchItem> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           color: _isHovering
-              ? Theme.of(context).colorScheme.surfaceContainerHighest
+              ? PasalColorToken.surfaceAlt.token.resolve(context)
               : Colors.transparent,
           child: Row(
             children: [
@@ -41,7 +42,9 @@ class _ProductSearchItemState extends State<ProductSearchItem> {
                     Text(
                       widget.product.name,
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: PasalColorToken.textPrimary.token.resolve(
+                          context,
+                        ),
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -51,8 +54,10 @@ class _ProductSearchItemState extends State<ProductSearchItem> {
                       '${widget.product.stockPieces} pcs',
                       style: TextStyle(
                         color: widget.product.isLowStock
-                            ? Theme.of(context).colorScheme.error
-                            : Theme.of(context).colorScheme.onSurfaceVariant,
+                            ? PasalColorToken.error.token.resolve(context)
+                            : PasalColorToken.textSecondary.token.resolve(
+                                context,
+                              ),
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
                       ),
@@ -63,7 +68,7 @@ class _ProductSearchItemState extends State<ProductSearchItem> {
               Text(
                 'Rs ${widget.product.sellingPrice.toStringAsFixed(2)}',
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
+                  color: PasalColorToken.textPrimary.token.resolve(context),
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),

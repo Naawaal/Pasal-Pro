@@ -58,6 +58,23 @@ final searchResultsProvider = FutureProvider.autoDispose<List<Product>>((ref) as
 
 // 4. Cache invalidation for manual refresh
 ref.invalidate(productsProvider);  // Triggers refetch on next watch()
+
+// 5. Cross-feature dependency (e.g., sales depends on products)
+final fastSaleProvider = FutureProvider((ref) async {
+  final products = ref.watch(productsProvider);
+  // Rebuilds when productsProvider changes
+  return products.whenData((products) => FastSaleState(products: products));
+});
+```
+
+### Database Service Singleton Access Pattern
+
+All data access flows through `DatabaseService.instance.database`:
+
+```dart
+// Consistent pattern across all repositories/datasources
+final isar = await DatabaseService.instance.database;
+final results = isar.productModels.where().findAll();
 ```
 
 ---
@@ -87,6 +104,30 @@ flutter run -d macos     # macOS build (Intel/Apple Silicon)
 
 # Debug with DevTools
 flutter run -d windows --devtools
+```
+
+### Responsive Design (AppResponsive Framework)
+
+The app uses `responsive_framework` with custom breakpoints in [lib/core/constants/app_responsive.dart](../lib/core/constants/app_responsive.dart):
+
+```dart
+// Desktop-first breakpoints (1024-2560px)
+import 'package:pasal_pro/core/constants/app_responsive.dart';
+
+// In main.dart, ResponsiveBreakpoints wraps the app
+builder: (context, child) => ResponsiveBreakpoints.builder(
+  child: child!,
+  breakpoints: AppResponsive.getBreakpoints(),
+),
+
+// In widgets, check breakpoints
+if (ResponsiveValue.isMobile(context)) {
+  // Mobile layout
+} else {
+  // Desktop layout
+}
+
+// Use AppSpacing for responsive-friendly gap values
 ```
 
 ### Before Committing Code
@@ -286,22 +327,163 @@ AppColors.bgDark        // Dark background
 Color.fromARGB(255, 76, 175, 80)  // NO
 ```
 
-### Material 3 Theme Structure
+### Mix Design Token Theme System
 
-The app uses `AppTheme` for consistent Material 3 theming:
+The app uses **Mix design tokens** for consistent theming (not Material 3 theme):
 
 ```dart
-// lib/core/theme/app_theme.dart
-AppTheme.lightTheme   // Light mode MaterialTheme
-AppTheme.darkTheme    // Dark mode MaterialTheme
+// lib/core/theme/mix_theme.dart & mix_tokens.dart
+final mixTheme = PasalMixTheme.forBrightness(brightness);
+
+// Wrap app in MixScope with tokens (main.dart)
+MixScope(
+  colors: mixTheme.colors,
+  textStyles: mixTheme.textStyles,
+  spaces: mixTheme.spaces,
+  radii: mixTheme.radii,
+  child: MaterialApp(...),
+)
+
+// Access tokens in widgets
+Box(
+  style: Box.style(
+    padding: PasalSpaceToken.medium.token,
+    color: PasalColorToken.primary.token,
+  ),
+)
 
 // Theme toggling in settings
 ref.read(appThemeModeProvider.notifier).state = ThemeMode.dark;
 ```
 
+**No Material theme needed** - MixScope handles all styling via design tokens.
+
 ---
 
-## 🗄️ Database Patterns (Isar)
+## � Feature Integration & Data Flows
+
+### Key Cross-Feature Dependencies
+
+```
+Dashboard
+  ├── Depends on: Products, Sales, Customers, Cheques (for metrics aggregation)
+  └── Provides: Real-time stats (10+ metrics), activity feed
+
+Sales
+  ├── Depends on: Products (inventory lookup), Customers (credit tracking)
+  └── Creates: SaleModel with SaleItems, updates product stock
+
+Customers
+  ├── Depends on: Transactions (ledger balance calculation)
+  └── Created by: Sales (new customer on fast sale)
+
+Products
+  └── Queried by: Sales (lookup), Dashboard (low-stock alerts)
+
+Cheques
+  ├── Depends on: Customers (payment tracking)
+  └── Updates: Customer transaction ledger
+```
+
+### Provider Watchers for Cross-Feature Data
+
+When a feature needs data from another feature, use `ref.watch()`:
+
+```dart
+// Example: Sales page watching products to validate stock before adding items
+class FastSaleProvider extends StateNotifier<FastSaleState> {
+  FastSaleProvider(this.ref) : super(FastSaleState());
+
+  final Ref ref;
+
+  void addItem(int productId, int quantity) async {
+    // Watch products to ensure stock availability
+    final productsAsync = ref.watch(productsProvider);
+
+    productsAsync.whenData((products) {
+      final product = products.firstWhere((p) => p.id == productId);
+      if (product.stockPieces >= quantity) {
+        // Add to cart
+      }
+    });
+  }
+}
+```
+
+### Database Access Patterns Across Features
+
+**Single Responsibility:** Each feature's datasource only queries its own models:
+
+```dart
+// ✅ Good: Sales datasource only touches SaleModel + queries ProductModel for existence
+class SaleLocalDataSource {
+  Future<void> addSale(SaleModel sale) async {
+    final isar = await DatabaseService.instance.database;
+
+    // Verify product exists (read-only)
+    final product = await isar.productModels.get(sale.productId);
+    if (product == null) throw 'Product not found';
+
+    // Write sale
+    await isar.writeTxn(() => isar.salesModels.put(sale));
+  }
+}
+
+// ❌ Bad: Sales datasource manipulating customer balances
+class SaleLocalDataSource {
+  Future<void> addSale(SaleModel sale) async {
+    // Don't do this - violates single responsibility
+    // await isar.customerModels.update(...);
+  }
+}
+```
+
+**Multi-Model Transactions:** Use `isar.writeTxn()` when a single operation affects multiple models:
+
+```dart
+// Good: Atomic write for related models
+await isar.writeTxn(() async {
+  await isar.salesModels.put(saleModel);
+  await isar.transactionModels.put(transactionModel);  // Ledger entry
+});
+```
+
+### Three-Layer Model Architecture
+
+**Data Layer Models** (Isar @Collection):
+
+- `ProductModel`, `CustomerModel`, `SaleModel`, `ChequeModel`, `TransactionModel`
+- Location: `lib/features/<feature>/data/models/`
+- **MUST** have `part 'model.g.dart'` and `@Collection()` annotation
+- Isar auto-generates getter/setter/comparison code in `.g.dart`
+
+**Domain Layer Entities** (Business logic):
+
+- `Product`, `Customer`, `Sale`, `Cheque`, `Transaction`
+- Location: `lib/features/<feature>/domain/entities/`
+- Pure Dart, no Isar/Flutter dependencies
+- Contains business methods (e.g., `profitMargin`, `isLowStock`, `isOverdue`)
+- Immutable when possible, equality via `@immutable` + custom equality or `equatable` package
+
+**Conversion Flow**:
+
+```dart
+// Data Model → Entity (in datasource/repository)
+Product toEntity() => Product(
+  id: id.toInt(),
+  name: name,
+  costPrice: costPrice,
+  sellingPrice: sellingPrice,
+  // ... map all fields
+);
+
+// Entity → Data Model (when saving)
+static ProductModel fromEntity(Product product) => ProductModel()
+  ..id = product.id == null ? Isar.autoIncrement : product.id!
+  ..name = product.name
+  ..costPrice = product.costPrice
+  // ... map all fields
+```
 
 ### Model Structure & Best Practices
 
@@ -394,25 +576,6 @@ class ProductRepositoryImpl implements ProductRepository {
     }
   }
 }
-```
-
-### Model-to-Entity Conversion
-
-```dart
-// In ProductModel (data/models/product_model.dart)
-Product toEntity() => Product(
-  id: id.toInt(),
-  name: name,
-  costPrice: costPrice,
-  sellingPrice: sellingPrice,
-  // ... other fields
-);
-
-// In data source
-static ProductModel fromEntity(Product product) => ProductModel()
-  ..id = product.id == null ? Isar.autoIncrement : product.id!
-  ..name = product.name
-  // ... set other fields
 ```
 
 ---

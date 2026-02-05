@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mix/mix.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
 import 'package:pasal_pro/features/customers/presentation/pages/customers_page.dart';
 import 'package:pasal_pro/features/dashboard/presentation/providers/dashboard_providers.dart';
@@ -7,31 +9,32 @@ import 'package:pasal_pro/features/products/presentation/pages/products_page.dar
 import 'package:pasal_pro/features/sales/presentation/pages/fast_sale_page.dart';
 import 'package:pasal_pro/features/settings/presentation/pages/settings_page.dart';
 
-/// Quick action buttons with real store statistics
+/// Quick action buttons with real store statistics using Mix
 class QuickActions extends ConsumerWidget {
   const QuickActions({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final storeStatsAsync = ref.watch(storeStatsProvider);
+    final surfaceColor = PasalColorToken.surface.token.resolve(context);
+    final borderColor = PasalColorToken.border.token.resolve(context);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).colorScheme.outline),
-      ),
+    return Box(
+      style: BoxStyler()
+          .paddingAll(20.0)
+          .borderRounded(12.0)
+          .color(surfaceColor)
+          .borderAll(color: borderColor),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          StyledText(
             'Quick Actions',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+            style: TextStyler()
+                .fontSize(16)
+                .fontWeight(FontWeight.w600)
+                .color(textPrimary),
           ),
           const SizedBox(height: 16),
           // Action buttons
@@ -100,27 +103,26 @@ class QuickActions extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Divider(color: Theme.of(context).colorScheme.outline),
+          Divider(color: borderColor),
           const SizedBox(height: 20),
           // Store stats
-          Text(
+          StyledText(
             'Today\'s Stats',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+            style: TextStyler()
+                .fontSize(14)
+                .fontWeight(FontWeight.w600)
+                .color(textPrimary),
           ),
           const SizedBox(height: 12),
           storeStatsAsync.when(
             loading: () => Center(
               child: CircularProgressIndicator(
-                color: Theme.of(context).colorScheme.primary,
+                color: PasalColorToken.primary.token.resolve(context),
               ),
             ),
             error: (error, stack) => Text(
               'Failed to load stats',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+              style: TextStyle(color: PasalColorToken.error.token.resolve(context)),
             ),
             data: (stats) => Column(
               children: [
@@ -174,83 +176,74 @@ class QuickActions extends ConsumerWidget {
     String? badgeLabel,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Theme.of(context).colorScheme.outline),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                icon,
-                size: 20,
-                color: Theme.of(context).colorScheme.primary,
-              ),
+    final borderColor = PasalColorToken.border.token.resolve(context);
+    final surfaceHover = PasalColorToken.surfaceHover.token.resolve(context);
+    final primaryColor = PasalColorToken.primary.token.resolve(context);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+    final textSecondary = PasalColorToken.textSecondary.token.resolve(context);
+
+    return PressableBox(
+      onPress: onTap,
+      style: BoxStyler()
+          .paddingAll(12.0)
+          .borderRounded(8.0)
+          .borderAll(color: borderColor)
+          .onHovered(BoxStyler().color(surfaceHover)),
+      child: Row(
+        children: [
+          Box(
+            style: BoxStyler()
+                .width(40)
+                .height(40)
+                .borderRounded(8.0)
+                .color(primaryColor.withValues(alpha: 0.1)),
+            child: StyledIcon(
+              icon: icon,
+              style: IconStyler().size(20).color(primaryColor),
             ),
-            const SizedBox(width: 12),
-            Flexible(
-              fit: FlexFit.loose,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
+          ),
+          const SizedBox(width: 12),
+          Flexible(
+            fit: FlexFit.loose,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                StyledText(
+                  label,
+                  style: TextStyler()
+                      .fontSize(14)
+                      .fontWeight(FontWeight.w600)
+                      .color(textPrimary),
+                ),
+                const SizedBox(height: 2),
+                StyledText(
+                  subtitle,
+                  style: TextStyler().fontSize(11).color(textSecondary),
+                ),
+              ],
             ),
-            if (badgeLabel != null)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  badgeLabel,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              )
-            else
-              Icon(
-                Icons.arrow_forward_ios,
-                size: 14,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          if (badgeLabel != null)
+            Box(
+              style: BoxStyler()
+                  .paddingX(6.0)
+                  .paddingY(2.0)
+                  .borderRounded(4.0)
+                  .color(primaryColor.withValues(alpha: 0.15)),
+              child: StyledText(
+                badgeLabel,
+                style: TextStyler()
+                    .fontSize(10)
+                    .fontWeight(FontWeight.w600)
+                    .color(primaryColor),
               ),
-          ],
-        ),
+            )
+          else
+            StyledIcon(
+              icon: Icons.arrow_forward_ios,
+              style: IconStyler().size(14).color(textSecondary),
+            ),
+        ],
       ),
     );
   }
@@ -261,6 +254,9 @@ class QuickActions extends ConsumerWidget {
     String value,
     Color color,
   ) {
+    final textSecondary = PasalColorToken.textSecondary.token.resolve(context);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+
     return ConstrainedBox(
       constraints: const BoxConstraints(minWidth: 200),
       child: Row(
@@ -270,28 +266,27 @@ class QuickActions extends ConsumerWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              Box(
+                style: BoxStyler()
+                    .width(8)
+                    .height(8)
+                    .color(color)
+                    .borderRounded(4.0),
+                child: const SizedBox.shrink(),
               ),
               const SizedBox(width: 8),
-              Text(
+              StyledText(
                 label,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+                style: TextStyler().fontSize(13).color(textSecondary),
               ),
             ],
           ),
-          Text(
+          StyledText(
             value,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+            style: TextStyler()
+                .fontSize(13)
+                .fontWeight(FontWeight.w600)
+                .color(textPrimary),
           ),
         ],
       ),
@@ -321,3 +316,5 @@ class _FeaturePageWrapper extends StatelessWidget {
     );
   }
 }
+
+

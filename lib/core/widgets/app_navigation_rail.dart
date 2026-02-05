@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mix/mix.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 
 class NavRailDestination {
   final String label;
@@ -39,15 +41,16 @@ class AppNavigationRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surfaceColor = PasalColorToken.surface.token.resolve(context);
+    final borderColor = PasalColorToken.border.token.resolve(context);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
       width: isExpanded ? 240 : 72,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(
-          right: BorderSide(color: Theme.of(context).colorScheme.outline),
-        ),
+        color: surfaceColor,
+        border: Border(right: BorderSide(color: borderColor)),
       ),
       child: Column(
         children: [
@@ -56,24 +59,19 @@ class AppNavigationRail extends StatelessWidget {
             height: 48,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
-              ),
+              border: Border(bottom: BorderSide(color: borderColor)),
             ),
             child: Row(
               children: [
                 if (isExpanded)
                   Expanded(
-                    child: Text(
+                    child: StyledText(
                       'PASAL PRO',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
+                      style: TextStyler()
+                          .style(PasalTextStyleToken.caption.token.mix())
+                          .fontWeight(FontWeight.w700)
+                          .letterSpacing(0.5)
+                          .color(textPrimary),
                     ),
                   ),
                 IconButton(
@@ -106,9 +104,7 @@ class AppNavigationRail extends StatelessWidget {
           // Footer items
           Container(
             decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(color: Theme.of(context).colorScheme.outline),
-              ),
+              border: Border(top: BorderSide(color: borderColor)),
             ),
             child: Column(
               children: [
@@ -157,7 +153,7 @@ class AppNavigationRail extends StatelessWidget {
   }
 }
 
-class _NavItem extends StatefulWidget {
+class _NavItem extends StatelessWidget {
   final NavRailDestination destination;
   final bool isSelected;
   final bool isExpanded;
@@ -171,78 +167,60 @@ class _NavItem extends StatefulWidget {
   });
 
   @override
-  State<_NavItem> createState() => _NavItemState();
-}
-
-class _NavItemState extends State<_NavItem> {
-  bool _isHovering = false;
-
-  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isActive = widget.isSelected;
-    final showHover = _isHovering && !isActive;
+    final primaryColor = PasalColorToken.primary.token.resolve(context);
+    final surfaceAlt = PasalColorToken.surfaceAlt.token.resolve(context);
+    final surfaceHover = PasalColorToken.surfaceHover.token.resolve(context);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+    final textSecondary = PasalColorToken.textSecondary.token.resolve(context);
+    final isActive = isSelected;
+    final baseStyle = BoxStyler()
+        .paddingX(12)
+        .paddingY(12)
+        .borderRounded(8)
+        .marginX(8)
+        .marginY(2)
+        .color(surfaceAlt)
+        .onHovered(BoxStyler().color(surfaceHover));
+    final activeStyle = baseStyle.color(primaryColor.withValues(alpha: 0.1));
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovering = true),
-      onExit: (_) => setState(() => _isHovering = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          decoration: BoxDecoration(
-            color: isActive
-                ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                : showHover
-                ? theme.colorScheme.surfaceContainerHighest
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
+    return PressableBox(
+      onPress: onTap,
+      style: isActive ? activeStyle : baseStyle,
+      child: Row(
+        children: [
+          StyledIcon(
+            icon: destination.icon,
+            style: IconStyler()
+                .size(20)
+                .color(isActive ? primaryColor : textSecondary),
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            child: Row(
-              children: [
-                Icon(
-                  widget.destination.icon,
-                  size: 20,
-                  color: isActive
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.onSurfaceVariant,
-                ),
-                if (widget.isExpanded) ...[
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.destination.label,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: isActive
-                                ? FontWeight.w600
-                                : FontWeight.w500,
-                            color: isActive
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.onSurface,
-                          ),
-                        ),
-                        Text(
-                          widget.destination.shortcut,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
+          if (isExpanded) ...[
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  StyledText(
+                    destination.label,
+                    style: TextStyler()
+                        .style(PasalTextStyleToken.body.token.mix())
+                        .fontWeight(
+                          isActive ? FontWeight.w600 : FontWeight.w500,
+                        )
+                        .color(isActive ? primaryColor : textPrimary),
+                  ),
+                  StyledText(
+                    destination.shortcut,
+                    style: TextStyler()
+                        .style(PasalTextStyleToken.caption.token.mix())
+                        .color(textSecondary),
                   ),
                 ],
-              ],
+              ),
             ),
-          ),
-        ),
+          ],
+        ],
       ),
     );
   }

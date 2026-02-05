@@ -36,7 +36,7 @@ dependencies:
 
   # UI Enhancement - Phase 1-4 (Responsive, Components, Styling)
   responsive_framework: ^1.5.1
-  mix: ^1.0.0
+  mix: ^2.0.0-rc.0
 
   # Printing
   printing: ^5.13.0

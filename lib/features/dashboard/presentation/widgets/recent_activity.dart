@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:mix/mix.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
 import 'package:pasal_pro/features/dashboard/presentation/providers/dashboard_providers.dart';
 import 'package:pasal_pro/features/sales/data/models/sale_model.dart';
 
-/// Recent activity feed showing latest transactions with real data
+/// Recent activity feed showing latest transactions with real data using Mix
 class RecentActivity extends ConsumerWidget {
   const RecentActivity({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final recentActivityAsync = ref.watch(recentActivityProvider);
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).colorScheme.outline),
-      ),
+    final surfaceColor = PasalColorToken.surface.token.resolve(context);
+    final borderColor = PasalColorToken.border.token.resolve(context);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+
+    return Box(
+      style: BoxStyler()
+          .paddingAll(20.0)
+          .borderRounded(12.0)
+          .color(surfaceColor)
+          .borderAll(color: borderColor),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -26,13 +31,12 @@ class RecentActivity extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              StyledText(
                 'Recent Activity',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
+                style: TextStyler()
+                    .fontSize(16)
+                    .fontWeight(FontWeight.w600)
+                    .color(textPrimary),
               ),
               TextButton(onPressed: () {}, child: const Text('View All')),
             ],
@@ -43,7 +47,7 @@ class RecentActivity extends ConsumerWidget {
             child: recentActivityAsync.when(
               loading: () => Center(
                 child: CircularProgressIndicator(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: PasalColorToken.primary.token.resolve(context),
                 ),
               ),
               error: (error, stack) => Center(
@@ -53,13 +57,13 @@ class RecentActivity extends ConsumerWidget {
                     Icon(
                       Icons.error_outline,
                       size: 40,
-                      color: Theme.of(context).colorScheme.error,
+                      color: PasalColorToken.error.token.resolve(context),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Failed to load activity',
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
+                        color: PasalColorToken.error.token.resolve(context),
                       ),
                     ),
                   ],
@@ -84,7 +88,7 @@ class RecentActivity extends ConsumerWidget {
                 return ListView.separated(
                   itemCount: activities.length,
                   separatorBuilder: (context, index) => Divider(
-                    color: Theme.of(context).colorScheme.outline,
+                    color: PasalColorToken.border.token.resolve(context),
                     height: 16,
                   ),
                   itemBuilder: (context, index) =>
@@ -99,6 +103,11 @@ class RecentActivity extends ConsumerWidget {
   }
 
   Widget _buildActivityItem(BuildContext context, SaleModel sale) {
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+    final textSecondary = PasalColorToken.textSecondary.token.resolve(context);
+    final profitColor = Color(0xFF4CAF50);
+    final creditColor = Color(0xFFFF9800);
+
     final paymentLabel = sale.paymentMethod == SalePaymentMethod.cash
         ? 'Cash'
         : 'Credit';
@@ -117,23 +126,27 @@ class RecentActivity extends ConsumerWidget {
 
     return Row(
       children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: sale.paymentMethod == SalePaymentMethod.cash
-                ? Colors.green.withValues(alpha: 0.1)
-                : Colors.orange.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(
-            sale.paymentMethod == SalePaymentMethod.cash
+        Box(
+          style: BoxStyler()
+              .width(40)
+              .height(40)
+              .borderRounded(10.0)
+              .color(
+                sale.paymentMethod == SalePaymentMethod.cash
+                    ? profitColor.withValues(alpha: 0.1)
+                    : creditColor.withValues(alpha: 0.1),
+              ),
+          child: StyledIcon(
+            icon: sale.paymentMethod == SalePaymentMethod.cash
                 ? Icons.attach_money
                 : Icons.credit_card,
-            size: 20,
-            color: sale.paymentMethod == SalePaymentMethod.cash
-                ? Colors.green
-                : Colors.orange,
+            style: IconStyler()
+                .size(20)
+                .color(
+                  sale.paymentMethod == SalePaymentMethod.cash
+                      ? profitColor
+                      : creditColor,
+                ),
           ),
         ),
         const SizedBox(width: 12),
@@ -141,21 +154,17 @@ class RecentActivity extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              StyledText(
                 'Sale completed',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
+                style: TextStyler()
+                    .fontSize(14)
+                    .fontWeight(FontWeight.w600)
+                    .color(textPrimary),
               ),
               const SizedBox(height: 2),
-              Text(
+              StyledText(
                 '${sale.items.length} items • $paymentLabel payment',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+                style: TextStyler().fontSize(12).color(textSecondary),
               ),
             ],
           ),
@@ -163,21 +172,17 @@ class RecentActivity extends ConsumerWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(
+            StyledText(
               CurrencyFormatter.format(sale.subtotal),
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.green,
-              ),
+              style: TextStyler()
+                  .fontSize(14)
+                  .fontWeight(FontWeight.w600)
+                  .color(profitColor),
             ),
             const SizedBox(height: 2),
-            Text(
+            StyledText(
               timeLabel,
-              style: TextStyle(
-                fontSize: 11,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyler().fontSize(11).color(textSecondary),
             ),
           ],
         ),
@@ -185,3 +190,5 @@ class RecentActivity extends ConsumerWidget {
     );
   }
 }
+
+

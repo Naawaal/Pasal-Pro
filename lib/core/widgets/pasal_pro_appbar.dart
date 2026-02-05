@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mix/mix.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 
 /// Modern flat AppBar for Pasal Pro
 /// Clean design with smooth interactions
@@ -27,25 +29,24 @@ class PasalProAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(
-          bottom: BorderSide(color: Theme.of(context).colorScheme.outline),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    final surfaceColor = PasalColorToken.surface.token.resolve(context);
+    final borderColor = PasalColorToken.border.token.resolve(context);
+    final appBarStyle = BoxStyler()
+        .height(56)
+        .color(surfaceColor)
+        .borderBottom(color: borderColor)
+        .paddingX(16);
+
+    return Box(
+      style: appBarStyle,
       child: Row(
         children: [
           // Title
-          Text(
+          StyledText(
             title ?? 'Pasal Pro',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+            style: TextStyler()
+                .style(PasalTextStyleToken.title.token.mix())
+                .color(PasalColorToken.textPrimary.token()),
           ),
           const Spacer(),
 
@@ -72,7 +73,7 @@ class PasalProAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-class _ActionButton extends StatefulWidget {
+class _ActionButton extends StatelessWidget {
   final IconData icon;
   final String tooltip;
   final VoidCallback? onPressed;
@@ -84,35 +85,24 @@ class _ActionButton extends StatefulWidget {
   });
 
   @override
-  State<_ActionButton> createState() => _ActionButtonState();
-}
-
-class _ActionButtonState extends State<_ActionButton> {
-  bool _isHovering = false;
-
-  @override
   Widget build(BuildContext context) {
+    final surfaceAlt = PasalColorToken.surfaceAlt.token.resolve(context);
+    final surfaceHover = PasalColorToken.surfaceHover.token.resolve(context);
+    final iconColor = PasalColorToken.textSecondary.token.resolve(context);
+
     return MouseRegion(
-      onEnter: (_) => setState(() => _isHovering = true),
-      onExit: (_) => setState(() => _isHovering = false),
       child: Tooltip(
-        message: widget.tooltip,
-        child: GestureDetector(
-          onTap: widget.onPressed,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: _isHovering
-                  ? Theme.of(context).colorScheme.surfaceContainerHighest
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              widget.icon,
-              size: 20,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+        message: tooltip,
+        child: PressableBox(
+          onPress: onPressed,
+          style: BoxStyler()
+              .paddingAll(8)
+              .borderRounded(8)
+              .color(surfaceAlt)
+              .onHovered(BoxStyler().color(surfaceHover)),
+          child: StyledIcon(
+            icon: icon,
+            style: IconStyler().size(20).color(iconColor),
           ),
         ),
       ),
@@ -147,12 +137,12 @@ class _SyncIndicator extends StatelessWidget {
     final icon = _getStatusIcon();
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
+      child: Box(
+        style: BoxStyler()
+            .paddingX(10)
+            .paddingY(6)
+            .borderRounded(12)
+            .color(color.withValues(alpha: 0.1)),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -168,13 +158,12 @@ class _SyncIndicator extends StatelessWidget {
             else
               Icon(icon, size: 14, color: color),
             const SizedBox(width: 6),
-            Text(
+            StyledText(
               _getStatusText(),
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
+              style: TextStyler()
+                  .style(PasalTextStyleToken.caption.token.mix())
+                  .fontWeight(FontWeight.w600)
+                  .color(color),
             ),
           ],
         ),
@@ -185,13 +174,13 @@ class _SyncIndicator extends StatelessWidget {
   Color _getStatusColor(BuildContext context) {
     switch (status) {
       case 'syncing':
-        return Theme.of(context).colorScheme.primary;
+        return PasalColorToken.primary.token.resolve(context);
       case 'synced':
         return const Color(0xFF10B981);
       case 'error':
-        return Theme.of(context).colorScheme.error;
+        return PasalColorToken.error.token.resolve(context);
       default:
-        return Theme.of(context).colorScheme.onSurfaceVariant;
+        return PasalColorToken.textSecondary.token.resolve(context);
     }
   }
 

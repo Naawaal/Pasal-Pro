@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:mix/mix.dart';
 import 'package:pasal_pro/core/constants/app_icons.dart';
-import 'package:pasal_pro/core/theme/app_theme.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
+import 'package:pasal_pro/core/constants/app_colors.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
 import 'package:pasal_pro/features/products/domain/entities/product.dart';
 
-/// Modern flat product list item with smooth interactions
-class ProductListItem extends StatefulWidget {
+/// Modern flat product list item with smooth interactions using Mix
+class ProductListItem extends StatelessWidget {
   final Product product;
   final VoidCallback? onEdit;
   final VoidCallback? onAdjustStock;
@@ -22,162 +24,148 @@ class ProductListItem extends StatefulWidget {
   });
 
   @override
-  State<ProductListItem> createState() => _ProductListItemState();
-}
-
-class _ProductListItemState extends State<ProductListItem> {
-  bool _isHovered = false;
-
-  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isInactive = !widget.product.isActive;
+    final isInactive = !product.isActive;
+    final surfaceColor = PasalColorToken.surface.token.resolve(context);
+    final surfaceHover = PasalColorToken.surfaceHover.token.resolve(context);
+    final borderColor = PasalColorToken.border.token.resolve(context);
+    final primaryColor = PasalColorToken.primary.token.resolve(context);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+    final errorColor = PasalColorToken.error.token.resolve(context);
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: _isHovered
-              ? theme.colorScheme.surfaceContainerHighest
-              : theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: theme.colorScheme.outline),
-        ),
-        child: Row(
-          children: [
-            // Product icon
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                AppIcons.package,
-                color: theme.colorScheme.primary,
-                size: 24,
-              ),
+    return PressableBox(
+      onPress: () {},
+      style: BoxStyler()
+          .paddingAll(16.0)
+          .borderRounded(12.0)
+          .color(surfaceColor)
+          .borderAll(color: borderColor)
+          .onHovered(BoxStyler().color(surfaceHover)),
+      child: Row(
+        children: [
+          // Product icon
+          Box(
+            style: BoxStyler()
+                .width(48)
+                .height(48)
+                .borderRounded(10.0)
+                .color(primaryColor.withValues(alpha: 0.1)),
+            child: StyledIcon(
+              icon: AppIcons.package,
+              style: IconStyler().size(24).color(primaryColor),
             ),
-            const SizedBox(width: 16),
+          ),
+          const SizedBox(width: 16),
 
-            // Product details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          widget.product.name,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: theme.colorScheme.onSurface,
-                            decoration: isInactive
-                                ? TextDecoration.lineThrough
-                                : null,
-                          ),
-                        ),
-                      ),
-                      if (isInactive)
-                        _buildBadge(
-                          context,
-                          'Inactive',
-                          theme.colorScheme.error,
-                        ),
-                      if (widget.product.isLowStock && !isInactive)
-                        _buildBadge(
-                          context,
-                          'Low Stock',
-                          AppTheme.lowStockColor,
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 4,
-                    children: [
-                      _buildInfoChip(
-                        context,
-                        icon: AppIcons.rupee,
-                        label:
-                            '${CurrencyFormatter.format(widget.product.sellingPrice)} / pc',
-                      ),
-                      _buildInfoChip(
-                        context,
-                        icon: AppIcons.package,
-                        label: 'Stock: ${widget.product.stockPieces}',
-                      ),
-                      _buildInfoChip(
-                        context,
-                        icon: AppIcons.carton,
-                        label: '${widget.product.piecesPerCarton} pcs/carton',
-                      ),
-                      if (widget.product.category != null)
-                        _buildInfoChip(
-                          context,
-                          icon: AppIcons.tag,
-                          label: widget.product.category!,
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-
-            // Actions
-            Row(
-              mainAxisSize: MainAxisSize.min,
+          // Product details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildActionButton(
-                  context,
-                  icon: AppIcons.edit,
-                  tooltip: 'Edit',
-                  onPressed: widget.onEdit,
+                Row(
+                  children: [
+                    Expanded(
+                      child: StyledText(
+                        product.name,
+                        style: TextStyler()
+                            .fontSize(14)
+                            .fontWeight(FontWeight.w600)
+                            .decoration(
+                              isInactive
+                                  ? TextDecoration.lineThrough
+                                  : TextDecoration.none,
+                            )
+                            .color(textPrimary),
+                      ),
+                    ),
+                    if (isInactive)
+                      _buildBadge(context, 'Inactive', errorColor),
+                    if (product.isLowStock && !isInactive)
+                      _buildBadge(
+                        context,
+                        'Low Stock',
+                        AppColors.warningOrange,
+                      ),
+                  ],
                 ),
-                const SizedBox(width: 4),
-                _buildActionButton(
-                  context,
-                  icon: AppIcons.packagePlus,
-                  tooltip: 'Adjust Stock',
-                  onPressed: widget.onAdjustStock,
-                ),
-                const SizedBox(width: 4),
-                _buildActionButton(
-                  context,
-                  icon: isInactive ? AppIcons.unlock : AppIcons.lock,
-                  tooltip: isInactive ? 'Activate' : 'Deactivate',
-                  onPressed: widget.onToggleActive,
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 4,
+                  children: [
+                    _buildInfoChip(
+                      context,
+                      icon: AppIcons.rupee,
+                      label:
+                          '${CurrencyFormatter.format(product.sellingPrice)} / pc',
+                    ),
+                    _buildInfoChip(
+                      context,
+                      icon: AppIcons.package,
+                      label: 'Stock: ${product.stockPieces}',
+                    ),
+                    _buildInfoChip(
+                      context,
+                      icon: AppIcons.carton,
+                      label: '${product.piecesPerCarton} pcs/carton',
+                    ),
+                    if (product.category != null)
+                      _buildInfoChip(
+                        context,
+                        icon: AppIcons.tag,
+                        label: product.category!,
+                      ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 16),
+
+          // Actions
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildActionButton(
+                context,
+                icon: AppIcons.edit,
+                tooltip: 'Edit',
+                onPressed: onEdit,
+              ),
+              const SizedBox(width: 4),
+              _buildActionButton(
+                context,
+                icon: AppIcons.packagePlus,
+                tooltip: 'Adjust Stock',
+                onPressed: onAdjustStock,
+              ),
+              const SizedBox(width: 4),
+              _buildActionButton(
+                context,
+                icon: isInactive ? AppIcons.unlock : AppIcons.lock,
+                tooltip: isInactive ? 'Activate' : 'Deactivate',
+                onPressed: onToggleActive,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildBadge(BuildContext context, String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
+    return Box(
+      style: BoxStyler()
+          .paddingX(8.0)
+          .paddingY(4.0)
+          .borderRounded(6.0)
+          .color(color.withValues(alpha: 0.1)),
+      child: StyledText(
         label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
+        style: TextStyler()
+            .fontSize(11)
+            .fontWeight(FontWeight.w600)
+            .color(color),
       ),
     );
   }
@@ -187,21 +175,19 @@ class _ProductListItemState extends State<ProductListItem> {
     required IconData icon,
     required String label,
   }) {
+    final textSecondary = PasalColorToken.textSecondary.token.resolve(context);
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          icon,
-          size: 14,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        StyledIcon(
+          icon: icon,
+          style: IconStyler().size(14).color(textSecondary),
         ),
         const SizedBox(width: 4),
-        Text(
+        StyledText(
           label,
-          style: TextStyle(
-            fontSize: 13,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: TextStyler().fontSize(13).color(textSecondary),
         ),
       ],
     );
@@ -213,20 +199,16 @@ class _ProductListItemState extends State<ProductListItem> {
     required String tooltip,
     VoidCallback? onPressed,
   }) {
+    final textSecondary = PasalColorToken.textSecondary.token.resolve(context);
+
     return Tooltip(
       message: tooltip,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
-          child: Icon(
-            icon,
-            size: 18,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+      child: PressableBox(
+        onPress: onPressed,
+        style: BoxStyler().width(36).height(36).borderRounded(8.0),
+        child: StyledIcon(
+          icon: icon,
+          style: IconStyler().size(18).color(textSecondary),
         ),
       ),
     );
