@@ -25,11 +25,11 @@ class DailySalesLog extends ConsumerWidget {
 
     final currentSale = ref.watch(currentSaleProvider);
 
-    return Card(
-      color: PasalColorToken.surface.token.resolve(context),
-      child: Padding(
-        padding: SalesSpacing.getFormPadding(),
+    return Padding(
+      padding: SalesSpacing.getFormPadding(),
+      child: SingleChildScrollView(
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header with entry count
@@ -72,120 +72,122 @@ class DailySalesLog extends ConsumerWidget {
             SalesSpacing.medium,
 
             // Table header and content
-            Expanded(
-              child: Column(
-                children: [
-                  // Column headers (table-like)
-                  Container(
-                    padding: SalesSpacing.getLogCellPadding(),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      border: Border(
-                        bottom: BorderSide(color: Colors.grey[300]!, width: 1),
-                      ),
-                      borderRadius: BorderRadius.circular(
-                        SalesSpacing.logBorderRadius,
-                      ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Column headers (table-like)
+                Container(
+                  padding: SalesSpacing.getLogCellPadding(),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey[300]!, width: 1),
                     ),
-                    child: Row(
-                      children: [
-                        // Product (flex: 3)
-                        Expanded(
-                          flex: 3,
-                          child: Text(
-                            'Product',
-                            style: TextStyle(
-                              fontSize: SalesSpacing.logHeaderFontSize,
-                              fontWeight: FontWeight.w600,
-                              color: textSecondary,
-                            ),
-                          ),
-                        ),
-
-                        // Qty (flex: 1)
-                        Expanded(
-                          flex: 1,
-                          child: Text(
-                            'Qty',
-                            style: TextStyle(
-                              fontSize: SalesSpacing.logHeaderFontSize,
-                              fontWeight: FontWeight.w600,
-                              color: textSecondary,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-
-                        // Price (flex: 1)
-                        Expanded(
-                          flex: 1,
-                          child: Text(
-                            'Price',
-                            style: TextStyle(
-                              fontSize: SalesSpacing.logHeaderFontSize,
-                              fontWeight: FontWeight.w600,
-                              color: textSecondary,
-                            ),
-                            textAlign: TextAlign.right,
-                          ),
-                        ),
-
-                        // Profit (flex: 1)
-                        Expanded(
-                          flex: 1,
-                          child: Text(
-                            'Profit',
-                            style: TextStyle(
-                              fontSize: SalesSpacing.logHeaderFontSize,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.successGreen,
-                            ),
-                            textAlign: TextAlign.right,
-                          ),
-                        ),
-
-                        // Remove button (32px)
-                        SizedBox(width: SalesSpacing.removeButtonSize),
-                      ],
+                    borderRadius: BorderRadius.circular(
+                      SalesSpacing.logBorderRadius,
                     ),
                   ),
-                  SalesSpacing.small,
-
-                  // Sales entries list or empty state
-                  if (currentSale.items.isEmpty)
-                    Expanded(
-                      child: Center(
+                  child: Row(
+                    children: [
+                      // Product (flex: 3)
+                      Expanded(
+                        flex: 3,
                         child: Text(
-                          'No sales recorded yet',
+                          'Product',
                           style: TextStyle(
-                            fontSize: SalesSpacing.fieldHintFontSize,
-                            color: Colors.grey[400],
+                            fontSize: SalesSpacing.logHeaderFontSize,
+                            fontWeight: FontWeight.w600,
+                            color: textSecondary,
                           ),
                         ),
                       ),
-                    )
-                  else
-                    Expanded(
-                      child: ListView.separated(
-                        itemCount: currentSale.items.length,
-                        separatorBuilder: (context, index) =>
-                            Divider(color: Colors.grey[200], height: 1),
-                        itemBuilder: (context, index) {
-                          final item = currentSale.items[index];
-                          return SalesLogRow(
-                            item: item,
-                            index: index,
-                            onRemove: () {
-                              ref
-                                  .read(currentSaleProvider.notifier)
-                                  .removeItem(item.product.id);
-                            },
-                          );
-                        },
+
+                      // Qty (flex: 1)
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          'Qty',
+                          style: TextStyle(
+                            fontSize: SalesSpacing.logHeaderFontSize,
+                            fontWeight: FontWeight.w600,
+                            color: textSecondary,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+
+                      // Price (flex: 1)
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          'Price',
+                          style: TextStyle(
+                            fontSize: SalesSpacing.logHeaderFontSize,
+                            fontWeight: FontWeight.w600,
+                            color: textSecondary,
+                          ),
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+
+                      // Profit (flex: 1)
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          'Profit',
+                          style: TextStyle(
+                            fontSize: SalesSpacing.logHeaderFontSize,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.successGreen,
+                          ),
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+
+                      // Remove button (32px)
+                      SizedBox(width: SalesSpacing.removeButtonSize),
+                    ],
+                  ),
+                ),
+                SalesSpacing.small,
+
+                // Sales entries list or empty state
+                if (currentSale.items.isEmpty)
+                  SizedBox(
+                    height: 200,
+                    child: Center(
+                      child: Text(
+                        'No sales recorded yet',
+                        style: TextStyle(
+                          fontSize: SalesSpacing.fieldHintFontSize,
+                          color: Colors.grey[400],
+                        ),
                       ),
                     ),
-                ],
-              ),
+                  )
+                else
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: currentSale.items.length,
+                      separatorBuilder: (context, index) =>
+                          Divider(color: Colors.grey[200], height: 1),
+                      itemBuilder: (context, index) {
+                        final item = currentSale.items[index];
+                        return SalesLogRow(
+                          item: item,
+                          index: index,
+                          onRemove: () {
+                            ref
+                                .read(currentSaleProvider.notifier)
+                                .removeItem(item.product.id);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+              ],
             ),
 
             SalesSpacing.medium,

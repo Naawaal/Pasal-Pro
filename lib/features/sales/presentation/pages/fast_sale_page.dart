@@ -120,67 +120,73 @@ class _FastSalePageState extends ConsumerState<FastSalePage> {
 
             // Responsive 40/60 split (form/log) or stacked layout
             Expanded(
-              child: ResponsiveRowColumn(
-                layout: AppResponsive.shouldStack(context)
-                    ? ResponsiveRowColumnType.COLUMN
-                    : ResponsiveRowColumnType.ROW,
-                children: [
-                  // Entry form panel (40% on desktop)
-                  ResponsiveRowColumnItem(
-                    rowFlex: 40,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: PasalColorToken.surface.token.resolve(context),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: PasalColorToken.border.token.resolve(context),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+              child: SingleChildScrollView(
+                child: ResponsiveRowColumn(
+                  layout: AppResponsive.shouldStack(context)
+                      ? ResponsiveRowColumnType.COLUMN
+                      : ResponsiveRowColumnType.ROW,
+                  children: [
+                    // Entry form panel (40% on desktop)
+                    ResponsiveRowColumnItem(
+                      rowFlex: 40,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: PasalColorToken.surface.token.resolve(context),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: PasalColorToken.border.token.resolve(
+                              context,
+                            ),
                           ),
-                        ],
-                      ),
-                      child: const SalesEntryForm(),
-                    ),
-                  ),
-
-                  // Horizontal/vertical gap (responsive)
-                  ResponsiveRowColumnItem(
-                    child: SizedBox(
-                      height: AppResponsive.shouldStack(context)
-                          ? SalesSpacing.formSectionGap
-                          : 0,
-                      width: AppResponsive.shouldStack(context)
-                          ? 0
-                          : SalesSpacing.formSectionGap,
-                    ),
-                  ),
-
-                  // Daily sales log panel (60% on desktop)
-                  ResponsiveRowColumnItem(
-                    rowFlex: 60,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: PasalColorToken.surface.token.resolve(context),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: PasalColorToken.border.token.resolve(context),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        child: const SalesEntryForm(),
                       ),
-                      child: const DailySalesLog(),
                     ),
-                  ),
-                ],
+
+                    // Horizontal/vertical gap (responsive)
+                    ResponsiveRowColumnItem(
+                      child: SizedBox(
+                        height: AppResponsive.shouldStack(context)
+                            ? SalesSpacing.formSectionGap
+                            : 0,
+                        width: AppResponsive.shouldStack(context)
+                            ? 0
+                            : SalesSpacing.formSectionGap,
+                      ),
+                    ),
+
+                    // Daily sales log panel (60% on desktop)
+                    ResponsiveRowColumnItem(
+                      rowFlex: 60,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: PasalColorToken.surface.token.resolve(context),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: PasalColorToken.border.token.resolve(
+                              context,
+                            ),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const DailySalesLog(),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
