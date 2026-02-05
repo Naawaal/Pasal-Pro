@@ -9,6 +9,9 @@ import 'package:pasal_pro/core/utils/app_logger.dart';
 import 'package:pasal_pro/features/customers/domain/entities/customer.dart';
 import 'package:pasal_pro/features/customers/presentation/providers/customer_providers.dart';
 import 'package:pasal_pro/core/theme/mix_tokens.dart';
+import 'package:pasal_pro/core/widgets/pasal_button.dart';
+import 'package:pasal_pro/core/widgets/pasal_dialog.dart';
+import 'package:pasal_pro/core/widgets/pasal_text_field.dart';
 
 /// Form page for creating and editing customers
 class CustomerFormPage extends ConsumerStatefulWidget {
@@ -109,7 +112,12 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
     final errorColor = PasalColorToken.error.token.resolve(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.customer == null ? 'Add Customer' : 'Edit Customer'),
+        title: StyledText(
+          widget.customer == null ? 'Add Customer' : 'Edit Customer',
+          style: TextStyler()
+              .style(PasalTextStyleToken.title.token.mix())
+              .color(textPrimary),
+        ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -127,14 +135,11 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Customer Name
-                    TextFormField(
+                    PasalTextField(
                       controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Customer Name',
-                        hintText: 'Enter customer name',
-                        prefixIcon: Icon(AppIcons.user),
-                        border: OutlineInputBorder(),
-                      ),
+                      label: 'Customer Name',
+                      hint: 'Enter customer name',
+                      prefixIcon: AppIcons.user,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'Customer name is required';
@@ -145,39 +150,31 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
                     AppSpacing.medium,
 
                     // Phone Number
-                    TextFormField(
+                    PasalTextField(
                       controller: _phoneController,
-                      decoration: const InputDecoration(
-                        labelText: 'Phone Number (Optional)',
-                        hintText: 'Enter phone number',
-                        prefixIcon: Icon(AppIcons.phone),
-                        border: OutlineInputBorder(),
-                      ),
+                      label: 'Phone Number (Optional)',
+                      hint: 'Enter phone number',
+                      prefixIcon: AppIcons.phone,
                     ),
                     AppSpacing.medium,
 
                     // Credit Limit
-                    TextFormField(
+                    PasalTextField(
                       controller: _creditLimitController,
-                      decoration: const InputDecoration(
-                        labelText: 'Credit Limit',
-                        hintText: 'Enter credit limit (0 = unlimited)',
-                        prefixIcon: Icon(AppIcons.creditCard),
-                        border: OutlineInputBorder(),
-                      ),
+                      label: 'Credit Limit',
+                      hint: 'Enter credit limit (0 = unlimited)',
+                      prefixIcon: AppIcons.creditCard,
                       keyboardType: TextInputType.number,
                     ),
                     AppSpacing.medium,
 
                     // Notes
-                    TextFormField(
+                    PasalTextField(
                       controller: _notesController,
-                      decoration: const InputDecoration(
-                        labelText: 'Notes (Optional)',
-                        hintText: 'Add any notes about the customer',
-                        border: OutlineInputBorder(),
-                      ),
+                      label: 'Notes (Optional)',
+                      hint: 'Add any notes about the customer',
                       maxLines: 4,
+                      minLines: 4,
                     ),
                     AppSpacing.xLarge,
 
@@ -252,27 +249,14 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
                       children: [
                         ResponsiveRowColumnItem(
                           rowFlex: 1,
-                          child: ElevatedButton(
+                          child: PasalButton(
+                            label: widget.customer == null
+                                ? 'Add Customer'
+                                : 'Update Customer',
                             onPressed: _isLoading ? null : _handleSubmit,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (_isLoading)
-                                  const SizedBox(
-                                    height: 16,
-                                    width: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                                if (_isLoading) const SizedBox(width: 8),
-                                Text(
-                                  widget.customer == null
-                                      ? 'Add Customer'
-                                      : 'Update Customer',
-                                ),
-                              ],
-                            ),
+                            isLoading: _isLoading,
+                            variant: PasalButtonVariant.primary,
+                            fullWidth: true,
                           ),
                         ),
 
@@ -290,19 +274,13 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
                           ),
                           ResponsiveRowColumnItem(
                             rowFlex: 1,
-                            child: ElevatedButton(
+                            child: PasalButton(
+                              label: 'Delete Customer',
                               onPressed: _isLoading
                                   ? null
                                   : () => _showDeleteConfirmation(errorColor),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.error,
-                                foregroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.onError,
-                              ),
-                              child: const Text('Delete Customer'),
+                              variant: PasalButtonVariant.destructive,
+                              fullWidth: true,
                             ),
                           ),
                         ],
@@ -320,28 +298,18 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
 
   /// Show delete confirmation dialog
   void _showDeleteConfirmation(Color errorColor) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Customer?'),
-        content: Text(
+    PasalConfirmDialog.show(
+      context,
+      title: 'Delete Customer?',
+      message:
           'Are you sure you want to delete "${widget.customer!.name}"?\n\nThis action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _handleDelete();
-            },
-            child: Text('Delete', style: TextStyle(color: errorColor)),
-          ),
-        ],
-      ),
-    );
+      confirmLabel: 'Delete',
+      isDestructive: true,
+    ).then((confirmed) {
+      if (confirmed == true) {
+        _handleDelete();
+      }
+    });
   }
 
   /// Handle customer deletion

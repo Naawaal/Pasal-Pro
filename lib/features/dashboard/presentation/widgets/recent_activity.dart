@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/theme/mix_tokens.dart';
+import 'package:pasal_pro/core/widgets/pasal_button.dart';
 import 'package:pasal_pro/features/dashboard/constants/dashboard_spacing.dart';
 import 'package:pasal_pro/features/dashboard/presentation/providers/dashboard_providers.dart';
 import 'package:pasal_pro/features/dashboard/presentation/widgets/activity_item.dart';
@@ -42,18 +43,13 @@ class RecentActivity extends ConsumerWidget {
                   color: textPrimary,
                 ),
               ),
-              TextButton(
+              PasalButton(
+                label: 'View All',
                 onPressed: () {
                   // TODO: Navigate to detailed activity log
                 },
-                child: Text(
-                  'View All',
-                  style: TextStyle(
-                    color: PasalColorToken.primary.token.resolve(context),
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                variant: PasalButtonVariant.ghost,
+                size: PasalButtonSize.small,
               ),
             ],
           ),

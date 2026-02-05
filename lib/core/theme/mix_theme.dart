@@ -108,6 +108,7 @@ class PasalMixThemeData {
   final Map<TextStyleToken, TextStyle> textStyles;
   final Map<SpaceToken, double> spaces;
   final Map<RadiusToken, Radius> radii;
+  // Duration tokens use generic MixToken type for registration in MixScope.tokens
   final Map<DurationToken, Duration> durations;
 
   const PasalMixThemeData({

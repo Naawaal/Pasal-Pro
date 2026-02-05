@@ -8,6 +8,7 @@ import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
 import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
+import 'package:pasal_pro/core/widgets/pasal_button.dart';
 import 'package:pasal_pro/features/customers/domain/entities/customer.dart';
 import 'package:pasal_pro/features/customers/presentation/providers/customer_transactions_providers.dart';
 import 'package:pasal_pro/features/sales/data/models/sale_model.dart';
@@ -123,12 +124,14 @@ class _CustomerTransactionsPageState
               children: [
                 ResponsiveRowColumnItem(
                   rowFlex: 1,
-                  child: OutlinedButton.icon(
+                  child: PasalButton(
+                    label:
+                        '${_formatDate(_selectedStartDate)} - ${_formatDate(_selectedEndDate)}',
+                    icon: AppIcons.calendar,
                     onPressed: _selectDateRange,
-                    icon: Icon(AppIcons.calendar),
-                    label: Text(
-                      '${_formatDate(_selectedStartDate)} - ${_formatDate(_selectedEndDate)}',
-                    ),
+                    variant: PasalButtonVariant.secondary,
+                    size: PasalButtonSize.small,
+                    fullWidth: true,
                   ),
                 ),
               ],

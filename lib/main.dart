@@ -47,6 +47,7 @@ class PasalProApp extends ConsumerWidget {
       textStyles: mixTheme.textStyles,
       spaces: mixTheme.spaces,
       radii: mixTheme.radii,
+      tokens: mixTheme.durations, // Generic tokens for custom DurationToken
       child: MaterialApp(
         title: AppConstants.appName,
         debugShowCheckedModeBanner: false,

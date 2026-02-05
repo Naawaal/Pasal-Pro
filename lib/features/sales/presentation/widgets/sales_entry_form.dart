@@ -13,6 +13,7 @@ import 'package:pasal_pro/features/sales/presentation/widgets/price_input_field.
 import 'package:pasal_pro/features/sales/presentation/widgets/product_search_field.dart';
 import 'package:pasal_pro/features/sales/presentation/widgets/profit_display_box.dart';
 import 'package:pasal_pro/features/sales/presentation/widgets/quantity_input_field.dart';
+import 'package:pasal_pro/core/widgets/pasal_button.dart';
 
 /// Sales Entry Form widget
 ///
@@ -417,17 +418,16 @@ class _SalesEntryFormState extends ConsumerState<SalesEntryForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextButton.icon(
+        PasalButton(
+          label: _showCustomerField
+              ? 'Remove customer'
+              : 'Add customer (optional)',
+          icon: _showCustomerField ? AppIcons.close : AppIcons.userPlus,
           onPressed: () {
             setState(() => _showCustomerField = !_showCustomerField);
           },
-          icon: Icon(
-            _showCustomerField ? AppIcons.close : AppIcons.userPlus,
-            size: 18,
-          ),
-          label: Text(
-            _showCustomerField ? 'Remove customer' : 'Add customer (optional)',
-          ),
+          variant: PasalButtonVariant.ghost,
+          size: PasalButtonSize.small,
         ),
         if (_showCustomerField) ...[
           SalesSpacing.small,
@@ -441,17 +441,21 @@ class _SalesEntryFormState extends ConsumerState<SalesEntryForm> {
     return Row(
       children: [
         Expanded(
-          child: FilledButton.icon(
+          child: PasalButton(
+            label: 'Add Sale',
+            icon: AppIcons.add,
             onPressed: _isFormValid() ? _submitEntry : null,
-            icon: const Icon(AppIcons.add),
-            label: const Text('Add Sale'),
+            variant: PasalButtonVariant.primary,
+            fullWidth: true,
           ),
         ),
         const SizedBox(width: 12),
-        TextButton.icon(
+        PasalButton(
+          label: 'Clear',
+          icon: AppIcons.close,
           onPressed: _resetForm,
-          icon: const Icon(AppIcons.close, size: 18),
-          label: const Text('Clear'),
+          variant: PasalButtonVariant.secondary,
+          size: PasalButtonSize.small,
         ),
       ],
     );

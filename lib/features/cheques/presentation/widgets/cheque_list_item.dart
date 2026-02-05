@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mix/mix.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
 import 'package:pasal_pro/core/theme/mix_tokens.dart';
+import 'package:pasal_pro/core/widgets/pasal_button.dart';
+import 'package:pasal_pro/core/widgets/pasal_dialog.dart';
 import 'package:pasal_pro/features/cheques/domain/entities/cheque.dart';
 import 'package:pasal_pro/features/cheques/presentation/providers/cheque_providers.dart';
 
@@ -42,83 +44,59 @@ class ChequeListItem extends ConsumerWidget {
   void _markAsCleared(BuildContext context, WidgetRef ref) {
     if (cheque.isCleared) return;
 
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Mark as Cleared'),
-        content: Text('Mark cheque ${cheque.chequeNumber} as cleared?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              try {
-                await ref.read(
-                  updateStatusProvider((cheque.id!, 'cleared')).future,
-                );
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Cheque marked as cleared')),
-                  );
-                }
-                onStatusChanged?.call();
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: ${e.toString()}')),
-                  );
-                }
-              }
-            },
-            child: const Text('Confirm'),
-          ),
-        ],
-      ),
-    );
+    PasalConfirmDialog.show(
+      context,
+      title: 'Mark as Cleared',
+      message: 'Mark cheque ${cheque.chequeNumber} as cleared?',
+      confirmLabel: 'Confirm',
+    ).then((confirmed) async {
+      if (confirmed == true) {
+        try {
+          await ref.read(updateStatusProvider((cheque.id!, 'cleared')).future);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Cheque marked as cleared')),
+            );
+          }
+          onStatusChanged?.call();
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+          }
+        }
+      }
+    });
   }
 
   /// Handle delete
   void _delete(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Cheque'),
-        content: Text(
-          'Delete cheque ${cheque.chequeNumber}? This cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              try {
-                await ref.read(deleteChequeProvider(cheque.id!).future);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Cheque deleted')),
-                  );
-                }
-                onStatusChanged?.call();
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: ${e.toString()}')),
-                  );
-                }
-              }
-            },
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
+    PasalConfirmDialog.show(
+      context,
+      title: 'Delete Cheque',
+      message: 'Delete cheque ${cheque.chequeNumber}? This cannot be undone.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
+    ).then((confirmed) async {
+      if (confirmed == true) {
+        try {
+          await ref.read(deleteChequeProvider(cheque.id!).future);
+          if (context.mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Cheque deleted')));
+          }
+          onStatusChanged?.call();
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+          }
+        }
+      }
+    });
   }
 
   @override
@@ -255,25 +233,20 @@ class ChequeListItem extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               if (!cheque.isCleared)
-                ElevatedButton.icon(
+                PasalButton(
+                  label: 'Mark Clear',
+                  icon: Icons.check,
                   onPressed: () => _markAsCleared(context, ref),
-                  icon: const Icon(Icons.check, size: 16),
-                  label: const Text('Mark Clear'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                  ),
+                  variant: PasalButtonVariant.primary,
+                  size: PasalButtonSize.small,
                 ),
               if (!cheque.isCleared) AppSpacing.hSmall,
-              OutlinedButton.icon(
+              PasalButton(
+                label: 'Delete',
+                icon: Icons.delete,
                 onPressed: () => _delete(context, ref),
-                icon: const Icon(Icons.delete, size: 16),
-                label: const Text('Delete'),
-                style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+                variant: PasalButtonVariant.destructive,
+                size: PasalButtonSize.small,
               ),
             ],
           ),

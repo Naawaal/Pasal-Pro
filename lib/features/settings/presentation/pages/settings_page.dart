@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/theme/mix_tokens.dart';
+import 'package:pasal_pro/core/widgets/pasal_button.dart';
+import 'package:pasal_pro/core/widgets/pasal_dialog.dart';
+import 'package:pasal_pro/core/widgets/pasal_text_field.dart';
 import 'package:pasal_pro/features/settings/presentation/providers/settings_providers.dart';
 import 'package:pasal_pro/features/settings/presentation/widgets/settings_section.dart';
 import 'package:pasal_pro/features/settings/presentation/widgets/settings_item.dart';
@@ -248,28 +251,30 @@ class SettingsPage extends ConsumerWidget {
     final controller = TextEditingController(text: current);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Store Name'),
-        content: TextField(
+      builder: (context) => PasalDialog(
+        title: 'Edit Store Name',
+        content: PasalTextField(
           controller: controller,
-          decoration: const InputDecoration(
-            hintText: 'Enter store name',
-            border: OutlineInputBorder(),
-          ),
+          hint: 'Enter store name',
+          prefixIcon: AppIcons.store,
         ),
         actions: [
-          TextButton(
+          PasalButton(
+            label: 'Cancel',
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            variant: PasalButtonVariant.secondary,
+            size: PasalButtonSize.small,
           ),
-          TextButton(
+          PasalButton(
+            label: 'Save',
             onPressed: () {
               ref
                   .read(settingsNotifierProvider.notifier)
                   .updateStoreName(controller.text);
               Navigator.pop(context);
             },
-            child: const Text('Save'),
+            variant: PasalButtonVariant.primary,
+            size: PasalButtonSize.small,
           ),
         ],
       ),
@@ -280,21 +285,22 @@ class SettingsPage extends ConsumerWidget {
     final controller = TextEditingController(text: current ?? '');
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Address'),
-        content: TextField(
+      builder: (context) => PasalDialog(
+        title: 'Edit Address',
+        content: PasalTextField(
           controller: controller,
-          decoration: const InputDecoration(
-            hintText: 'Enter store address',
-            border: OutlineInputBorder(),
-          ),
+          hint: 'Enter store address',
+          prefixIcon: AppIcons.location,
         ),
         actions: [
-          TextButton(
+          PasalButton(
+            label: 'Cancel',
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            variant: PasalButtonVariant.secondary,
+            size: PasalButtonSize.small,
           ),
-          TextButton(
+          PasalButton(
+            label: 'Save',
             onPressed: () {
               ref
                   .read(settingsNotifierProvider.notifier)
@@ -303,7 +309,8 @@ class SettingsPage extends ConsumerWidget {
                   );
               Navigator.pop(context);
             },
-            child: const Text('Save'),
+            variant: PasalButtonVariant.primary,
+            size: PasalButtonSize.small,
           ),
         ],
       ),
@@ -314,21 +321,23 @@ class SettingsPage extends ConsumerWidget {
     final controller = TextEditingController(text: current ?? '');
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Phone'),
-        content: TextField(
+      builder: (context) => PasalDialog(
+        title: 'Edit Phone',
+        content: PasalTextField(
           controller: controller,
-          decoration: const InputDecoration(
-            hintText: 'Enter store phone',
-            border: OutlineInputBorder(),
-          ),
+          hint: 'Enter store phone',
+          prefixIcon: AppIcons.phone,
+          keyboardType: TextInputType.phone,
         ),
         actions: [
-          TextButton(
+          PasalButton(
+            label: 'Cancel',
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            variant: PasalButtonVariant.secondary,
+            size: PasalButtonSize.small,
           ),
-          TextButton(
+          PasalButton(
+            label: 'Save',
             onPressed: () {
               ref
                   .read(settingsNotifierProvider.notifier)
@@ -337,7 +346,8 @@ class SettingsPage extends ConsumerWidget {
                   );
               Navigator.pop(context);
             },
-            child: const Text('Save'),
+            variant: PasalButtonVariant.primary,
+            size: PasalButtonSize.small,
           ),
         ],
       ),
@@ -348,29 +358,34 @@ class SettingsPage extends ConsumerWidget {
     final controller = TextEditingController(text: current.toString());
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Tax Rate (%)'),
-        content: TextField(
+      builder: (context) => PasalDialog(
+        title: 'Edit Tax Rate (%)',
+        content: PasalTextField(
           controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(
-            hintText: 'Enter tax rate',
-            border: OutlineInputBorder(),
-            suffixText: '%',
+          hint: 'Enter tax rate',
+          prefixIcon: AppIcons.dollarSign,
+          keyboardType: TextInputType.number,
+          suffix: const Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: Text('%'),
           ),
         ),
         actions: [
-          TextButton(
+          PasalButton(
+            label: 'Cancel',
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            variant: PasalButtonVariant.secondary,
+            size: PasalButtonSize.small,
           ),
-          TextButton(
+          PasalButton(
+            label: 'Save',
             onPressed: () {
               final rate = double.tryParse(controller.text) ?? current;
               ref.read(settingsNotifierProvider.notifier).updateTaxRate(rate);
               Navigator.pop(context);
             },
-            child: const Text('Save'),
+            variant: PasalButtonVariant.primary,
+            size: PasalButtonSize.small,
           ),
         ],
       ),
@@ -381,8 +396,8 @@ class SettingsPage extends ConsumerWidget {
     final primaryColor = PasalColorToken.primary.token.resolve(context);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select Language'),
+      builder: (context) => PasalDialog(
+        title: 'Select Language',
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -421,7 +436,7 @@ class SettingsPage extends ConsumerWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const AlertDialog(
+      builder: (context) => const PasalDialog(
         content: Row(
           children: [
             CircularProgressIndicator(),
@@ -447,60 +462,54 @@ class SettingsPage extends ConsumerWidget {
   }
 
   void _showRestoreDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Restore Data'),
-        content: const Text(
-          'This will restore your data from the latest backup. Continue?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Data restored successfully')),
-              );
-            },
-            child: const Text('Restore'),
-          ),
-        ],
-      ),
-    );
+    PasalConfirmDialog.show(
+      context,
+      title: 'Restore Data',
+      message: 'This will restore your data from the latest backup. Continue?',
+      confirmLabel: 'Restore',
+    ).then((confirmed) {
+      if (confirmed == true && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Data restored successfully')),
+        );
+      }
+    });
   }
 
   void _showExportDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Export Data'),
+      builder: (context) => PasalDialog(
+        title: 'Export Data',
         content: const Text('Choose export format:'),
         actions: [
-          TextButton(
+          PasalButton(
+            label: 'Cancel',
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            variant: PasalButtonVariant.secondary,
+            size: PasalButtonSize.small,
           ),
-          TextButton(
+          PasalButton(
+            label: 'CSV',
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Data exported as CSV')),
               );
             },
-            child: const Text('CSV'),
+            variant: PasalButtonVariant.primary,
+            size: PasalButtonSize.small,
           ),
-          TextButton(
+          PasalButton(
+            label: 'Excel',
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Data exported as Excel')),
               );
             },
-            child: const Text('Excel'),
+            variant: PasalButtonVariant.secondary,
+            size: PasalButtonSize.small,
           ),
         ],
       ),
@@ -510,8 +519,8 @@ class SettingsPage extends ConsumerWidget {
   void _showTermsDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Terms & Conditions'),
+      builder: (context) => PasalDialog(
+        title: 'Terms & Conditions',
         content: const SingleChildScrollView(
           child: Text(
             'Pasal Pro Terms & Conditions\n\n'
@@ -525,9 +534,11 @@ class SettingsPage extends ConsumerWidget {
           ),
         ),
         actions: [
-          TextButton(
+          PasalButton(
+            label: 'Close',
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            variant: PasalButtonVariant.secondary,
+            size: PasalButtonSize.small,
           ),
         ],
       ),
@@ -537,8 +548,8 @@ class SettingsPage extends ConsumerWidget {
   void _showPrivacyDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Privacy Policy'),
+      builder: (context) => PasalDialog(
+        title: 'Privacy Policy',
         content: const SingleChildScrollView(
           child: Text(
             'Pasal Pro Privacy Policy\n\n'
@@ -554,9 +565,11 @@ class SettingsPage extends ConsumerWidget {
           ),
         ),
         actions: [
-          TextButton(
+          PasalButton(
+            label: 'Close',
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            variant: PasalButtonVariant.secondary,
+            size: PasalButtonSize.small,
           ),
         ],
       ),
@@ -566,8 +579,8 @@ class SettingsPage extends ConsumerWidget {
   void _showHelpDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Help & Support'),
+      builder: (context) => PasalDialog(
+        title: 'Help & Support',
         content: const SingleChildScrollView(
           child: Text(
             'Pasal Pro Help & Support\n\n'
@@ -587,9 +600,11 @@ class SettingsPage extends ConsumerWidget {
           ),
         ),
         actions: [
-          TextButton(
+          PasalButton(
+            label: 'Close',
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            variant: PasalButtonVariant.secondary,
+            size: PasalButtonSize.small,
           ),
         ],
       ),
@@ -668,8 +683,8 @@ class SettingsPage extends ConsumerWidget {
     final primaryColor = PasalColorToken.primary.token.resolve(context);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select Theme Mode'),
+      builder: (context) => PasalDialog(
+        title: 'Select Theme Mode',
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mix/mix.dart';
 import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
+import 'package:pasal_pro/core/widgets/pasal_button.dart';
+import 'package:pasal_pro/core/widgets/pasal_text_field.dart';
 import 'package:pasal_pro/features/customers/presentation/pages/customer_form_page.dart';
 import 'package:pasal_pro/features/customers/presentation/providers/customer_providers.dart';
 import 'package:pasal_pro/features/customers/presentation/widgets/customer_list_item.dart';
@@ -139,34 +142,27 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              StyledText(
                 'Customers',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: textPrimary,
-                ),
+                style: TextStyler()
+                    .style(PasalTextStyleToken.title.token.mix())
+                    .color(textPrimary),
               ),
               const SizedBox(height: 2),
-              Text(
+              StyledText(
                 '$totalCustomers customers • ${CurrencyFormatter.formatCompact(totalCredit)} credit',
-                style: TextStyle(fontSize: 13, color: textSecondary),
+                style: TextStyler()
+                    .style(PasalTextStyleToken.caption.token.mix())
+                    .color(textSecondary),
               ),
             ],
           ),
         ),
-        ElevatedButton.icon(
+        PasalButton(
+          label: 'Add Customer',
+          icon: Icons.add,
           onPressed: () {},
-          icon: const Icon(Icons.add, size: 18),
-          label: const Text('Add Customer'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryColor,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
+          variant: PasalButtonVariant.primary,
         ),
       ],
     );
@@ -184,52 +180,58 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
     return Row(
       children: [
         Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              color: surfaceColor,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: borderColor),
-            ),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search customers...',
-                hintStyle: TextStyle(color: textSecondary),
-                prefixIcon: Icon(Icons.search, color: textSecondary, size: 20),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-              ),
-              onChanged: (value) => setState(() {}),
-            ),
+          child: PasalTextField(
+            controller: _searchController,
+            hint: 'Search customers...',
+            prefixIcon: Icons.search,
+            onChanged: (_) => setState(() {}),
+            fillColor: surfaceColor,
           ),
         ),
         const SizedBox(width: 12),
-        GestureDetector(
-          onTap: () => setState(() => _showInactive = !_showInactive),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: _showInactive ? primaryLight : surfaceColor,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: _showInactive ? primaryColor : borderColor,
-              ),
-            ),
-            child: Text(
-              'Inactive',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: _showInactive ? primaryColor : textPrimary,
-              ),
-            ),
-          ),
+        _buildFilterChip(
+          label: 'Inactive',
+          selected: _showInactive,
+          primaryColor: primaryColor,
+          primaryLight: primaryLight,
+          surfaceColor: surfaceColor,
+          borderColor: borderColor,
+          textPrimary: textPrimary,
+          onSelected: (value) => setState(() => _showInactive = value),
         ),
       ],
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required bool selected,
+    required Color primaryColor,
+    required Color primaryLight,
+    required Color surfaceColor,
+    required Color borderColor,
+    required Color textPrimary,
+    required ValueChanged<bool> onSelected,
+  }) {
+    return GestureDetector(
+      onTap: () => onSelected(!selected),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? primaryLight : surfaceColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: selected ? primaryColor : borderColor),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: selected ? primaryColor : textPrimary,
+          ),
+        ),
+      ),
     );
   }
 
@@ -243,7 +245,18 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
     required Color textPrimary,
     required Color textSecondary,
   }) {
-    if (customers.isEmpty) {
+    final query = _searchController.text.trim().toLowerCase();
+    final filtered = customers.where((customer) {
+      if (!_showInactive && customer.isActive == false) {
+        return false;
+      }
+      if (query.isEmpty) return true;
+      final nameMatch = customer.name.toLowerCase().contains(query);
+      final phoneMatch = (customer.phone ?? '').contains(query);
+      return nameMatch || phoneMatch;
+    }).toList();
+
+    if (filtered.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -257,18 +270,18 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
               child: Icon(Icons.people_outline, size: 48, color: primaryColor),
             ),
             const SizedBox(height: 16),
-            Text(
+            StyledText(
               'No customers found',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: textPrimary,
-              ),
+              style: TextStyler()
+                  .style(PasalTextStyleToken.title.token.mix())
+                  .color(textPrimary),
             ),
             const SizedBox(height: 4),
-            Text(
+            StyledText(
               'Add your first customer to get started',
-              style: TextStyle(fontSize: 13, color: textSecondary),
+              style: TextStyler()
+                  .style(PasalTextStyleToken.caption.token.mix())
+                  .color(textSecondary),
             ),
           ],
         ),
@@ -283,11 +296,11 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
       ),
       child: ListView.separated(
         padding: EdgeInsets.all(AppResponsive.getSectionGap(context) - 4),
-        itemCount: customers.length,
+        itemCount: filtered.length,
         separatorBuilder: (context, index) =>
             SizedBox(height: AppResponsive.getSectionGap(context) - 4),
         itemBuilder: (context, index) {
-          final customer = customers[index];
+          final customer = filtered[index];
           return CustomerListItem(
             customer: customer,
             onTap: () {

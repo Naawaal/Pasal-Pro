@@ -1,13 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mix/mix.dart';
-import 'package:responsive_framework/responsive_framework.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mix/mix.dart';
 import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/utils/result.dart';
 import 'package:pasal_pro/core/theme/mix_tokens.dart';
+import 'package:pasal_pro/core/widgets/pasal_button.dart';
+import 'package:pasal_pro/core/widgets/pasal_text_field.dart';
 import 'package:pasal_pro/features/products/domain/entities/product.dart';
 import 'package:pasal_pro/features/products/domain/usecases/create_product.dart';
 import 'package:pasal_pro/features/products/domain/usecases/update_product.dart';
@@ -92,89 +93,55 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
           icon: const Icon(AppIcons.close),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          _isEditing ? 'Edit Product' : 'Add Product',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: textPrimary,
-          ),
+        title: StyledText(
+          _isEditing ? 'Edit Product' : 'Add New Product',
+          style: TextStyler()
+              .style(PasalTextStyleToken.title.token.mix())
+              .color(textPrimary),
         ),
+        centerTitle: false,
       ),
       body: SingleChildScrollView(
         child: Form(
           key: _formKey,
-          child: ResponsiveRowColumn(
-            layout: AppResponsive.shouldStack(context)
-                ? ResponsiveRowColumnType.COLUMN
-                : ResponsiveRowColumnType.ROW,
-            children: [
-              // Main form fields (left side / full width on mobile)
-              ResponsiveRowColumnItem(
-                rowFlex: 2,
-                child: Padding(
-                  padding: AppResponsive.getPagePadding(context),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+          child: Padding(
+            padding: AppResponsive.getPagePadding(context),
+            child: Column(
+              children: [
+                // Two-column layout on desktop, single column on mobile
+                if (AppResponsive.isMultiColumn(context))
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildSection(
-                        context,
-                        title: 'Basic Information',
-                        icon: AppIcons.info,
-                        primaryColor: primaryColor,
-                        primaryLight: primaryLight,
-                        surfaceColor: surfaceColor,
-                        borderColor: borderColor,
-                        textPrimary: textPrimary,
-                        children: [
-                          _buildTextField(
-                            controller: _nameController,
-                            label: 'Product Name',
-                            hint: 'Enter product name',
-                            validator: _requiredText,
-                          ),
-                          SizedBox(
-                            height: AppResponsive.getSectionGap(context),
-                          ),
-                          ResponsiveRowColumn(
-                            layout: AppResponsive.shouldStack(context)
-                                ? ResponsiveRowColumnType.COLUMN
-                                : ResponsiveRowColumnType.ROW,
-                            children: [
-                              ResponsiveRowColumnItem(
-                                rowFlex: 1,
-                                child: _buildTextField(
-                                  controller: _categoryController,
-                                  label: 'Category',
-                                  hint: 'Optional',
-                                ),
-                              ),
-                              ResponsiveRowColumnItem(
-                                child: SizedBox(
-                                  width: AppResponsive.shouldStack(context)
-                                      ? 0
-                                      : AppResponsive.getSectionGap(context),
-                                  height: AppResponsive.shouldStack(context)
-                                      ? AppResponsive.getSectionGap(context)
-                                      : 0,
-                                ),
-                              ),
-                              ResponsiveRowColumnItem(
-                                rowFlex: 1,
-                                child: _buildTextField(
-                                  controller: _barcodeController,
-                                  label: 'Barcode / SKU',
-                                  hint: 'Optional',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                      Expanded(
+                        child: _buildLeftColumn(
+                          context,
+                          primaryColor: primaryColor,
+                          primaryLight: primaryLight,
+                          surfaceColor: surfaceColor,
+                          borderColor: borderColor,
+                          textPrimary: textPrimary,
+                          textSecondary: textSecondary,
+                        ),
                       ),
-                      SizedBox(
-                        height: AppResponsive.getSectionGap(context) + 8,
+                      SizedBox(width: AppResponsive.getSectionGap(context)),
+                      Expanded(
+                        child: _buildRightColumn(
+                          context,
+                          primaryColor: primaryColor,
+                          primaryLight: primaryLight,
+                          surfaceColor: surfaceColor,
+                          borderColor: borderColor,
+                          textPrimary: textPrimary,
+                          textSecondary: textSecondary,
+                        ),
                       ),
-                      _buildImageUploadSection(
+                    ],
+                  )
+                else
+                  Column(
+                    children: [
+                      _buildLeftColumn(
                         context,
                         primaryColor: primaryColor,
                         primaryLight: primaryLight,
@@ -183,192 +150,212 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                         textPrimary: textPrimary,
                         textSecondary: textSecondary,
                       ),
-                      SizedBox(
-                        height: AppResponsive.getSectionGap(context) + 8,
-                      ),
-                      _buildSection(
+                      SizedBox(height: AppResponsive.getSectionGap(context)),
+                      _buildRightColumn(
                         context,
-                        title: 'Pricing',
-                        icon: AppIcons.rupee,
                         primaryColor: primaryColor,
                         primaryLight: primaryLight,
                         surfaceColor: surfaceColor,
                         borderColor: borderColor,
                         textPrimary: textPrimary,
-                        children: [
-                          ResponsiveRowColumn(
-                            layout: AppResponsive.shouldStack(context)
-                                ? ResponsiveRowColumnType.COLUMN
-                                : ResponsiveRowColumnType.ROW,
-                            children: [
-                              ResponsiveRowColumnItem(
-                                rowFlex: 1,
-                                child: _buildNumberField(
-                                  controller: _costController,
-                                  label: 'Cost Price',
-                                  hint: 'Per piece',
-                                  validator: _requiredNonNegative,
-                                ),
-                              ),
-                              ResponsiveRowColumnItem(
-                                child: SizedBox(
-                                  width: AppResponsive.shouldStack(context)
-                                      ? 0
-                                      : AppResponsive.getSectionGap(context),
-                                  height: AppResponsive.shouldStack(context)
-                                      ? AppResponsive.getSectionGap(context)
-                                      : 0,
-                                ),
-                              ),
-                              ResponsiveRowColumnItem(
-                                rowFlex: 1,
-                                child: _buildNumberField(
-                                  controller: _sellingController,
-                                  label: 'Selling Price',
-                                  hint: 'Per piece',
-                                  validator: _requiredNonNegative,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: AppResponsive.getSectionGap(context) + 8,
-                      ),
-                      _buildSection(
-                        context,
-                        title: 'Inventory',
-                        icon: AppIcons.warehouse,
-                        primaryColor: primaryColor,
-                        primaryLight: primaryLight,
-                        surfaceColor: surfaceColor,
-                        borderColor: borderColor,
-                        textPrimary: textPrimary,
-                        children: [
-                          ResponsiveRowColumn(
-                            layout: AppResponsive.shouldStack(context)
-                                ? ResponsiveRowColumnType.COLUMN
-                                : ResponsiveRowColumnType.ROW,
-                            children: [
-                              ResponsiveRowColumnItem(
-                                rowFlex: 1,
-                                child: _buildIntField(
-                                  controller: _piecesPerCartonController,
-                                  label: 'Pieces per Carton',
-                                  hint: 'e.g., 24',
-                                  validator: _requiredPositiveInt,
-                                ),
-                              ),
-                              ResponsiveRowColumnItem(
-                                child: SizedBox(
-                                  width: AppResponsive.shouldStack(context)
-                                      ? 0
-                                      : AppResponsive.getSectionGap(context),
-                                  height: AppResponsive.shouldStack(context)
-                                      ? AppResponsive.getSectionGap(context)
-                                      : 0,
-                                ),
-                              ),
-                              ResponsiveRowColumnItem(
-                                rowFlex: 1,
-                                child: _buildIntField(
-                                  controller: _stockController,
-                                  label: 'Current Stock',
-                                  hint: 'Pieces',
-                                  validator: _requiredNonNegativeInt,
-                                ),
-                              ),
-                              ResponsiveRowColumnItem(
-                                child: SizedBox(
-                                  width: AppResponsive.shouldStack(context)
-                                      ? 0
-                                      : AppResponsive.getSectionGap(context),
-                                  height: AppResponsive.shouldStack(context)
-                                      ? AppResponsive.getSectionGap(context)
-                                      : 0,
-                                ),
-                              ),
-                              ResponsiveRowColumnItem(
-                                rowFlex: 1,
-                                child: _buildIntField(
-                                  controller: _lowStockController,
-                                  label: 'Low Stock Alert',
-                                  hint: 'Threshold',
-                                  validator: _requiredNonNegativeInt,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: AppResponsive.getSectionGap(context) + 8,
-                      ),
-                      ResponsiveRowColumn(
-                        layout: AppResponsive.shouldStack(context)
-                            ? ResponsiveRowColumnType.COLUMN
-                            : ResponsiveRowColumnType.ROW,
-                        children: [
-                          ResponsiveRowColumnItem(
-                            rowFlex: 1,
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: const Text('Cancel'),
-                            ),
-                          ),
-                          ResponsiveRowColumnItem(
-                            child: SizedBox(
-                              width: AppResponsive.shouldStack(context)
-                                  ? 0
-                                  : AppResponsive.getSectionGap(context),
-                              height: AppResponsive.shouldStack(context)
-                                  ? AppResponsive.getSectionGap(context)
-                                  : 0,
-                            ),
-                          ),
-                          ResponsiveRowColumnItem(
-                            rowFlex: 2,
-                            child: ElevatedButton(
-                              onPressed: _isSaving ? null : _saveProduct,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (_isSaving)
-                                    const SizedBox(
-                                      height: 16,
-                                      width: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    ),
-                                  if (_isSaving) const SizedBox(width: 8),
-                                  Text(
-                                    _isEditing
-                                        ? 'Save Changes'
-                                        : 'Create Product',
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: AppResponsive.getPagePadding(context).top,
+                        textSecondary: textSecondary,
                       ),
                     ],
                   ),
-                ),
-              ),
-            ],
+                SizedBox(height: AppResponsive.getSectionGap(context)),
+                _buildActionButtons(context, primaryColor),
+                SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildSection(
+  /// Left column: Basic Info, Pricing, Inventory
+  Widget _buildLeftColumn(
+    BuildContext context, {
+    required Color primaryColor,
+    required Color primaryLight,
+    required Color surfaceColor,
+    required Color borderColor,
+    required Color textPrimary,
+    required Color textSecondary,
+  }) {
+    return Column(
+      children: [
+        // Basic Information Section
+        _buildFormSection(
+          context,
+          title: 'Basic Information',
+          icon: AppIcons.info,
+          primaryColor: primaryColor,
+          primaryLight: primaryLight,
+          surfaceColor: surfaceColor,
+          borderColor: borderColor,
+          textPrimary: textPrimary,
+          children: [
+            _buildStyledTextField(
+              controller: _nameController,
+              label: 'Product Name',
+              hint: 'e.g., Basmati Rice',
+              icon: AppIcons.package,
+              keyboardType: TextInputType.text,
+              validator: _requiredText,
+            ),
+            SizedBox(height: AppResponsive.getSectionGap(context) * 0.8),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStyledTextField(
+                    controller: _categoryController,
+                    label: 'Category',
+                    hint: 'Optional',
+                    icon: AppIcons.tag,
+                    keyboardType: TextInputType.text,
+                  ),
+                ),
+                SizedBox(width: AppResponsive.getSectionGap(context) * 0.8),
+                Expanded(
+                  child: _buildStyledTextField(
+                    controller: _barcodeController,
+                    label: 'SKU/Barcode',
+                    hint: 'Optional',
+                    icon: AppIcons.barcode,
+                    keyboardType: TextInputType.text,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        SizedBox(height: AppResponsive.getSectionGap(context)),
+
+        // Pricing Section
+        _buildFormSection(
+          context,
+          title: 'Pricing',
+          icon: AppIcons.rupee,
+          primaryColor: primaryColor,
+          primaryLight: primaryLight,
+          surfaceColor: surfaceColor,
+          borderColor: borderColor,
+          textPrimary: textPrimary,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStyledTextField(
+                    controller: _costController,
+                    label: 'Cost Price',
+                    hint: '0.00',
+                    icon: AppIcons.cash,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    validator: _requiredNonNegative,
+                  ),
+                ),
+                SizedBox(width: AppResponsive.getSectionGap(context) * 0.8),
+                Expanded(
+                  child: _buildStyledTextField(
+                    controller: _sellingController,
+                    label: 'Selling Price',
+                    hint: '0.00',
+                    icon: AppIcons.dollarSign,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    validator: _requiredNonNegative,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 12),
+            _buildProfitDisplay(),
+          ],
+        ),
+        SizedBox(height: AppResponsive.getSectionGap(context)),
+
+        // Inventory Section
+        _buildFormSection(
+          context,
+          title: 'Inventory',
+          icon: AppIcons.warehouse,
+          primaryColor: primaryColor,
+          primaryLight: primaryLight,
+          surfaceColor: surfaceColor,
+          borderColor: borderColor,
+          textPrimary: textPrimary,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStyledTextField(
+                    controller: _piecesPerCartonController,
+                    label: 'Pieces/Carton',
+                    hint: 'e.g., 24',
+                    icon: AppIcons.carton,
+                    keyboardType: TextInputType.number,
+                    validator: _requiredPositiveInt,
+                  ),
+                ),
+                SizedBox(width: AppResponsive.getSectionGap(context) * 0.8),
+                Expanded(
+                  child: _buildStyledTextField(
+                    controller: _stockController,
+                    label: 'Stock',
+                    hint: 'Pieces',
+                    icon: AppIcons.box,
+                    keyboardType: TextInputType.number,
+                    validator: _requiredNonNegativeInt,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: AppResponsive.getSectionGap(context) * 0.8),
+            _buildStyledTextField(
+              controller: _lowStockController,
+              label: 'Low Stock Alert',
+              hint: 'Alert when below...',
+              icon: AppIcons.alertCircle,
+              keyboardType: TextInputType.number,
+              validator: _requiredNonNegativeInt,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// Right column: Image upload
+  Widget _buildRightColumn(
+    BuildContext context, {
+    required Color primaryColor,
+    required Color primaryLight,
+    required Color surfaceColor,
+    required Color borderColor,
+    required Color textPrimary,
+    required Color textSecondary,
+  }) {
+    return Column(
+      children: [
+        _buildImageUploadSectionRedesigned(
+          context,
+          primaryColor: primaryColor,
+          primaryLight: primaryLight,
+          surfaceColor: surfaceColor,
+          borderColor: borderColor,
+          textPrimary: textPrimary,
+          textSecondary: textSecondary,
+        ),
+      ],
+    );
+  }
+
+  /// Build styled form section with icon and title
+  Widget _buildFormSection(
     BuildContext context, {
     required String title,
     required IconData icon,
@@ -379,95 +366,109 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
     required Color textPrimary,
     required List<Widget> children,
   }) {
-    final sectionStyle = BoxStyler()
-        .paddingAll(20)
-        .borderRounded(12)
-        .color(surfaceColor)
-        .borderAll(color: borderColor);
-
-    return Box(
-      style: sectionStyle,
+    return Container(
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        border: Border.all(color: borderColor, width: 1),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Box(
-                style: BoxStyler()
-                    .paddingAll(8)
-                    .borderRounded(8)
-                    .color(primaryLight),
-                child: StyledIcon(
-                  icon: icon,
-                  style: IconStyler().size(18).color(primaryColor),
+          // Section header
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: borderColor)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: primaryLight,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: primaryColor, size: 20),
                 ),
-              ),
-              const SizedBox(width: 12),
-              StyledText(
-                title,
-                style: TextStyler()
-                    .style(PasalTextStyleToken.title.token.mix())
-                    .color(textPrimary),
-              ),
-            ],
+                const SizedBox(width: 12),
+                StyledText(
+                  title,
+                  style: TextStyler()
+                      .style(PasalTextStyleToken.title.token.mix())
+                      .color(textPrimary),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 20),
-          ...children,
+          // Section content
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: children,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildTextField({
+  /// Build a styled text field with icon
+  Widget _buildStyledTextField({
     required TextEditingController controller,
     required String label,
     required String hint,
+    required IconData icon,
+    TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
+    return PasalTextField(
       controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        border: const OutlineInputBorder(),
-      ),
+      label: label,
+      hint: hint,
+      prefixIcon: icon,
+      keyboardType: keyboardType,
       validator: validator,
     );
   }
 
-  Widget _buildNumberField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        border: const OutlineInputBorder(),
-      ),
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      validator: validator,
-    );
-  }
+  /// Display profit margin between cost and selling price
+  Widget _buildProfitDisplay() {
+    final cost = double.tryParse(_costController.text) ?? 0;
+    final selling = double.tryParse(_sellingController.text) ?? 0;
+    final profit = selling > 0 ? ((selling - cost) / selling) * 100 : 0;
 
-  Widget _buildIntField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        border: const OutlineInputBorder(),
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: PasalColorToken.success.token
+            .resolve(context)
+            .withValues(alpha: 0.1),
+        border: Border.all(
+          color: PasalColorToken.success.token
+              .resolve(context)
+              .withValues(alpha: 0.3),
+        ),
+        borderRadius: BorderRadius.circular(8),
       ),
-      keyboardType: TextInputType.number,
-      validator: validator,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          StyledText(
+            'Profit Margin',
+            style: TextStyler()
+                .style(PasalTextStyleToken.caption.token.mix())
+                .color(PasalColorToken.textSecondary.token.resolve(context)),
+          ),
+          StyledText(
+            '${profit.toStringAsFixed(1)}%',
+            style: TextStyler()
+                .style(PasalTextStyleToken.title.token.mix())
+                .color(PasalColorToken.success.token.resolve(context)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -605,8 +606,8 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
     }
   }
 
-  /// Build product image upload section with preview
-  Widget _buildImageUploadSection(
+  /// Build redesigned image upload section with better visual hierarchy
+  Widget _buildImageUploadSectionRedesigned(
     BuildContext context, {
     required Color primaryColor,
     required Color primaryLight,
@@ -615,7 +616,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
     required Color textPrimary,
     required Color textSecondary,
   }) {
-    return _buildSection(
+    return _buildFormSection(
       context,
       title: 'Product Image',
       icon: AppIcons.image,
@@ -625,80 +626,172 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
       borderColor: borderColor,
       textPrimary: textPrimary,
       children: [
-        // Image preview
+        // Image preview with delete button
         if (_selectedImagePath != null && _selectedImagePath!.isNotEmpty)
-          Container(
-            width: double.infinity,
-            height: 200,
-            margin: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              border: Border.all(color: borderColor),
-              borderRadius: BorderRadius.circular(8),
-              image: DecorationImage(
-                image: _selectedImagePath!.startsWith('http')
-                    ? NetworkImage(_selectedImagePath!)
-                    : FileImage(File(_selectedImagePath!)) as ImageProvider,
-                fit: BoxFit.cover,
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  width: double.infinity,
+                  height: 220,
+                  decoration: BoxDecoration(
+                    color: PasalColorToken.surfaceAlt.token.resolve(context),
+                  ),
+                  child: _selectedImagePath!.startsWith('http')
+                      ? Image.network(
+                          _selectedImagePath!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  AppIcons.image,
+                                  size: 48,
+                                  color: PasalColorToken.textSecondary.token
+                                      .resolve(context),
+                                ),
+                                const SizedBox(height: 8),
+                                StyledText(
+                                  'Failed to load image',
+                                  style: TextStyler()
+                                      .style(
+                                        PasalTextStyleToken.caption.token.mix(),
+                                      )
+                                      .color(
+                                        PasalColorToken.textSecondary.token
+                                            .resolve(context),
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : Image.file(
+                          File(_selectedImagePath!),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Center(
+                            child: Icon(
+                              AppIcons.image,
+                              size: 48,
+                              color: PasalColorToken.textSecondary.token
+                                  .resolve(context),
+                            ),
+                          ),
+                        ),
+                ),
               ),
-            ),
-            child: Align(
-              alignment: Alignment.topRight,
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: IconButton(
-                  icon: const Icon(AppIcons.close, color: Colors.white),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: PasalIconButton(
+                  icon: AppIcons.close,
+                  tooltip: 'Remove image',
+                  variant: PasalButtonVariant.secondary,
+                  size: PasalButtonSize.small,
                   onPressed: () {
                     setState(() {
                       _selectedImagePath = null;
                       _imageUrlController.clear();
                     });
                   },
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.black.withValues(alpha: 0.5),
-                    padding: const EdgeInsets.all(8),
-                  ),
                 ),
               ),
+            ],
+          )
+        else
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 32),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: borderColor,
+                width: 2,
+                style: BorderStyle.solid,
+              ),
+              borderRadius: BorderRadius.circular(8),
+              color: PasalColorToken.surfaceAlt.token
+                  .resolve(context)
+                  .withValues(alpha: 0.6),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(AppIcons.image, size: 48, color: primaryColor),
+                const SizedBox(height: 12),
+                StyledText(
+                  'No Image Selected',
+                  style: TextStyler()
+                      .style(PasalTextStyleToken.title.token.mix())
+                      .color(textPrimary),
+                ),
+                const SizedBox(height: 4),
+                StyledText(
+                  'Upload or paste a product image',
+                  style: TextStyler()
+                      .style(PasalTextStyleToken.caption.token.mix())
+                      .color(textSecondary),
+                ),
+              ],
             ),
           ),
-        // URL input field
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Image URL (Internet)',
-              style: Theme.of(context).textTheme.labelMedium,
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _imageUrlController,
-              decoration: const InputDecoration(
-                hintText: 'https://example.com/image.jpg',
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                if (value.startsWith('http')) {
-                  setState(() => _selectedImagePath = value);
-                }
-              },
-            ),
-          ],
+        const SizedBox(height: 16),
+        StyledText(
+          'Image URL',
+          style: TextStyler()
+              .style(PasalTextStyleToken.caption.token.mix())
+              .color(textSecondary),
+        ),
+        const SizedBox(height: 8),
+        PasalTextField(
+          controller: _imageUrlController,
+          hint: 'https://example.com/image.jpg',
+          prefixIcon: AppIcons.upload,
+          keyboardType: TextInputType.url,
+          onChanged: (value) {
+            if (value.startsWith('http')) {
+              setState(() => _selectedImagePath = value);
+            }
+          },
         ),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                'Paste URL or browse local file',
-                style: TextStyle(fontSize: 12, color: textSecondary),
-              ),
-            ),
-            OutlinedButton.icon(
-              onPressed: _pickImageFile,
-              icon: const Icon(AppIcons.upload, size: 16),
-              label: const Text('Browse'),
-            ),
-          ],
+        SizedBox(
+          width: double.infinity,
+          child: PasalButton(
+            label: 'Browse from Device',
+            icon: AppIcons.upload,
+            onPressed: _pickImageFile,
+            variant: PasalButtonVariant.secondary,
+            fullWidth: true,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Build action buttons (Cancel and Save)
+  Widget _buildActionButtons(BuildContext context, Color primaryColor) {
+    return Row(
+      children: [
+        Expanded(
+          child: PasalButton(
+            label: 'Cancel',
+            onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
+            variant: PasalButtonVariant.secondary,
+            fullWidth: true,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          flex: 1,
+          child: PasalButton(
+            label: _isEditing ? 'Save Changes' : 'Create Product',
+            onPressed: _isSaving ? null : _saveProduct,
+            isLoading: _isSaving,
+            variant: PasalButtonVariant.primary,
+            fullWidth: true,
+          ),
         ),
       ],
     );

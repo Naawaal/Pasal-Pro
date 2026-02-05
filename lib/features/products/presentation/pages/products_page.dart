@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mix/mix.dart';
 import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/theme/mix_tokens.dart';
@@ -7,6 +8,11 @@ import 'package:pasal_pro/core/utils/currency_formatter.dart';
 import 'package:pasal_pro/features/products/domain/entities/product.dart';
 import 'package:pasal_pro/features/products/presentation/pages/product_form_page.dart';
 import 'package:pasal_pro/features/products/presentation/providers/products_providers.dart';
+import 'package:pasal_pro/core/widgets/pasal_button.dart';
+import 'package:pasal_pro/core/widgets/pasal_dialog.dart';
+import 'package:pasal_pro/core/widgets/pasal_filter_chip.dart';
+import 'package:pasal_pro/core/widgets/pasal_segmented_button.dart';
+import 'package:pasal_pro/core/widgets/pasal_text_field.dart';
 import 'package:pasal_pro/features/products/presentation/widgets/product_list_item.dart';
 
 /// Modern Products Page with beautiful flat design
@@ -19,8 +25,8 @@ class ProductsPage extends ConsumerStatefulWidget {
 
 class _ProductsPageState extends ConsumerState<ProductsPage> {
   final TextEditingController _searchController = TextEditingController();
-  bool _showInactive = false;
   bool _showLowStockOnly = false;
+  bool _showInactive = false;
 
   @override
   void dispose() {
@@ -31,18 +37,18 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
   @override
   Widget build(BuildContext context) {
     // Resolve Mix design tokens once per build
-    final bgColor = PasalColorToken.background.token.resolve(context);
+    final productsState = ref.watch(productsControllerProvider);
+    final searchState = ref.watch(productSearchProvider);
+    final bgColor = PasalColorToken.surfaceAlt.token.resolve(context);
     final surfaceColor = PasalColorToken.surface.token.resolve(context);
+    final borderColor = PasalColorToken.border.token.resolve(context);
     final primaryColor = PasalColorToken.primary.token.resolve(context);
     final primaryLight = primaryColor.withValues(alpha: 0.1);
-    final borderColor = PasalColorToken.border.token.resolve(context);
     final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
     final textSecondary = PasalColorToken.textSecondary.token.resolve(context);
     final errorColor = PasalColorToken.error.token.resolve(context);
     final errorLight = errorColor.withValues(alpha: 0.1);
 
-    final productsState = ref.watch(productsControllerProvider);
-    final searchState = ref.watch(productSearchProvider);
     final sourceProducts = _searchController.text.trim().isNotEmpty
         ? searchState.valueOrNull ?? []
         : productsState.valueOrNull ?? [];
@@ -136,18 +142,18 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              StyledText(
                 'Products',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: textPrimary,
-                ),
+                style: TextStyler()
+                    .style(PasalTextStyleToken.title.token.mix())
+                    .color(textPrimary),
               ),
               const SizedBox(height: 2),
-              Text(
+              StyledText(
                 '$totalProducts items${lowStockCount > 0 ? " • $lowStockCount low stock" : ""} • ${CurrencyFormatter.formatCompact(inventoryValue)} value',
-                style: TextStyle(fontSize: 13, color: textSecondary),
+                style: TextStyler()
+                    .style(PasalTextStyleToken.caption.token.mix())
+                    .color(textSecondary),
               ),
             ],
           ),
@@ -170,16 +176,11 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     required Color primaryColor,
     required VoidCallback onPressed,
   }) {
-    return ElevatedButton.icon(
+    return PasalButton(
+      label: label,
+      icon: icon,
       onPressed: onPressed,
-      icon: Icon(icon, size: 18),
-      label: Text(label),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
+      variant: PasalButtonVariant.primary,
     );
   }
 
@@ -195,53 +196,29 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     return Row(
       children: [
         Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              color: surfaceColor,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: borderColor),
-            ),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search products...',
-                hintStyle: TextStyle(color: textSecondary),
-                prefixIcon: Icon(Icons.search, color: textSecondary, size: 20),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-              ),
-              onChanged: (value) {
-                setState(() {});
-                ref.read(productSearchProvider.notifier).search(value);
-              },
-            ),
+          child: PasalTextField(
+            controller: _searchController,
+            hint: 'Search products...',
+            prefixIcon: Icons.search,
+            onChanged: (value) {
+              setState(() {});
+              ref.read(productSearchProvider.notifier).search(value);
+            },
+            fillColor: surfaceColor,
           ),
         ),
         const SizedBox(width: 12),
-        _buildFilterChip(
-          context,
+        PasalFilterChip(
           label: 'Low Stock',
           selected: _showLowStockOnly,
-          primaryColor: primaryColor,
-          primaryLight: primaryLight,
-          surfaceColor: surfaceColor,
-          borderColor: borderColor,
-          textPrimary: textPrimary,
+          icon: AppIcons.alertTriangle,
           onSelected: (value) => setState(() => _showLowStockOnly = value),
         ),
         const SizedBox(width: 8),
-        _buildFilterChip(
-          context,
+        PasalFilterChip(
           label: 'Inactive',
           selected: _showInactive,
-          primaryColor: primaryColor,
-          primaryLight: primaryLight,
-          surfaceColor: surfaceColor,
-          borderColor: borderColor,
-          textPrimary: textPrimary,
+          icon: AppIcons.eyeOff,
           onSelected: (value) {
             setState(() => _showInactive = value);
             ref
@@ -250,39 +227,6 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
           },
         ),
       ],
-    );
-  }
-
-  Widget _buildFilterChip(
-    BuildContext context, {
-    required String label,
-    required bool selected,
-    required Color primaryColor,
-    required Color primaryLight,
-    required Color surfaceColor,
-    required Color borderColor,
-    required Color textPrimary,
-    required ValueChanged<bool> onSelected,
-  }) {
-    return GestureDetector(
-      onTap: () => onSelected(!selected),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected ? primaryLight : surfaceColor,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: selected ? primaryColor : borderColor),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: selected ? primaryColor : textPrimary,
-          ),
-        ),
-      ),
     );
   }
 
@@ -314,18 +258,18 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
               ),
             ),
             const SizedBox(height: 16),
-            Text(
+            StyledText(
               'No products found',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: textPrimary,
-              ),
+              style: TextStyler()
+                  .style(PasalTextStyleToken.title.token.mix())
+                  .color(textPrimary),
             ),
             const SizedBox(height: 4),
-            Text(
+            StyledText(
               'Add your first product to get started',
-              style: TextStyle(fontSize: 13, color: textSecondary),
+              style: TextStyler()
+                  .style(PasalTextStyleToken.caption.token.mix())
+                  .color(textSecondary),
             ),
           ],
         ),
@@ -379,19 +323,18 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
             child: Icon(Icons.error_outline, size: 48, color: errorColor),
           ),
           const SizedBox(height: 16),
-          Text(
+          StyledText(
             'Something went wrong',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: textPrimary,
-            ),
+            style: TextStyler()
+                .style(PasalTextStyleToken.title.token.mix())
+                .color(textPrimary),
           ),
           const SizedBox(height: 4),
-          Text(
+          StyledText(
             error.toString(),
-            style: TextStyle(fontSize: 13, color: textSecondary),
-            textAlign: TextAlign.center,
+            style: TextStyler()
+                .style(PasalTextStyleToken.caption.token.mix())
+                .color(textSecondary),
           ),
         ],
       ),
@@ -435,8 +378,6 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     BuildContext context,
     Product product,
   ) async {
-    final primaryColor = PasalColorToken.primary.token.resolve(context);
-    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
     final controller = TextEditingController();
     bool isAdd = true;
 
@@ -445,37 +386,29 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              title: const Text('Adjust Stock'),
+            return PasalDialog(
+              title: 'Adjust Stock',
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  StyledText(
                     product.name,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: textPrimary,
-                    ),
+                    style: TextStyler()
+                        .style(PasalTextStyleToken.body.token.mix())
+                        .color(
+                          PasalColorToken.textPrimary.token.resolve(context),
+                        ),
                   ),
                   const SizedBox(height: 16),
-                  TextField(
+                  PasalTextField(
                     controller: controller,
+                    label: 'Quantity',
+                    prefixIcon: AppIcons.package,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Quantity',
-                      prefixIcon: const Icon(AppIcons.package),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
                   ),
                   const SizedBox(height: 16),
-                  SegmentedButton<bool>(
+                  PasalSegmentedButton<bool>(
                     segments: const [
                       ButtonSegment<bool>(
                         value: true,
@@ -496,17 +429,17 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                 ],
               ),
               actions: [
-                TextButton(
+                PasalButton(
+                  label: 'Cancel',
                   onPressed: () => Navigator.of(dialogContext).pop(false),
-                  child: const Text('Cancel'),
+                  variant: PasalButtonVariant.secondary,
+                  size: PasalButtonSize.small,
                 ),
-                ElevatedButton(
+                PasalButton(
+                  label: 'Apply',
                   onPressed: () => Navigator.of(dialogContext).pop(true),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Apply'),
+                  variant: PasalButtonVariant.primary,
+                  size: PasalButtonSize.small,
                 ),
               ],
             );

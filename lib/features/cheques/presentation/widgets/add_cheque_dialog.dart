@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
+import 'package:pasal_pro/core/widgets/pasal_button.dart';
+import 'package:pasal_pro/core/widgets/pasal_dialog.dart';
+import 'package:pasal_pro/core/widgets/pasal_text_field.dart';
 import 'package:pasal_pro/features/cheques/domain/entities/cheque.dart';
 import 'package:pasal_pro/features/cheques/presentation/providers/cheque_providers.dart';
 
@@ -125,137 +128,93 @@ class _AddChequeDialogState extends ConsumerState<AddChequeDialog> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Dialog(
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Text(
-                'Add Cheque',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              AppSpacing.large,
+    return PasalDialog(
+      title: 'Add Cheque',
+      maxWidth: 450,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Party Name Field
+          PasalTextField(
+            controller: _partyNameController,
+            label: 'Party Name',
+            hint: 'Enter party/customer name',
+            enabled: !_isLoading,
+            keyboardType: TextInputType.text,
+          ),
+          AppSpacing.medium,
 
-              // Party Name Field
-              TextField(
-                controller: _partyNameController,
-                enabled: !_isLoading,
-                decoration: InputDecoration(
-                  labelText: 'Party Name',
-                  hintText: 'Enter party/customer name',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              AppSpacing.medium,
+          // Cheque Number Field
+          PasalTextField(
+            controller: _chequeNumberController,
+            label: 'Cheque Number',
+            hint: 'e.g., CHQ-001',
+            enabled: !_isLoading,
+            keyboardType: TextInputType.text,
+          ),
+          AppSpacing.medium,
 
-              // Cheque Number Field
-              TextField(
-                controller: _chequeNumberController,
-                enabled: !_isLoading,
-                decoration: InputDecoration(
-                  labelText: 'Cheque Number',
-                  hintText: 'e.g., CHQ-001',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              AppSpacing.medium,
+          // Amount Field
+          PasalTextField(
+            controller: _amountController,
+            label: 'Amount (Rs)',
+            hint: 'Enter amount',
+            enabled: !_isLoading,
+            keyboardType: TextInputType.number,
+          ),
+          AppSpacing.medium,
 
-              // Amount Field
-              TextField(
-                controller: _amountController,
-                enabled: !_isLoading,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
+          // Due Date Field
+          Material(
+            child: InkWell(
+              onTap: _isLoading ? null : _selectDueDate,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
                 ),
-                decoration: InputDecoration(
-                  labelText: 'Amount (Rs)',
-                  hintText: 'Enter amount',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                decoration: BoxDecoration(
+                  border: Border.all(color: theme.colorScheme.outline),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ),
-              AppSpacing.medium,
-
-              // Due Date Field
-              Material(
-                child: InkWell(
-                  onTap: _isLoading ? null : _selectDueDate,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 16,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: theme.colorScheme.outline),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Due Date', style: theme.textTheme.labelSmall),
-                            const SizedBox(height: 4),
-                            Text(
-                              _getFormattedDate(_selectedDueDate),
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
-                        Icon(
-                          AppIcons.calendar,
-                          color: theme.colorScheme.primary,
+                        Text('Due Date', style: theme.textTheme.labelSmall),
+                        const SizedBox(height: 4),
+                        Text(
+                          _getFormattedDate(_selectedDueDate),
+                          style: theme.textTheme.bodyMedium,
                         ),
                       ],
                     ),
-                  ),
+                    Icon(AppIcons.calendar, color: theme.colorScheme.primary),
+                  ],
                 ),
               ),
-              AppSpacing.large,
-
-              // Action Buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: _isLoading ? null : () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                  AppSpacing.hMedium,
-                  FilledButton(
-                    onPressed: _isLoading ? null : _handleSubmit,
-                    child: _isLoading
-                        ? SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation(
-                                theme.colorScheme.onPrimary,
-                              ),
-                            ),
-                          )
-                        : const Text('Add Cheque'),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
+      actions: [
+        PasalButton(
+          label: 'Cancel',
+          onPressed: _isLoading ? null : () => Navigator.pop(context),
+          variant: PasalButtonVariant.secondary,
+          size: PasalButtonSize.small,
+        ),
+        PasalButton(
+          label: 'Add Cheque',
+          onPressed: _isLoading ? null : _handleSubmit,
+          isLoading: _isLoading,
+          variant: PasalButtonVariant.primary,
+          size: PasalButtonSize.small,
+        ),
+      ],
     );
   }
 
