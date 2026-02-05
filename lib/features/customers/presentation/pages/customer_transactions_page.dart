@@ -78,6 +78,14 @@ class _CustomerTransactionsPageState
     final averageTransactionAsync = ref.watch(
       customerAverageTransactionProvider(customerId),
     );
+    final surfaceColor = PasalColorToken.surface.token.resolve(context);
+    final surfaceAlt = PasalColorToken.surfaceAlt.token.resolve(context);
+    final borderColor = PasalColorToken.border.token.resolve(context);
+    final primaryColor = PasalColorToken.primary.token.resolve(context);
+    final primaryLight = primaryColor.withValues(alpha: 0.1);
+    final errorColor = PasalColorToken.error.token.resolve(context);
+    final successColor = PasalColorToken.success.token.resolve(context);
+    final warningColor = PasalColorToken.warning.token.resolve(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -95,6 +103,11 @@ class _CustomerTransactionsPageState
               balanceAsync,
               totalPurchasesAsync,
               averageTransactionAsync,
+              surfaceColor: surfaceColor,
+              borderColor: borderColor,
+              primaryColor: primaryColor,
+              successColor: successColor,
+              warningColor: warningColor,
             ),
           ),
 
@@ -143,11 +156,7 @@ class _CustomerTransactionsPageState
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          AppIcons.inbox,
-                          size: 48,
-                          color: PasalColorToken.border.token.resolve(context),
-                        ),
+                        Icon(AppIcons.inbox, size: 48, color: borderColor),
                         AppSpacing.medium,
                         Text(
                           'No transactions in this period',
@@ -170,10 +179,8 @@ class _CustomerTransactionsPageState
                 return ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: transactionsWithBalance.length,
-                  separatorBuilder: (context, index) => Divider(
-                    color: PasalColorToken.border.token.resolve(context),
-                    height: 16,
-                  ),
+                  separatorBuilder: (context, index) =>
+                      Divider(color: borderColor, height: 16),
                   itemBuilder: (context, index) {
                     final (sale, balance) = transactionsWithBalance[index];
                     return _buildTransactionItem(
@@ -181,6 +188,12 @@ class _CustomerTransactionsPageState
                       sale,
                       balance,
                       index + 1,
+                      surfaceAlt: surfaceAlt,
+                      borderColor: borderColor,
+                      primaryColor: primaryColor,
+                      primaryLight: primaryLight,
+                      successColor: successColor,
+                      warningColor: warningColor,
                     );
                   },
                 );
@@ -190,11 +203,7 @@ class _CustomerTransactionsPageState
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      AppIcons.error,
-                      size: 48,
-                      color: PasalColorToken.error.token.resolve(context),
-                    ),
+                    Icon(AppIcons.error, size: 48, color: errorColor),
                     AppSpacing.medium,
                     Text(
                       'Failed to load transactions',
@@ -215,8 +224,13 @@ class _CustomerTransactionsPageState
     BuildContext context,
     AsyncValue<double> balanceAsync,
     AsyncValue<double> totalPurchasesAsync,
-    AsyncValue<double> averageTransactionAsync,
-  ) {
+    AsyncValue<double> averageTransactionAsync, {
+    required Color surfaceColor,
+    required Color borderColor,
+    required Color primaryColor,
+    required Color successColor,
+    required Color warningColor,
+  }) {
     return GridView.count(
       crossAxisCount: AppResponsive.getValue<int>(
         context,
@@ -237,6 +251,11 @@ class _CustomerTransactionsPageState
           balanceAsync,
           AppIcons.creditCard,
           false,
+          surfaceColor: surfaceColor,
+          borderColor: borderColor,
+          primaryColor: primaryColor,
+          successColor: successColor,
+          warningColor: warningColor,
         ),
         _buildStatCard(
           context,
@@ -244,6 +263,11 @@ class _CustomerTransactionsPageState
           totalPurchasesAsync,
           AppIcons.rupee,
           true,
+          surfaceColor: surfaceColor,
+          borderColor: borderColor,
+          primaryColor: primaryColor,
+          successColor: successColor,
+          warningColor: warningColor,
         ),
         _buildStatCard(
           context,
@@ -251,6 +275,11 @@ class _CustomerTransactionsPageState
           averageTransactionAsync,
           AppIcons.barChart3,
           true,
+          surfaceColor: surfaceColor,
+          borderColor: borderColor,
+          primaryColor: primaryColor,
+          successColor: successColor,
+          warningColor: warningColor,
         ),
       ],
     );
@@ -262,16 +291,19 @@ class _CustomerTransactionsPageState
     String label,
     AsyncValue<double> value,
     IconData icon,
-    bool isPositive,
-  ) {
+    bool isPositive, {
+    required Color surfaceColor,
+    required Color borderColor,
+    required Color primaryColor,
+    required Color successColor,
+    required Color warningColor,
+  }) {
     return Container(
       padding: EdgeInsets.all(AppResponsive.getSectionGap(context) - 4),
       decoration: BoxDecoration(
-        color: PasalColorToken.surface.token.resolve(context),
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: PasalColorToken.border.token.resolve(context),
-        ),
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,11 +313,7 @@ class _CustomerTransactionsPageState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(label, style: Theme.of(context).textTheme.labelSmall),
-              Icon(
-                icon,
-                size: 14,
-                color: PasalColorToken.primary.token.resolve(context),
-              ),
+              Icon(icon, size: 14, color: primaryColor),
             ],
           ),
           value.when(
@@ -293,7 +321,7 @@ class _CustomerTransactionsPageState
               CurrencyFormatter.format(amount),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w700,
-                color: isPositive ? Colors.green : Colors.orange,
+                color: isPositive ? successColor : warningColor,
               ),
             ),
             loading: () =>
@@ -311,18 +339,22 @@ class _CustomerTransactionsPageState
     BuildContext context,
     SaleModel sale,
     double balance,
-    int index,
-  ) {
+    int index, {
+    required Color surfaceAlt,
+    required Color borderColor,
+    required Color primaryColor,
+    required Color primaryLight,
+    required Color successColor,
+    required Color warningColor,
+  }) {
     final isCash = sale.paymentMethod == SalePaymentMethod.cash;
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: PasalColorToken.surfaceAlt.token.resolve(context),
+        color: surfaceAlt,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: PasalColorToken.border.token.resolve(context),
-        ),
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -353,8 +385,8 @@ class _CustomerTransactionsPageState
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: isCash
-                      ? Colors.green.withValues(alpha: 0.1)
-                      : Colors.orange.withValues(alpha: 0.1),
+                      ? successColor.withValues(alpha: 0.1)
+                      : warningColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -362,7 +394,7 @@ class _CustomerTransactionsPageState
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: isCash ? Colors.green : Colors.orange,
+                    color: isCash ? successColor : warningColor,
                   ),
                 ),
               ),
@@ -402,9 +434,7 @@ class _CustomerTransactionsPageState
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.1),
+                    color: primaryLight,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Column(
@@ -419,7 +449,7 @@ class _CustomerTransactionsPageState
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: PasalColorToken.primary.token.resolve(context),
+                          color: primaryColor,
                         ),
                       ),
                     ],

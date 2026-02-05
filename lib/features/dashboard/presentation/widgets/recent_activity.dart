@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
-import 'package:mix/mix.dart';
+import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/theme/mix_tokens.dart';
-import 'package:pasal_pro/core/utils/currency_formatter.dart';
+import 'package:pasal_pro/features/dashboard/constants/dashboard_spacing.dart';
 import 'package:pasal_pro/features/dashboard/presentation/providers/dashboard_providers.dart';
-import 'package:pasal_pro/features/sales/data/models/sale_model.dart';
+import 'package:pasal_pro/features/dashboard/presentation/widgets/activity_item.dart';
+import 'package:pasal_pro/features/dashboard/presentation/widgets/activity_feed_skeleton.dart';
 
-/// Recent activity feed showing latest transactions with real data using Mix
+/// Recent activity feed showing latest 10 transactions
+/// Modern clean list view with payment type indicators and timestamps
 class RecentActivity extends ConsumerWidget {
   const RecentActivity({super.key});
 
@@ -18,81 +19,61 @@ class RecentActivity extends ConsumerWidget {
     final borderColor = PasalColorToken.border.token.resolve(context);
     final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
 
-    return Box(
-      style: BoxStyler()
-          .paddingAll(20.0)
-          .borderRounded(12.0)
-          .color(surfaceColor)
-          .borderAll(color: borderColor),
+    return Container(
+      padding: DashboardSpacing.getCardPadding(),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        border: Border.all(color: borderColor, width: 1.0),
+        borderRadius: BorderRadius.circular(DashboardSpacing.cardBorderRadius),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Header: Title + View All link
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              StyledText(
+              Text(
                 'Recent Activity',
-                style: TextStyler()
-                    .fontSize(16)
-                    .fontWeight(FontWeight.w600)
-                    .color(textPrimary),
+                style: TextStyle(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w600,
+                  color: textPrimary,
+                ),
               ),
-              TextButton(onPressed: () {}, child: const Text('View All')),
+              TextButton(
+                onPressed: () {
+                  // TODO: Navigate to detailed activity log
+                },
+                child: Text(
+                  'View All',
+                  style: TextStyle(
+                    color: PasalColorToken.primary.token.resolve(context),
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: DashboardSpacing.sectionGap / 2), // 16px
+          // Activity list
           SizedBox(
-            height: 400,
+            height: 400.0, // Fixed height for list
             child: recentActivityAsync.when(
-              loading: () => Center(
-                child: CircularProgressIndicator(
-                  color: PasalColorToken.primary.token.resolve(context),
-                ),
-              ),
-              error: (error, stack) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 40,
-                      color: PasalColorToken.error.token.resolve(context),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Failed to load activity',
-                      style: TextStyle(
-                        color: PasalColorToken.error.token.resolve(context),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              loading: () => const ActivityFeedSkeleton(itemCount: 5),
+              error: (error, stack) => _buildErrorState(context),
               data: (activities) {
                 if (activities.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.history, size: 40, color: Colors.grey[400]),
-                        const SizedBox(height: 8),
-                        Text(
-                          'No activity yet',
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                      ],
-                    ),
-                  );
+                  return _buildEmptyState(context);
                 }
                 return ListView.separated(
                   itemCount: activities.length,
-                  separatorBuilder: (context, index) => Divider(
-                    color: PasalColorToken.border.token.resolve(context),
-                    height: 16,
-                  ),
+                  separatorBuilder: (context, index) =>
+                      Divider(color: borderColor, height: 16.0),
                   itemBuilder: (context, index) =>
-                      _buildActivityItem(context, activities[index]),
+                      ActivityItem(sale: activities[index]),
                 );
               },
             ),
@@ -102,93 +83,59 @@ class RecentActivity extends ConsumerWidget {
     );
   }
 
-  Widget _buildActivityItem(BuildContext context, SaleModel sale) {
-    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+  /// Build empty state when no activities exist
+  Widget _buildEmptyState(BuildContext context) {
     final textSecondary = PasalColorToken.textSecondary.token.resolve(context);
-    final profitColor = Color(0xFF4CAF50);
-    final creditColor = Color(0xFFFF9800);
 
-    final paymentLabel = sale.paymentMethod == SalePaymentMethod.cash
-        ? 'Cash'
-        : 'Credit';
-    final now = DateTime.now();
-    final difference = now.difference(sale.createdAt);
-    String timeLabel;
-    if (difference.inMinutes < 1) {
-      timeLabel = 'Just now';
-    } else if (difference.inMinutes < 60) {
-      timeLabel = '${difference.inMinutes}m ago';
-    } else if (difference.inHours < 24) {
-      timeLabel = '${difference.inHours}h ago';
-    } else {
-      timeLabel = DateFormat('MMM d, HH:mm').format(sale.createdAt);
-    }
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(AppIcons.history, size: 48.0, color: Colors.grey[350]),
+          SizedBox(height: 12.0),
+          Text(
+            'No activity yet',
+            style: TextStyle(
+              fontSize: 14.0,
+              fontWeight: FontWeight.w500,
+              color: textSecondary,
+            ),
+          ),
+          SizedBox(height: 4.0),
+          Text(
+            'Transactions will appear here',
+            style: TextStyle(fontSize: 12.0, color: Colors.grey[400]),
+          ),
+        ],
+      ),
+    );
+  }
 
-    return Row(
-      children: [
-        Box(
-          style: BoxStyler()
-              .width(40)
-              .height(40)
-              .borderRounded(10.0)
-              .color(
-                sale.paymentMethod == SalePaymentMethod.cash
-                    ? profitColor.withValues(alpha: 0.1)
-                    : creditColor.withValues(alpha: 0.1),
-              ),
-          child: StyledIcon(
-            icon: sale.paymentMethod == SalePaymentMethod.cash
-                ? Icons.attach_money
-                : Icons.credit_card,
-            style: IconStyler()
-                .size(20)
-                .color(
-                  sale.paymentMethod == SalePaymentMethod.cash
-                      ? profitColor
-                      : creditColor,
-                ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              StyledText(
-                'Sale completed',
-                style: TextStyler()
-                    .fontSize(14)
-                    .fontWeight(FontWeight.w600)
-                    .color(textPrimary),
-              ),
-              const SizedBox(height: 2),
-              StyledText(
-                '${sale.items.length} items • $paymentLabel payment',
-                style: TextStyler().fontSize(12).color(textSecondary),
-              ),
-            ],
-          ),
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            StyledText(
-              CurrencyFormatter.format(sale.subtotal),
-              style: TextStyler()
-                  .fontSize(14)
-                  .fontWeight(FontWeight.w600)
-                  .color(profitColor),
+  /// Build error state when data fails to load
+  Widget _buildErrorState(BuildContext context) {
+    final errorColor = PasalColorToken.error.token.resolve(context);
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(AppIcons.error, size: 48.0, color: errorColor),
+          SizedBox(height: 12.0),
+          Text(
+            'Failed to load activity',
+            style: TextStyle(
+              fontSize: 14.0,
+              fontWeight: FontWeight.w500,
+              color: errorColor,
             ),
-            const SizedBox(height: 2),
-            StyledText(
-              timeLabel,
-              style: TextStyler().fontSize(11).color(textSecondary),
-            ),
-          ],
-        ),
-      ],
+          ),
+          SizedBox(height: 4.0),
+          Text(
+            'Please try again later',
+            style: TextStyle(fontSize: 12.0, color: Colors.grey[400]),
+          ),
+        ],
+      ),
     );
   }
 }
-
-

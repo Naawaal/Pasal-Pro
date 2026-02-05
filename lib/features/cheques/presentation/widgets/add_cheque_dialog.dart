@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
 import 'package:pasal_pro/features/cheques/domain/entities/cheque.dart';
 import 'package:pasal_pro/features/cheques/presentation/providers/cheque_providers.dart';
@@ -215,7 +216,7 @@ class _AddChequeDialogState extends ConsumerState<AddChequeDialog> {
                           ],
                         ),
                         Icon(
-                          Icons.calendar_today,
+                          AppIcons.calendar,
                           color: theme.colorScheme.primary,
                         ),
                       ],

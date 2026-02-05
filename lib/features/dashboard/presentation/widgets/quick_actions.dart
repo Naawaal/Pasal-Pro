@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mix/mix.dart';
+import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
 import 'package:pasal_pro/features/customers/presentation/pages/customers_page.dart';
@@ -40,7 +41,7 @@ class QuickActions extends ConsumerWidget {
           // Action buttons
           _buildActionButton(
             context,
-            icon: Icons.add_shopping_cart,
+            icon: AppIcons.shoppingCart,
             label: 'New Sale',
             subtitle: 'Record a transaction',
             badgeLabel: '⌘+S',
@@ -57,7 +58,7 @@ class QuickActions extends ConsumerWidget {
           const SizedBox(height: 12),
           _buildActionButton(
             context,
-            icon: Icons.inventory_2,
+            icon: AppIcons.warehouse,
             label: 'Products',
             subtitle: 'Manage inventory',
             onTap: () => Navigator.push(
@@ -73,7 +74,7 @@ class QuickActions extends ConsumerWidget {
           const SizedBox(height: 12),
           _buildActionButton(
             context,
-            icon: Icons.people,
+            icon: AppIcons.users,
             label: 'Customers',
             subtitle: 'View & manage customers',
             onTap: () => Navigator.push(
@@ -89,7 +90,7 @@ class QuickActions extends ConsumerWidget {
           const SizedBox(height: 12),
           _buildActionButton(
             context,
-            icon: Icons.settings,
+            icon: AppIcons.settings,
             label: 'Settings',
             subtitle: 'App configuration',
             onTap: () => Navigator.push(
@@ -122,7 +123,9 @@ class QuickActions extends ConsumerWidget {
             ),
             error: (error, stack) => Text(
               'Failed to load stats',
-              style: TextStyle(color: PasalColorToken.error.token.resolve(context)),
+              style: TextStyle(
+                color: PasalColorToken.error.token.resolve(context),
+              ),
             ),
             data: (stats) => Column(
               children: [
@@ -308,7 +311,7 @@ class _FeaturePageWrapper extends StatelessWidget {
       appBar: AppBar(
         title: Text(title),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(AppIcons.back),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -316,5 +319,3 @@ class _FeaturePageWrapper extends StatelessWidget {
     );
   }
 }
-
-

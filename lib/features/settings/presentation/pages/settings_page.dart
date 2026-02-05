@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/features/settings/presentation/providers/settings_providers.dart';
@@ -13,17 +14,28 @@ class SettingsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsAsync = ref.watch(settingsNotifierProvider);
+    final bgColor = PasalColorToken.background.token.resolve(context);
+    final primaryColor = PasalColorToken.primary.token.resolve(context);
+    final primaryLight = primaryColor.withValues(alpha: 0.1);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+    final textSecondary = PasalColorToken.textSecondary.token.resolve(context);
+    final errorColor = PasalColorToken.error.token.resolve(context);
 
     return settingsAsync.when(
       data: (settings) {
-        final bgColor = PasalColorToken.background.token.resolve(context);
         return Container(
           color: bgColor,
           padding: AppResponsive.getPagePadding(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(context),
+              _buildHeader(
+                context,
+                primaryColor: primaryColor,
+                primaryLight: primaryLight,
+                textPrimary: textPrimary,
+                textSecondary: textSecondary,
+              ),
               SizedBox(height: AppResponsive.getSectionGap(context)),
               Expanded(
                 child: SingleChildScrollView(
@@ -32,10 +44,10 @@ class SettingsPage extends ConsumerWidget {
                       // Business Information Section
                       SettingsSection(
                         title: 'Business Information',
-                        icon: Icons.business_outlined,
+                        icon: AppIcons.store,
                         children: [
                           SettingsItem(
-                            icon: Icons.store_outlined,
+                            icon: AppIcons.store,
                             title: 'Store Name',
                             subtitle: settings.storeName,
                             onTap: () => _editStoreName(
@@ -45,7 +57,7 @@ class SettingsPage extends ConsumerWidget {
                             ),
                           ),
                           SettingsItem(
-                            icon: Icons.location_on_outlined,
+                            icon: AppIcons.location,
                             title: 'Address',
                             subtitle: settings.storeAddress ?? 'Not set',
                             onTap: () => _editStoreAddress(
@@ -55,7 +67,7 @@ class SettingsPage extends ConsumerWidget {
                             ),
                           ),
                           SettingsItem(
-                            icon: Icons.phone_outlined,
+                            icon: AppIcons.phone,
                             title: 'Contact',
                             subtitle: settings.storePhone ?? 'Not set',
                             onTap: () => _editStorePhone(
@@ -65,7 +77,7 @@ class SettingsPage extends ConsumerWidget {
                             ),
                           ),
                           SettingsItem(
-                            icon: Icons.receipt_outlined,
+                            icon: AppIcons.receipt,
                             title: 'Tax Rate',
                             subtitle:
                                 'VAT ${settings.taxRate?.toStringAsFixed(1)}%',
@@ -81,10 +93,10 @@ class SettingsPage extends ConsumerWidget {
                       // Application Section
                       SettingsSection(
                         title: 'Application',
-                        icon: Icons.settings_outlined,
+                        icon: AppIcons.settings,
                         children: [
                           SettingsItem(
-                            icon: Icons.palette_outlined,
+                            icon: AppIcons.palette,
                             title: 'Theme Mode',
                             subtitle: _themeModeLabel(settings.themeMode),
                             onTap: () => _selectThemeMode(
@@ -94,7 +106,7 @@ class SettingsPage extends ConsumerWidget {
                             ),
                           ),
                           SettingsItem(
-                            icon: Icons.language_outlined,
+                            icon: AppIcons.language,
                             title: 'Language',
                             subtitle: settings.language == 'en'
                                 ? 'English'
@@ -106,12 +118,12 @@ class SettingsPage extends ConsumerWidget {
                             ),
                           ),
                           SettingsItem(
-                            icon: Icons.currency_rupee,
+                            icon: AppIcons.rupee,
                             title: 'Currency',
                             subtitle: settings.currency,
                           ),
                           SettingsItem(
-                            icon: Icons.notifications_outlined,
+                            icon: AppIcons.notification,
                             title: 'Low Stock Alerts',
                             subtitle: 'Notify when inventory is low',
                             trailing: Switch(
@@ -124,7 +136,7 @@ class SettingsPage extends ConsumerWidget {
                             ),
                           ),
                           SettingsItem(
-                            icon: Icons.insert_chart_outlined,
+                            icon: AppIcons.analytics,
                             title: 'Daily Reports',
                             subtitle: 'Get daily business summary',
                             trailing: Switch(
@@ -142,10 +154,10 @@ class SettingsPage extends ConsumerWidget {
                       // Data & Backup Section
                       SettingsSection(
                         title: 'Data & Backup',
-                        icon: Icons.cloud_outlined,
+                        icon: AppIcons.cloud,
                         children: [
                           SettingsItem(
-                            icon: Icons.sync_outlined,
+                            icon: AppIcons.sync,
                             title: 'Auto Sync',
                             subtitle: 'Sync data automatically',
                             trailing: Switch(
@@ -158,7 +170,7 @@ class SettingsPage extends ConsumerWidget {
                             ),
                           ),
                           SettingsItem(
-                            icon: Icons.backup_outlined,
+                            icon: AppIcons.backup,
                             title: 'Backup Data',
                             subtitle: settings.lastBackupTime != null
                                 ? 'Last backup: ${_formatDateTime(settings.lastBackupTime!)}'
@@ -166,13 +178,13 @@ class SettingsPage extends ConsumerWidget {
                             onTap: () => _performBackup(context, ref),
                           ),
                           SettingsItem(
-                            icon: Icons.restore_outlined,
+                            icon: AppIcons.restore,
                             title: 'Restore Data',
                             subtitle: 'Restore from backup',
                             onTap: () => _showRestoreDialog(context),
                           ),
                           SettingsItem(
-                            icon: Icons.download_outlined,
+                            icon: AppIcons.download,
                             title: 'Export Data',
                             subtitle: 'Export to CSV/Excel',
                             onTap: () => _showExportDialog(context),
@@ -183,25 +195,25 @@ class SettingsPage extends ConsumerWidget {
                       // About Section
                       SettingsSection(
                         title: 'About',
-                        icon: Icons.info_outlined,
+                        icon: AppIcons.info,
                         children: [
                           SettingsItem(
-                            icon: Icons.info_outlined,
+                            icon: AppIcons.info,
                             title: 'Version',
                             subtitle: settings.version,
                           ),
                           SettingsItem(
-                            icon: Icons.description_outlined,
+                            icon: AppIcons.fileText,
                             title: 'Terms & Conditions',
                             onTap: () => _showTermsDialog(context),
                           ),
                           SettingsItem(
-                            icon: Icons.privacy_tip_outlined,
+                            icon: AppIcons.shield,
                             title: 'Privacy Policy',
                             onTap: () => _showPrivacyDialog(context),
                           ),
                           SettingsItem(
-                            icon: Icons.help_outline,
+                            icon: AppIcons.help,
                             title: 'Help & Support',
                             onTap: () => _showHelpDialog(context),
                           ),
@@ -215,8 +227,19 @@ class SettingsPage extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) => Center(child: Text('Error: $error')),
+      loading: () => _buildLoadingState(primaryColor: primaryColor),
+      error: (error, stackTrace) =>
+          _buildErrorState(error, errorColor: errorColor),
+    );
+  }
+
+  Widget _buildLoadingState({required Color primaryColor}) {
+    return Center(child: CircularProgressIndicator(color: primaryColor));
+  }
+
+  Widget _buildErrorState(Object error, {required Color errorColor}) {
+    return Center(
+      child: Text('Error: $error', style: TextStyle(color: errorColor)),
     );
   }
 
@@ -355,6 +378,7 @@ class SettingsPage extends ConsumerWidget {
   }
 
   void _selectLanguage(BuildContext context, WidgetRef ref, String current) {
+    final primaryColor = PasalColorToken.primary.token.resolve(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -365,10 +389,7 @@ class SettingsPage extends ConsumerWidget {
             ListTile(
               title: const Text('English'),
               trailing: current == 'en'
-                  ? Icon(
-                      Icons.check,
-                      color: PasalColorToken.primary.token.resolve(context),
-                    )
+                  ? Icon(AppIcons.check, color: primaryColor)
                   : null,
               onTap: () {
                 ref
@@ -380,10 +401,7 @@ class SettingsPage extends ConsumerWidget {
             ListTile(
               title: const Text('नेपाली'),
               trailing: current == 'ne'
-                  ? Icon(
-                      Icons.check,
-                      color: PasalColorToken.primary.token.resolve(context),
-                    )
+                  ? Icon(Icons.check, color: primaryColor)
                   : null,
               onTap: () {
                 ref
@@ -578,22 +596,22 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(
+    BuildContext context, {
+    required Color primaryColor,
+    required Color primaryLight,
+    required Color textPrimary,
+    required Color textSecondary,
+  }) {
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: PasalColorToken.primary.token
-                .resolve(context)
-                .withValues(alpha: 0.1),
+            color: primaryLight,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            Icons.settings_outlined,
-            color: PasalColorToken.primary.token.resolve(context),
-            size: 24,
-          ),
+          child: Icon(AppIcons.settings, color: primaryColor, size: 24),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -605,16 +623,13 @@ class SettingsPage extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: PasalColorToken.textPrimary.token.resolve(context),
+                  color: textPrimary,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 'Manage your app preferences and configurations',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: PasalColorToken.textSecondary.token.resolve(context),
-                ),
+                style: TextStyle(fontSize: 13, color: textSecondary),
               ),
             ],
           ),
@@ -650,6 +665,7 @@ class SettingsPage extends ConsumerWidget {
 
   /// Show theme mode selection dialog
   void _selectThemeMode(BuildContext context, WidgetRef ref, String current) {
+    final primaryColor = PasalColorToken.primary.token.resolve(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -661,10 +677,7 @@ class SettingsPage extends ConsumerWidget {
               title: const Text('System'),
               subtitle: const Text('Follow device settings'),
               trailing: current == 'system'
-                  ? Icon(
-                      Icons.check,
-                      color: PasalColorToken.primary.token.resolve(context),
-                    )
+                  ? Icon(Icons.check, color: primaryColor)
                   : null,
               onTap: () {
                 ref
@@ -677,10 +690,7 @@ class SettingsPage extends ConsumerWidget {
               title: const Text('Light'),
               subtitle: const Text('Always use light theme'),
               trailing: current == 'light'
-                  ? Icon(
-                      Icons.check,
-                      color: PasalColorToken.primary.token.resolve(context),
-                    )
+                  ? Icon(Icons.check, color: primaryColor)
                   : null,
               onTap: () {
                 ref
@@ -693,10 +703,7 @@ class SettingsPage extends ConsumerWidget {
               title: const Text('Dark'),
               subtitle: const Text('Always use dark theme'),
               trailing: current == 'dark'
-                  ? Icon(
-                      Icons.check,
-                      color: PasalColorToken.primary.token.resolve(context),
-                    )
+                  ? Icon(Icons.check, color: primaryColor)
                   : null,
               onTap: () {
                 ref

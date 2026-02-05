@@ -85,6 +85,8 @@ class AppIcons {
   static const IconData print = LucideIcons.printer;
   static const IconData inbox = LucideIcons.inbox;
   static const IconData history = LucideIcons.history;
+  static const IconData image = LucideIcons.image;
+  static const IconData folder = LucideIcons.folder;
 
   // Dashboard & Analytics
   static const IconData dashboard = LucideIcons.layoutDashboard;
@@ -111,6 +113,8 @@ class AppIcons {
   static const IconData phone = LucideIcons.phone;
   static const IconData mail = LucideIcons.mail;
   static const IconData message = LucideIcons.messageSquare;
+  static const IconData notification = LucideIcons.bell;
+  static const IconData location = LucideIcons.mapPin;
 
   // Misc
   static const IconData home = LucideIcons.house;
@@ -123,6 +127,7 @@ class AppIcons {
   static const IconData wrench = LucideIcons.wrench;
   static const IconData lock = LucideIcons.lock;
   static const IconData unlock = LucideIcons.lockOpen;
+  static const IconData language = LucideIcons.globe;
 
   // Profit/Loss (custom color indicators)
   static const IconData profit = LucideIcons.trendingUp;
@@ -142,4 +147,10 @@ class AppIcons {
   static const IconData lowStock = LucideIcons.packageX;
   static const IconData inStock = LucideIcons.packageCheck;
   static const IconData outOfStock = LucideIcons.packageMinus;
+
+  // Payment & Cheque Status
+  static const IconData paid = LucideIcons.circleCheck;
+  static const IconData pending = LucideIcons.clock;
+  static const IconData failed = LucideIcons.circleX;
+  static const IconData overdue = LucideIcons.triangleAlert;
 }

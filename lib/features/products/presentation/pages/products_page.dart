@@ -22,18 +22,6 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
   bool _showInactive = false;
   bool _showLowStockOnly = false;
 
-  // Mix design token colors (set in build)
-  late Color _bgColor;
-  late Color _surfaceColor;
-  late Color _surfaceAltColor;
-  late Color _primaryColor;
-  late Color _primaryLight;
-  late Color _borderColor;
-  late Color _textPrimary;
-  late Color _textSecondary;
-  late Color _errorColor;
-  late Color _errorLight;
-
   @override
   void dispose() {
     _searchController.dispose();
@@ -42,17 +30,16 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Set Mix design token colors
-    _bgColor = PasalColorToken.background.token.resolve(context);
-    _surfaceColor = PasalColorToken.surface.token.resolve(context);
-    _surfaceAltColor = PasalColorToken.surfaceAlt.token.resolve(context);
-    _primaryColor = PasalColorToken.primary.token.resolve(context);
-    _primaryLight = _primaryColor.withValues(alpha: 0.1);
-    _borderColor = PasalColorToken.border.token.resolve(context);
-    _textPrimary = PasalColorToken.textPrimary.token.resolve(context);
-    _textSecondary = PasalColorToken.textSecondary.token.resolve(context);
-    _errorColor = PasalColorToken.error.token.resolve(context);
-    _errorLight = _errorColor.withValues(alpha: 0.1);
+    // Resolve Mix design tokens once per build
+    final bgColor = PasalColorToken.background.token.resolve(context);
+    final surfaceColor = PasalColorToken.surface.token.resolve(context);
+    final primaryColor = PasalColorToken.primary.token.resolve(context);
+    final primaryLight = primaryColor.withValues(alpha: 0.1);
+    final borderColor = PasalColorToken.border.token.resolve(context);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+    final textSecondary = PasalColorToken.textSecondary.token.resolve(context);
+    final errorColor = PasalColorToken.error.token.resolve(context);
+    final errorLight = errorColor.withValues(alpha: 0.1);
 
     final productsState = ref.watch(productsControllerProvider);
     final searchState = ref.watch(productSearchProvider);
@@ -62,25 +49,56 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     final products = _applyFilters(sourceProducts);
 
     return Container(
-      color: _bgColor,
+      color: bgColor,
       padding: AppResponsive.getPagePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header with stats
-          _buildHeader(context, products),
+          _buildHeader(
+            context,
+            products,
+            primaryColor: primaryColor,
+            primaryLight: primaryLight,
+            textPrimary: textPrimary,
+            textSecondary: textSecondary,
+          ),
           SizedBox(height: AppResponsive.getSectionGap(context)),
 
           // Search and filters
-          _buildSearchAndFilters(context),
+          _buildSearchAndFilters(
+            context,
+            surfaceColor: surfaceColor,
+            borderColor: borderColor,
+            primaryColor: primaryColor,
+            primaryLight: primaryLight,
+            textPrimary: textPrimary,
+            textSecondary: textSecondary,
+          ),
           SizedBox(height: AppResponsive.getSectionGap(context) - 8),
 
           // Products list
           Expanded(
             child: productsState.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => _buildErrorState(context, error),
-              data: (_) => _buildProductsList(context, products),
+              error: (error, _) => _buildErrorState(
+                context,
+                error,
+                errorColor: errorColor,
+                errorLight: errorLight,
+                textPrimary: textPrimary,
+                textSecondary: textSecondary,
+              ),
+              data: (_) => _buildProductsList(
+                context,
+                products,
+                surfaceColor: surfaceColor,
+                borderColor: borderColor,
+                primaryColor: primaryColor,
+                primaryLight: primaryLight,
+                textPrimary: textPrimary,
+                textSecondary: textSecondary,
+              ),
             ),
           ),
         ],
@@ -88,7 +106,14 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, List<Product> products) {
+  Widget _buildHeader(
+    BuildContext context,
+    List<Product> products, {
+    required Color primaryColor,
+    required Color primaryLight,
+    required Color textPrimary,
+    required Color textSecondary,
+  }) {
     final totalProducts = products.length;
     final lowStockCount = products.where((p) => p.isLowStock).length;
     final inventoryValue = products.fold<double>(
@@ -101,10 +126,10 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: _primaryLight,
+            color: primaryLight,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(Icons.inventory_2_outlined, color: _primaryColor),
+          child: Icon(Icons.inventory_2_outlined, color: primaryColor),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -116,13 +141,13 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: _textPrimary,
+                  color: textPrimary,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 '$totalProducts items${lowStockCount > 0 ? " • $lowStockCount low stock" : ""} • ${CurrencyFormatter.formatCompact(inventoryValue)} value',
-                style: TextStyle(fontSize: 13, color: _textSecondary),
+                style: TextStyle(fontSize: 13, color: textSecondary),
               ),
             ],
           ),
@@ -131,6 +156,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
           context,
           icon: Icons.add,
           label: 'Add Product',
+          primaryColor: primaryColor,
           onPressed: _openCreateProduct,
         ),
       ],
@@ -141,6 +167,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     BuildContext context, {
     required IconData icon,
     required String label,
+    required Color primaryColor,
     required VoidCallback onPressed,
   }) {
     return ElevatedButton.icon(
@@ -148,7 +175,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
       icon: Icon(icon, size: 18),
       label: Text(label),
       style: ElevatedButton.styleFrom(
-        backgroundColor: _primaryColor,
+        backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -156,22 +183,30 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     );
   }
 
-  Widget _buildSearchAndFilters(BuildContext context) {
+  Widget _buildSearchAndFilters(
+    BuildContext context, {
+    required Color surfaceColor,
+    required Color borderColor,
+    required Color primaryColor,
+    required Color primaryLight,
+    required Color textPrimary,
+    required Color textSecondary,
+  }) {
     return Row(
       children: [
         Expanded(
           child: Container(
             decoration: BoxDecoration(
-              color: _surfaceColor,
+              color: surfaceColor,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: _borderColor),
+              border: Border.all(color: borderColor),
             ),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search products...',
-                hintStyle: TextStyle(color: _textSecondary),
-                prefixIcon: Icon(Icons.search, color: _textSecondary, size: 20),
+                hintStyle: TextStyle(color: textSecondary),
+                prefixIcon: Icon(Icons.search, color: textSecondary, size: 20),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -190,6 +225,11 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
           context,
           label: 'Low Stock',
           selected: _showLowStockOnly,
+          primaryColor: primaryColor,
+          primaryLight: primaryLight,
+          surfaceColor: surfaceColor,
+          borderColor: borderColor,
+          textPrimary: textPrimary,
           onSelected: (value) => setState(() => _showLowStockOnly = value),
         ),
         const SizedBox(width: 8),
@@ -197,6 +237,11 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
           context,
           label: 'Inactive',
           selected: _showInactive,
+          primaryColor: primaryColor,
+          primaryLight: primaryLight,
+          surfaceColor: surfaceColor,
+          borderColor: borderColor,
+          textPrimary: textPrimary,
           onSelected: (value) {
             setState(() => _showInactive = value);
             ref
@@ -212,6 +257,11 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     BuildContext context, {
     required String label,
     required bool selected,
+    required Color primaryColor,
+    required Color primaryLight,
+    required Color surfaceColor,
+    required Color borderColor,
+    required Color textPrimary,
     required ValueChanged<bool> onSelected,
   }) {
     return GestureDetector(
@@ -220,23 +270,32 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? _primaryLight : _surfaceColor,
+          color: selected ? primaryLight : surfaceColor,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: selected ? _primaryColor : _borderColor),
+          border: Border.all(color: selected ? primaryColor : borderColor),
         ),
         child: Text(
           label,
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w500,
-            color: selected ? _primaryColor : _textPrimary,
+            color: selected ? primaryColor : textPrimary,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildProductsList(BuildContext context, List<Product> products) {
+  Widget _buildProductsList(
+    BuildContext context,
+    List<Product> products, {
+    required Color surfaceColor,
+    required Color borderColor,
+    required Color primaryColor,
+    required Color primaryLight,
+    required Color textPrimary,
+    required Color textSecondary,
+  }) {
     if (products.isEmpty) {
       return Center(
         child: Column(
@@ -245,15 +304,13 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.1),
+                color: primaryLight,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
                 Icons.inventory_2_outlined,
                 size: 48,
-                color: _primaryColor,
+                color: primaryColor,
               ),
             ),
             const SizedBox(height: 16),
@@ -262,13 +319,13 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: _textPrimary,
+                color: textPrimary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Add your first product to get started',
-              style: TextStyle(fontSize: 13, color: _textSecondary),
+              style: TextStyle(fontSize: 13, color: textSecondary),
             ),
           ],
         ),
@@ -277,9 +334,9 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
 
     return Container(
       decoration: BoxDecoration(
-        color: _surfaceColor,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _borderColor),
+        border: Border.all(color: borderColor),
       ),
       child: ListView.separated(
         padding: EdgeInsets.all(AppResponsive.getSectionGap(context) - 4),
@@ -301,7 +358,14 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     );
   }
 
-  Widget _buildErrorState(BuildContext context, Object error) {
+  Widget _buildErrorState(
+    BuildContext context,
+    Object error, {
+    required Color errorLight,
+    required Color errorColor,
+    required Color textPrimary,
+    required Color textSecondary,
+  }) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -309,10 +373,10 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: _errorLight,
+              color: errorLight,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(Icons.error_outline, size: 48, color: _errorColor),
+            child: Icon(Icons.error_outline, size: 48, color: errorColor),
           ),
           const SizedBox(height: 16),
           Text(
@@ -320,13 +384,13 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: _textPrimary,
+              color: textPrimary,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             error.toString(),
-            style: TextStyle(fontSize: 13, color: _textSecondary),
+            style: TextStyle(fontSize: 13, color: textSecondary),
             textAlign: TextAlign.center,
           ),
         ],
@@ -371,6 +435,8 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     BuildContext context,
     Product product,
   ) async {
+    final primaryColor = PasalColorToken.primary.token.resolve(context);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
     final controller = TextEditingController();
     bool isAdd = true;
 
@@ -393,7 +459,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: _textPrimary,
+                      color: textPrimary,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -437,7 +503,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                 ElevatedButton(
                   onPressed: () => Navigator.of(dialogContext).pop(true),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _primaryColor,
+                    backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
                   ),
                   child: const Text('Apply'),

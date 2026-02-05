@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mix/mix.dart';
 import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
@@ -58,8 +57,8 @@ class CustomerListItem extends StatelessWidget {
                 .color(statusColor.withValues(alpha: 0.2)),
             child: StyledIcon(
               icon: customer.isOverCreditLimit
-                  ? LucideIcons.triangleAlert
-                  : LucideIcons.user,
+                  ? AppIcons.overdue
+                  : AppIcons.user,
               style: IconStyler().size(20).color(statusColor),
             ),
           ),
@@ -79,7 +78,7 @@ class CustomerListItem extends StatelessWidget {
                 Row(
                   children: [
                     StyledIcon(
-                      icon: LucideIcons.phone,
+                      icon: AppIcons.phone,
                       style: IconStyler().size(14).color(textSecondary),
                     ),
                     AppSpacing.hXSmall,

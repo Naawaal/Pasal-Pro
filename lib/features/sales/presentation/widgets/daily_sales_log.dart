@@ -1,20 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pasal_pro/core/constants/app_colors.dart';
-import 'package:pasal_pro/core/constants/app_spacing.dart';
+import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/features/sales/presentation/providers/fast_sale_providers.dart';
+import 'package:pasal_pro/features/sales/constants/sales_spacing.dart';
+import 'package:pasal_pro/features/sales/presentation/widgets/sales_log_row.dart';
 
 /// Daily Sales Log widget - displays today's sales entries and totals
+///
+/// Features:
+/// - 52px data-dense rows with hover effects
+/// - 150ms hover animation (scale + background)
+/// - Smooth add/remove animations
+/// - SalesSpacing constants throughout
+/// - Green profit highlighting
 class DailySalesLog extends ConsumerWidget {
   const DailySalesLog({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Resolve color tokens from Mix theme
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+    final textSecondary = PasalColorToken.textSecondary.token.resolve(context);
+
     final currentSale = ref.watch(currentSaleProvider);
 
     return Card(
+      color: PasalColorToken.surface.token.resolve(context),
       child: Padding(
-        padding: AppSpacing.paddingMedium,
+        padding: SalesSpacing.getFormPadding(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -24,91 +38,118 @@ class DailySalesLog extends ConsumerWidget {
               children: [
                 Text(
                   'TODAY\'S SALES',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: Colors.grey[700],
+                  style: TextStyle(
+                    fontSize: SalesSpacing.logHeaderFontSize,
                     fontWeight: FontWeight.w600,
+                    color: textPrimary,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                    border: Border.all(color: AppColors.primaryBlue, width: 1),
-                    borderRadius: BorderRadius.circular(12),
+                    color: PasalColorToken.primary.token
+                        .resolve(context)
+                        .withValues(alpha: 0.1),
+                    border: Border.all(
+                      color: PasalColorToken.primary.token.resolve(context),
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(
+                      SalesSpacing.inputBorderRadius,
+                    ),
                   ),
                   child: Text(
                     '${currentSale.items.length} entries',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.primaryBlue,
+                    style: TextStyle(
+                      fontSize: SalesSpacing.fieldLabelFontSize,
                       fontWeight: FontWeight.w600,
+                      color: PasalColorToken.primary.token.resolve(context),
                     ),
                   ),
                 ),
               ],
             ),
-            AppSpacing.medium,
+            SalesSpacing.medium,
 
             // Table header and content
             Expanded(
               child: Column(
                 children: [
-                  // Column headers
+                  // Column headers (table-like)
                   Container(
-                    padding: AppSpacing.paddingSmall,
+                    padding: SalesSpacing.getLogCellPadding(),
                     decoration: BoxDecoration(
                       color: Colors.grey[100],
                       border: Border(
                         bottom: BorderSide(color: Colors.grey[300]!, width: 1),
                       ),
+                      borderRadius: BorderRadius.circular(
+                        SalesSpacing.logBorderRadius,
+                      ),
                     ),
                     child: Row(
                       children: [
+                        // Product (flex: 3)
                         Expanded(
                           flex: 3,
                           child: Text(
                             'Product',
-                            style: Theme.of(context).textTheme.labelSmall
-                                ?.copyWith(fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                              fontSize: SalesSpacing.logHeaderFontSize,
+                              fontWeight: FontWeight.w600,
+                              color: textSecondary,
+                            ),
                           ),
                         ),
+
+                        // Qty (flex: 1)
                         Expanded(
                           flex: 1,
                           child: Text(
                             'Qty',
-                            style: Theme.of(context).textTheme.labelSmall
-                                ?.copyWith(fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                              fontSize: SalesSpacing.logHeaderFontSize,
+                              fontWeight: FontWeight.w600,
+                              color: textSecondary,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ),
+
+                        // Price (flex: 1)
                         Expanded(
                           flex: 1,
                           child: Text(
                             'Price',
-                            style: Theme.of(context).textTheme.labelSmall
-                                ?.copyWith(fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                              fontSize: SalesSpacing.logHeaderFontSize,
+                              fontWeight: FontWeight.w600,
+                              color: textSecondary,
+                            ),
                             textAlign: TextAlign.right,
                           ),
                         ),
+
+                        // Profit (flex: 1)
                         Expanded(
                           flex: 1,
                           child: Text(
                             'Profit',
-                            style: Theme.of(context).textTheme.labelSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.successGreen,
-                                ),
+                            style: TextStyle(
+                              fontSize: SalesSpacing.logHeaderFontSize,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.successGreen,
+                            ),
                             textAlign: TextAlign.right,
                           ),
                         ),
-                        const SizedBox(width: 32),
+
+                        // Remove button (32px)
+                        SizedBox(width: SalesSpacing.removeButtonSize),
                       ],
                     ),
                   ),
-                  AppSpacing.small,
+                  SalesSpacing.small,
 
                   // Sales entries list or empty state
                   if (currentSale.items.isEmpty)
@@ -116,8 +157,10 @@ class DailySalesLog extends ConsumerWidget {
                       child: Center(
                         child: Text(
                           'No sales recorded yet',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: Colors.grey[400]),
+                          style: TextStyle(
+                            fontSize: SalesSpacing.fieldHintFontSize,
+                            color: Colors.grey[400],
+                          ),
                         ),
                       ),
                     )
@@ -129,65 +172,14 @@ class DailySalesLog extends ConsumerWidget {
                             Divider(color: Colors.grey[200], height: 1),
                         itemBuilder: (context, index) {
                           final item = currentSale.items[index];
-                          return Padding(
-                            padding: AppSpacing.paddingSmall,
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  flex: 3,
-                                  child: Text(
-                                    item.product.name,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodySmall,
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 1,
-                                  child: Text(
-                                    '${item.quantity}',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodySmall,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 1,
-                                  child: Text(
-                                    'Rs ${item.unitPrice.toStringAsFixed(2)}',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodySmall,
-                                    textAlign: TextAlign.right,
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 1,
-                                  child: Text(
-                                    'Rs ${item.profit.toStringAsFixed(2)}',
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(
-                                          color: AppColors.successGreen,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                    textAlign: TextAlign.right,
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 32,
-                                  child: IconButton(
-                                    icon: const Icon(Icons.close, size: 18),
-                                    onPressed: () {
-                                      ref
-                                          .read(currentSaleProvider.notifier)
-                                          .removeItem(item.product.id);
-                                    },
-                                    padding: EdgeInsets.zero,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          return SalesLogRow(
+                            item: item,
+                            index: index,
+                            onRemove: () {
+                              ref
+                                  .read(currentSaleProvider.notifier)
+                                  .removeItem(item.product.id);
+                            },
                           );
                         },
                       ),
@@ -196,68 +188,77 @@ class DailySalesLog extends ConsumerWidget {
               ),
             ),
 
-            AppSpacing.medium,
+            SalesSpacing.medium,
 
             // Totals section
             Container(
-              padding: AppSpacing.paddingMedium,
+              padding: SalesSpacing.getProfitBoxPadding(),
               decoration: BoxDecoration(
                 color: Colors.grey[50],
                 border: Border(
                   top: BorderSide(color: Colors.grey[300]!, width: 1),
                 ),
+                borderRadius: BorderRadius.circular(
+                  SalesSpacing.inputBorderRadius,
+                ),
               ),
               child: Column(
                 children: [
-                  // Total sales
+                  // Total sales row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Total Sales',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        style: TextStyle(
+                          fontSize: SalesSpacing.totalsFontSize,
                           fontWeight: FontWeight.w600,
+                          color: textPrimary,
                         ),
                       ),
                       Text(
                         'Rs ${currentSale.subtotal.toStringAsFixed(2)}',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        style: TextStyle(
+                          fontSize: SalesSpacing.totalsFontSize,
                           fontWeight: FontWeight.w600,
+                          color: textPrimary,
                         ),
                       ),
                     ],
                   ),
-                  AppSpacing.small,
+                  SalesSpacing.small,
 
-                  // Total profit (highlighted)
+                  // Total profit (highlighted green box)
                   Container(
-                    padding: AppSpacing.paddingSmall,
+                    padding: SalesSpacing.getInputFieldPadding(),
                     decoration: BoxDecoration(
                       color: AppColors.successGreen.withValues(alpha: 0.1),
                       border: Border.all(
                         color: AppColors.successGreen,
-                        width: 1,
+                        width: 1.5,
                       ),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(
+                        SalesSpacing.inputBorderRadius - 2,
+                      ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           'Total Profit',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.successGreen,
-                              ),
+                          style: TextStyle(
+                            fontSize: SalesSpacing.totalsFontSize,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.successGreen,
+                          ),
                         ),
                         Text(
                           'Rs ${currentSale.totalProfit.toStringAsFixed(2)}',
-                          style: Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.successGreen,
-                              ),
+                          style: TextStyle(
+                            fontSize: SalesSpacing.profitBoxFontSize * 0.75,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.successGreen,
+                          ),
                         ),
                       ],
                     ),

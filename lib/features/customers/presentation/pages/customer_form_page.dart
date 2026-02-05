@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mix/mix.dart';
 import 'package:responsive_framework/responsive_framework.dart';
+import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/constants/app_spacing.dart';
 import 'package:pasal_pro/core/utils/app_logger.dart';
@@ -105,6 +106,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
     final surfaceAlt = PasalColorToken.surfaceAlt.token.resolve(context);
     final borderColor = PasalColorToken.border.token.resolve(context);
     final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+    final errorColor = PasalColorToken.error.token.resolve(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.customer == null ? 'Add Customer' : 'Edit Customer'),
@@ -130,7 +132,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
                       decoration: const InputDecoration(
                         labelText: 'Customer Name',
                         hintText: 'Enter customer name',
-                        prefixIcon: Icon(Icons.person_outline),
+                        prefixIcon: Icon(AppIcons.user),
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
@@ -148,7 +150,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
                       decoration: const InputDecoration(
                         labelText: 'Phone Number (Optional)',
                         hintText: 'Enter phone number',
-                        prefixIcon: Icon(Icons.phone_outlined),
+                        prefixIcon: Icon(AppIcons.phone),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -160,7 +162,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
                       decoration: const InputDecoration(
                         labelText: 'Credit Limit',
                         hintText: 'Enter credit limit (0 = unlimited)',
-                        prefixIcon: Icon(Icons.credit_card_outlined),
+                        prefixIcon: Icon(AppIcons.creditCard),
                         border: OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
@@ -291,7 +293,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
                             child: ElevatedButton(
                               onPressed: _isLoading
                                   ? null
-                                  : _showDeleteConfirmation,
+                                  : () => _showDeleteConfirmation(errorColor),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Theme.of(
                                   context,
@@ -317,7 +319,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
   }
 
   /// Show delete confirmation dialog
-  void _showDeleteConfirmation() {
+  void _showDeleteConfirmation(Color errorColor) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -335,7 +337,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
               Navigator.pop(context);
               _handleDelete();
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text('Delete', style: TextStyle(color: errorColor)),
           ),
         ],
       ),

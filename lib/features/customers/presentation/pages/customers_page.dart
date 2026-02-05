@@ -28,22 +28,57 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
   @override
   Widget build(BuildContext context) {
     final customersAsync = ref.watch(customersProvider);
+    final bgColor = PasalColorToken.surfaceAlt.token.resolve(context);
+    final surfaceColor = PasalColorToken.surface.token.resolve(context);
+    final primaryColor = PasalColorToken.primary.token.resolve(context);
+    final primaryLight = primaryColor.withValues(alpha: 0.1);
+    final borderColor = PasalColorToken.border.token.resolve(context);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+    final textSecondary = PasalColorToken.textSecondary.token.resolve(context);
+    final errorColor = PasalColorToken.error.token.resolve(context);
 
     return customersAsync.when(
-      loading: () => _buildLoadingState(context),
-      error: (error, stack) => _buildErrorState(context, error),
+      loading: () => _buildLoadingState(context, primaryColor: primaryColor),
+      error: (error, stack) =>
+          _buildErrorState(context, error, errorColor: errorColor),
       data: (customers) {
         return Container(
-          color: PasalColorToken.surfaceAlt.token.resolve(context),
+          color: bgColor,
           padding: AppResponsive.getPagePadding(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(context, customers),
+              _buildHeader(
+                context,
+                customers,
+                primaryColor: primaryColor,
+                primaryLight: primaryLight,
+                textPrimary: textPrimary,
+                textSecondary: textSecondary,
+              ),
               SizedBox(height: AppResponsive.getSectionGap(context)),
-              _buildSearchAndFilters(context),
+              _buildSearchAndFilters(
+                context,
+                primaryColor: primaryColor,
+                primaryLight: primaryLight,
+                surfaceColor: surfaceColor,
+                borderColor: borderColor,
+                textPrimary: textPrimary,
+                textSecondary: textSecondary,
+              ),
               SizedBox(height: AppResponsive.getSectionGap(context) - 8),
-              Expanded(child: _buildCustomersList(context, customers)),
+              Expanded(
+                child: _buildCustomersList(
+                  context,
+                  customers,
+                  primaryColor: primaryColor,
+                  primaryLight: primaryLight,
+                  surfaceColor: surfaceColor,
+                  borderColor: borderColor,
+                  textPrimary: textPrimary,
+                  textSecondary: textSecondary,
+                ),
+              ),
             ],
           ),
         );
@@ -51,38 +86,41 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
     );
   }
 
-  Widget _buildLoadingState(BuildContext context) {
-    return Center(
-      child: CircularProgressIndicator(
-        color: PasalColorToken.primary.token.resolve(context),
-      ),
-    );
+  Widget _buildLoadingState(
+    BuildContext context, {
+    required Color primaryColor,
+  }) {
+    return Center(child: CircularProgressIndicator(color: primaryColor));
   }
 
-  Widget _buildErrorState(BuildContext context, Object error) {
+  Widget _buildErrorState(
+    BuildContext context,
+    Object error, {
+    required Color errorColor,
+  }) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 48,
-            color: PasalColorToken.error.token.resolve(context),
-          ),
+          Icon(Icons.error_outline, size: 48, color: errorColor),
           const SizedBox(height: 16),
           Text(
             'Error loading customers',
-            style: TextStyle(
-              fontSize: 16,
-              color: PasalColorToken.error.token.resolve(context),
-            ),
+            style: TextStyle(fontSize: 16, color: errorColor),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context, List customers) {
+  Widget _buildHeader(
+    BuildContext context,
+    List customers, {
+    required Color primaryColor,
+    required Color primaryLight,
+    required Color textPrimary,
+    required Color textSecondary,
+  }) {
     final totalCustomers = customers.length;
     final totalCredit = customers.fold<double>(0, (sum, c) => sum + c.balance);
 
@@ -91,16 +129,10 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: PasalColorToken.primary.token
-                .resolve(context)
-                .withValues(alpha: 0.1),
+            color: primaryLight,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            Icons.people_outline,
-            color: PasalColorToken.primary.token.resolve(context),
-            size: 24,
-          ),
+          child: Icon(Icons.people_outline, color: primaryColor, size: 24),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -112,16 +144,13 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: PasalColorToken.textPrimary.token.resolve(context),
+                  color: textPrimary,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 '$totalCustomers customers • ${CurrencyFormatter.formatCompact(totalCredit)} credit',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: PasalColorToken.textSecondary.token.resolve(context),
-                ),
+                style: TextStyle(fontSize: 13, color: textSecondary),
               ),
             ],
           ),
@@ -131,7 +160,7 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
           icon: const Icon(Icons.add, size: 18),
           label: const Text('Add Customer'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: PasalColorToken.primary.token.resolve(context),
+            backgroundColor: primaryColor,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             shape: RoundedRectangleBorder(
@@ -143,30 +172,30 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
     );
   }
 
-  Widget _buildSearchAndFilters(BuildContext context) {
+  Widget _buildSearchAndFilters(
+    BuildContext context, {
+    required Color primaryColor,
+    required Color primaryLight,
+    required Color surfaceColor,
+    required Color borderColor,
+    required Color textPrimary,
+    required Color textSecondary,
+  }) {
     return Row(
       children: [
         Expanded(
           child: Container(
             decoration: BoxDecoration(
-              color: PasalColorToken.surface.token.resolve(context),
+              color: surfaceColor,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: PasalColorToken.border.token.resolve(context),
-              ),
+              border: Border.all(color: borderColor),
             ),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search customers...',
-                hintStyle: TextStyle(
-                  color: PasalColorToken.textSecondary.token.resolve(context),
-                ),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: PasalColorToken.textSecondary.token.resolve(context),
-                  size: 20,
-                ),
+                hintStyle: TextStyle(color: textSecondary),
+                prefixIcon: Icon(Icons.search, color: textSecondary, size: 20),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -184,16 +213,10 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
             duration: const Duration(milliseconds: 150),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: _showInactive
-                  ? PasalColorToken.primary.token
-                        .resolve(context)
-                        .withValues(alpha: 0.1)
-                  : PasalColorToken.surface.token.resolve(context),
+              color: _showInactive ? primaryLight : surfaceColor,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: _showInactive
-                    ? PasalColorToken.primary.token.resolve(context)
-                    : PasalColorToken.border.token.resolve(context),
+                color: _showInactive ? primaryColor : borderColor,
               ),
             ),
             child: Text(
@@ -201,9 +224,7 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: _showInactive
-                    ? PasalColorToken.primary.token.resolve(context)
-                    : PasalColorToken.textPrimary.token.resolve(context),
+                color: _showInactive ? primaryColor : textPrimary,
               ),
             ),
           ),
@@ -212,7 +233,16 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
     );
   }
 
-  Widget _buildCustomersList(BuildContext context, List customers) {
+  Widget _buildCustomersList(
+    BuildContext context,
+    List customers, {
+    required Color primaryColor,
+    required Color primaryLight,
+    required Color surfaceColor,
+    required Color borderColor,
+    required Color textPrimary,
+    required Color textSecondary,
+  }) {
     if (customers.isEmpty) {
       return Center(
         child: Column(
@@ -221,16 +251,10 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: PasalColorToken.primary.token
-                    .resolve(context)
-                    .withValues(alpha: 0.1),
+                color: primaryLight,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(
-                Icons.people_outline,
-                size: 48,
-                color: PasalColorToken.primary.token.resolve(context),
-              ),
+              child: Icon(Icons.people_outline, size: 48, color: primaryColor),
             ),
             const SizedBox(height: 16),
             Text(
@@ -238,16 +262,13 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: PasalColorToken.textPrimary.token.resolve(context),
+                color: textPrimary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Add your first customer to get started',
-              style: TextStyle(
-                fontSize: 13,
-                color: PasalColorToken.textSecondary.token.resolve(context),
-              ),
+              style: TextStyle(fontSize: 13, color: textSecondary),
             ),
           ],
         ),
@@ -256,11 +277,9 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
 
     return Container(
       decoration: BoxDecoration(
-        color: PasalColorToken.surface.token.resolve(context),
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: PasalColorToken.border.token.resolve(context),
-        ),
+        border: Border.all(color: borderColor),
       ),
       child: ListView.separated(
         padding: EdgeInsets.all(AppResponsive.getSectionGap(context) - 4),

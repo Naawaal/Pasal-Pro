@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:responsive_framework/responsive_framework.dart';
+import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/theme/mix_tokens.dart';
 import 'package:pasal_pro/core/utils/currency_formatter.dart';
+import 'package:pasal_pro/features/dashboard/constants/dashboard_spacing.dart';
 import 'package:pasal_pro/features/dashboard/presentation/providers/dashboard_providers.dart';
 import 'package:pasal_pro/features/dashboard/presentation/widgets/metric_card.dart';
+import 'package:pasal_pro/features/dashboard/presentation/widgets/metric_card_skeleton.dart';
 import 'package:pasal_pro/features/dashboard/presentation/widgets/quick_actions.dart';
 import 'package:pasal_pro/features/dashboard/presentation/widgets/recent_activity.dart';
 
@@ -74,21 +77,36 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final todayProfitState = ref.watch(todayProfitProvider);
     final transactionCountState = ref.watch(todayTransactionCountProvider);
     final lowStockCountState = ref.watch(lowStockCountProvider);
+    final surfaceAlt = PasalColorToken.surfaceAlt.token.resolve(context);
+    final primaryColor = PasalColorToken.primary.token.resolve(context);
+    final primaryLight = primaryColor.withValues(alpha: 0.1);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+    final textSecondary = PasalColorToken.textSecondary.token.resolve(context);
 
     return Container(
-      color: PasalColorToken.surfaceAlt.token.resolve(context),
-      padding: AppResponsive.getPagePadding(context),
+      color: surfaceAlt,
+      padding: DashboardSpacing.getResponsiveSectionPadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(context),
-          const SizedBox(height: 12),
-          _buildRefreshBar(context),
-          const SizedBox(height: 24),
+          _buildHeader(
+            context,
+            primaryColor: primaryColor,
+            primaryLight: primaryLight,
+            textPrimary: textPrimary,
+            textSecondary: textSecondary,
+          ),
+          SizedBox(height: DashboardSpacing.sectionGap / 2), // 16px
+          _buildRefreshBar(
+            context,
+            primaryColor: primaryColor,
+            textSecondary: textSecondary,
+          ),
+          SizedBox(height: DashboardSpacing.sectionGap), // 32px
           Expanded(
             child: RefreshIndicator(
               onRefresh: _refreshDashboard,
-              color: PasalColorToken.primary.token.resolve(context),
+              color: primaryColor,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: MaxWidthBox(
@@ -102,7 +120,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                         transactionCountState,
                         lowStockCountState,
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: DashboardSpacing.sectionGap), // 32px
                       ResponsiveRowColumn(
                         layout: AppResponsive.shouldStack(context)
                             ? ResponsiveRowColumnType.COLUMN
@@ -115,11 +133,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                           ResponsiveRowColumnItem(
                             child: SizedBox(
                               height: AppResponsive.shouldStack(context)
-                                  ? 24
+                                  ? DashboardSpacing.sectionGap
                                   : 0,
                               width: AppResponsive.shouldStack(context)
                                   ? 0
-                                  : 24,
+                                  : DashboardSpacing.sectionGap,
                             ),
                           ),
                           ResponsiveRowColumnItem(
@@ -140,7 +158,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   }
 
   /// Refresh status bar with last updated time
-  Widget _buildRefreshBar(BuildContext context) {
+  Widget _buildRefreshBar(
+    BuildContext context, {
+    required Color primaryColor,
+    required Color textSecondary,
+  }) {
     final now = DateTime.now();
     final difference = now.difference(_lastUpdated);
 
@@ -158,27 +180,16 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       children: [
         Row(
           children: [
-            Icon(
-              Icons.sync,
-              size: 16,
-              color: PasalColorToken.textSecondary.token.resolve(context),
-            ),
+            Icon(AppIcons.sync, size: 16, color: textSecondary),
             const SizedBox(width: 8),
             Text(
               'Last updated: $timeAgo',
-              style: TextStyle(
-                fontSize: 12,
-                color: PasalColorToken.textSecondary.token.resolve(context),
-              ),
+              style: TextStyle(fontSize: 12, color: textSecondary),
             ),
           ],
         ),
         IconButton(
-          icon: Icon(
-            Icons.refresh,
-            size: 20,
-            color: PasalColorToken.primary.token.resolve(context),
-          ),
+          icon: Icon(AppIcons.sync, size: 20, color: primaryColor),
           tooltip: 'Refresh dashboard',
           onPressed: _refreshDashboard,
           iconSize: 20,
@@ -189,7 +200,13 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(
+    BuildContext context, {
+    required Color primaryColor,
+    required Color primaryLight,
+    required Color textPrimary,
+    required Color textSecondary,
+  }) {
     final hour = DateTime.now().hour;
     final greeting = hour < 12
         ? 'Good Morning'
@@ -202,15 +219,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: PasalColorToken.primary.token
-                .resolve(context)
-                .withValues(alpha: 0.1),
+            color: primaryLight,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            Icons.dashboard_outlined,
-            color: PasalColorToken.primary.token.resolve(context),
-          ),
+          child: Icon(AppIcons.dashboard, color: primaryColor),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -222,16 +234,13 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: PasalColorToken.textPrimary.token.resolve(context),
+                  color: textPrimary,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 'Here\'s what\'s happening with your store today',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: PasalColorToken.textSecondary.token.resolve(context),
-                ),
+                style: TextStyle(fontSize: 13, color: textSecondary),
               ),
             ],
           ),
@@ -247,7 +256,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     AsyncValue<int> transactionState,
     AsyncValue<int> lowStockState,
   ) {
-    // Responsive column count: 1 on mobile, 2 on tablet, 3 on laptop, 4 on desktop/4K
+    // Responsive column count: 3 cols @1366px, 4 cols @1920px+
     final cols = AppResponsive.getValue<int>(
       context,
       small: 1,
@@ -260,31 +269,31 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       crossAxisCount: cols,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: AppResponsive.getSectionGap(context),
-      crossAxisSpacing: AppResponsive.getSectionGap(context),
-      childAspectRatio: 1.8,
+      mainAxisSpacing: DashboardSpacing.cardGap,
+      crossAxisSpacing: DashboardSpacing.cardGap,
+      childAspectRatio: 1.6, // Slightly wider for better proportions
       children: [
         _buildMetricCardAsync(
           title: 'Today\'s Sales',
           state: salesState,
           format: (v) => CurrencyFormatter.format(v),
-          icon: Icons.trending_up,
+          icon: AppIcons.trendingUp,
         ),
         _buildMetricCardAsync(
           title: 'Total Profit',
           state: profitState,
           format: (v) => CurrencyFormatter.format(v),
-          icon: Icons.account_balance_wallet_outlined,
+          icon: AppIcons.wallet,
         ),
         _buildMetricCardAsyncInt(
           title: 'Transactions',
           state: transactionState,
-          icon: Icons.receipt_long_outlined,
+          icon: AppIcons.receipt,
         ),
         _buildMetricCardAsyncInt(
           title: 'Low Stock Items',
           state: lowStockState,
-          icon: Icons.inventory_2_outlined,
+          icon: AppIcons.warehouse,
         ),
       ],
     );
@@ -300,21 +309,16 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       data: (value) => MetricCard(
         title: title,
         value: format(value),
-        change: '',
+        trend: '↑ 12% vs yesterday', // TODO: Calculate from historical data
         isPositive: true,
         icon: icon,
+        timestamp: 'Last updated: just now',
       ),
-      loading: () => MetricCard(
-        title: title,
-        value: '—',
-        change: 'Loading...',
-        isPositive: true,
-        icon: icon,
-      ),
+      loading: () => const MetricCardSkeleton(),
       error: (error, stackTrace) => MetricCard(
         title: title,
         value: '—',
-        change: 'Error',
+        trend: 'Error loading data',
         isPositive: false,
         icon: icon,
       ),
@@ -330,21 +334,16 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       data: (value) => MetricCard(
         title: title,
         value: value.toString(),
-        change: '',
-        isPositive: true,
+        trend: '↓ 5% vs yesterday', // TODO: Calculate from historical data
+        isPositive: false,
         icon: icon,
+        timestamp: 'Last updated: just now',
       ),
-      loading: () => MetricCard(
-        title: title,
-        value: '—',
-        change: 'Loading...',
-        isPositive: true,
-        icon: icon,
-      ),
+      loading: () => const MetricCardSkeleton(),
       error: (error, stackTrace) => MetricCard(
         title: title,
         value: '—',
-        change: 'Error',
+        trend: 'Error loading data',
         isPositive: false,
         icon: icon,
       ),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mix/mix.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pasal_pro/core/constants/app_icons.dart';
 import 'package:pasal_pro/core/constants/app_responsive.dart';
 import 'package:pasal_pro/core/utils/result.dart';
 import 'package:pasal_pro/core/theme/mix_tokens.dart';
@@ -76,6 +77,11 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
   Widget build(BuildContext context) {
     final bgColor = PasalColorToken.background.token.resolve(context);
     final surfaceColor = PasalColorToken.surface.token.resolve(context);
+    final borderColor = PasalColorToken.border.token.resolve(context);
+    final primaryColor = PasalColorToken.primary.token.resolve(context);
+    final primaryLight = primaryColor.withValues(alpha: 0.1);
+    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
+    final textSecondary = PasalColorToken.textSecondary.token.resolve(context);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -83,7 +89,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
         backgroundColor: surfaceColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(AppIcons.close),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -91,7 +97,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: PasalColorToken.textPrimary.token.resolve(context),
+            color: textPrimary,
           ),
         ),
       ),
@@ -111,7 +117,12 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                   _buildSection(
                     context,
                     title: 'Basic Information',
-                    icon: Icons.info_outline,
+                    icon: AppIcons.info,
+                    primaryColor: primaryColor,
+                    primaryLight: primaryLight,
+                    surfaceColor: surfaceColor,
+                    borderColor: borderColor,
+                    textPrimary: textPrimary,
                     children: [
                       _buildTextField(
                         controller: _nameController,
@@ -156,12 +167,25 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                     ],
                   ),
                   SizedBox(height: AppResponsive.getSectionGap(context) + 8),
-                  _buildImageUploadSection(context),
+                  _buildImageUploadSection(
+                    context,
+                    primaryColor: primaryColor,
+                    primaryLight: primaryLight,
+                    surfaceColor: surfaceColor,
+                    borderColor: borderColor,
+                    textPrimary: textPrimary,
+                    textSecondary: textSecondary,
+                  ),
                   SizedBox(height: AppResponsive.getSectionGap(context) + 8),
                   _buildSection(
                     context,
                     title: 'Pricing',
-                    icon: Icons.payments_outlined,
+                    icon: AppIcons.rupee,
+                    primaryColor: primaryColor,
+                    primaryLight: primaryLight,
+                    surfaceColor: surfaceColor,
+                    borderColor: borderColor,
+                    textPrimary: textPrimary,
                     children: [
                       ResponsiveRowColumn(
                         layout: AppResponsive.shouldStack(context)
@@ -204,7 +228,12 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                   _buildSection(
                     context,
                     title: 'Inventory',
-                    icon: Icons.inventory_2_outlined,
+                    icon: AppIcons.warehouse,
+                    primaryColor: primaryColor,
+                    primaryLight: primaryLight,
+                    surfaceColor: surfaceColor,
+                    borderColor: borderColor,
+                    textPrimary: textPrimary,
                     children: [
                       ResponsiveRowColumn(
                         layout: AppResponsive.shouldStack(context)
@@ -324,15 +353,18 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
     BuildContext context, {
     required String title,
     required IconData icon,
+    required Color primaryColor,
+    required Color primaryLight,
+    required Color surfaceColor,
+    required Color borderColor,
+    required Color textPrimary,
     required List<Widget> children,
   }) {
-    final primaryColor = PasalColorToken.primary.token.resolve(context);
-    final textPrimary = PasalColorToken.textPrimary.token.resolve(context);
     final sectionStyle = BoxStyler()
         .paddingAll(20)
         .borderRounded(12)
-        .color(PasalColorToken.surface.token.resolve(context))
-        .borderAll(color: PasalColorToken.border.token.resolve(context));
+        .color(surfaceColor)
+        .borderAll(color: borderColor);
 
     return Box(
       style: sectionStyle,
@@ -345,7 +377,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                 style: BoxStyler()
                     .paddingAll(8)
                     .borderRounded(8)
-                    .color(primaryColor.withValues(alpha: 0.1)),
+                    .color(primaryLight),
                 child: StyledIcon(
                   icon: icon,
                   style: IconStyler().size(18).color(primaryColor),
@@ -554,11 +586,24 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
   }
 
   /// Build product image upload section with preview
-  Widget _buildImageUploadSection(BuildContext context) {
+  Widget _buildImageUploadSection(
+    BuildContext context, {
+    required Color primaryColor,
+    required Color primaryLight,
+    required Color surfaceColor,
+    required Color borderColor,
+    required Color textPrimary,
+    required Color textSecondary,
+  }) {
     return _buildSection(
       context,
       title: 'Product Image',
-      icon: Icons.image_outlined,
+      icon: AppIcons.image,
+      primaryColor: primaryColor,
+      primaryLight: primaryLight,
+      surfaceColor: surfaceColor,
+      borderColor: borderColor,
+      textPrimary: textPrimary,
       children: [
         // Image preview
         if (_selectedImagePath != null && _selectedImagePath!.isNotEmpty)
@@ -567,9 +612,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
             height: 200,
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              border: Border.all(
-                color: PasalColorToken.border.token.resolve(context),
-              ),
+              border: Border.all(color: borderColor),
               borderRadius: BorderRadius.circular(8),
               image: DecorationImage(
                 image: _selectedImagePath!.startsWith('http')
@@ -583,7 +626,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
               child: Padding(
                 padding: const EdgeInsets.all(8),
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
+                  icon: const Icon(AppIcons.close, color: Colors.white),
                   onPressed: () {
                     setState(() {
                       _selectedImagePath = null;
@@ -627,15 +670,12 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
             Expanded(
               child: Text(
                 'Paste URL or browse local file',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: PasalColorToken.textSecondary.token.resolve(context),
-                ),
+                style: TextStyle(fontSize: 12, color: textSecondary),
               ),
             ),
             OutlinedButton.icon(
               onPressed: _pickImageFile,
-              icon: const Icon(Icons.folder_open, size: 16),
+              icon: const Icon(AppIcons.upload, size: 16),
               label: const Text('Browse'),
             ),
           ],
