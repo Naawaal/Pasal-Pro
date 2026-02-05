@@ -192,7 +192,7 @@ class _NavItem extends StatelessWidget {
           StyledIcon(
             icon: destination.icon,
             style: IconStyler()
-                .size(20)
+                .size(19)
                 .color(isActive ? primaryColor : textSecondary),
           ),
           if (isExpanded) ...[
